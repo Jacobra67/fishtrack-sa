@@ -6,6 +6,7 @@
     <title>Log Your Catch - FishTrack SA</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/logger.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
     <header class="page-header">
@@ -82,9 +83,26 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Drop Pin on Map 📍</label>
+                        <div class="location-buttons">
+                            <button type="button" id="useCurrentLocation" class="location-btn primary">
+                                📍 Use My Current Location
+                            </button>
+                            <button type="button" id="clearPin" class="location-btn secondary" style="display: none;">
+                                ✕ Clear Pin
+                            </button>
+                        </div>
+                        <div id="pinMap" class="pin-map"></div>
+                        <div id="coordinatesDisplay" class="coordinates-display" style="display: none;">
+                            <small>📍 Coordinates: <span id="latLng"></span></small>
+                        </div>
+                        <small class="form-hint">Tap map to drop pin, or use your current location</small>
+                    </div>
+
+                    <div class="form-group">
                         <label for="locationName">Location Name *</label>
                         <input type="text" id="locationName" placeholder="e.g., Struisbaai Beach, Mile 72" required>
-                        <small class="form-hint">GPS coordinates will be captured automatically</small>
+                        <small class="form-hint">Describe the fishing spot</small>
                     </div>
 
                     <div class="form-group">
@@ -162,6 +180,9 @@
         </div>
     </main>
 
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>

@@ -166,6 +166,65 @@
     gap: 16px;
 }
 
+/* Location Buttons */
+.location-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.location-btn {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.location-btn.primary {
+    background: var(--ocean-blue);
+    color: var(--white);
+}
+
+.location-btn.primary:hover {
+    background: #005a8c;
+}
+
+.location-btn.secondary {
+    background: var(--light-grey);
+    color: var(--dark-grey);
+}
+
+.location-btn.secondary:hover {
+    background: #d5dde0;
+}
+
+/* Pin Map */
+.pin-map {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    margin-bottom: 8px;
+    cursor: crosshair;
+}
+
+.coordinates-display {
+    padding: 8px 12px;
+    background: #f0f8fc;
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+
+.coordinates-display small {
+    color: var(--ocean-blue);
+    font-weight: 600;
+}
+
 /* Checkbox */
 .checkbox-group {
     margin-top: 8px;

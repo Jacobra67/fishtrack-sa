@@ -49,6 +49,136 @@ changePhotoBtn.addEventListener('click', () => {
     photoInput.click();
 });
 
+// ===== MAP PIN DROP FUNCTIONALITY =====
+
+let pinMap = null;
+let pinMarker = null;
+let pinnedLocation = null;
+
+// Initialize pin-drop map
+function initPinMap() {
+    // Create map centered on South Africa
+    pinMap = L.map('pinMap').setView([-33.5, 20.0], 6);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(pinMap);
+    
+    // Handle map click to drop pin
+    pinMap.on('click', (e) => {
+        dropPin(e.latlng.lat, e.latlng.lng);
+    });
+    
+    console.log('Pin map initialized');
+}
+
+// Drop pin at coordinates
+function dropPin(lat, lng) {
+    // Remove existing marker if any
+    if (pinMarker) {
+        pinMap.removeLayer(pinMarker);
+    }
+    
+    // Create new marker
+    pinMarker = L.marker([lat, lng], {
+        draggable: true,
+        icon: L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41]
+        })
+    }).addTo(pinMap);
+    
+    // Update pinned location
+    pinnedLocation = { lat, lng };
+    currentLocation = { lat, lng }; // Update current location to use pin
+    
+    // Show coordinates
+    document.getElementById('coordinatesDisplay').style.display = 'block';
+    document.getElementById('latLng').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    
+    // Show clear button
+    document.getElementById('clearPin').style.display = 'inline-block';
+    
+    // Handle marker drag
+    pinMarker.on('dragend', (e) => {
+        const pos = e.target.getLatLng();
+        dropPin(pos.lat, pos.lng);
+    });
+    
+    console.log('Pin dropped:', lat, lng);
+}
+
+// Use current location button
+document.getElementById('useCurrentLocation').addEventListener('click', () => {
+    if (navigator.geolocation) {
+        // Show loading state
+        const btn = document.getElementById('useCurrentLocation');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '⏳ Getting location...';
+        btn.disabled = true;
+        
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                // Drop pin at current location
+                dropPin(lat, lng);
+                
+                // Center map on location
+                pinMap.setView([lat, lng], 12);
+                
+                // Reset button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                console.log('Used current location:', lat, lng);
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                alert('Could not get your location. Please drop a pin manually on the map.');
+                
+                // Reset button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    } else {
+        alert('Geolocation not supported by your browser. Please drop a pin manually.');
+    }
+});
+
+// Clear pin button
+document.getElementById('clearPin').addEventListener('click', () => {
+    if (pinMarker) {
+        pinMap.removeLayer(pinMarker);
+        pinMarker = null;
+    }
+    
+    pinnedLocation = null;
+    currentLocation = null;
+    
+    document.getElementById('coordinatesDisplay').style.display = 'none';
+    document.getElementById('clearPin').style.display = 'none';
+    
+    console.log('Pin cleared');
+});
+
+// Initialize map when page loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPinMap);
+} else {
+    initPinMap();
+}
+
 // Form submission
 const catchForm = document.getElementById('catchForm');
 const submitBtn = document.getElementById('submitBtn');
