@@ -81,32 +81,32 @@ function formatDate(timestamp) {
 }
 
 // Create popup content for catch
-function createPopupContent(catch) {
+function createPopupContent(catchData) {
     let html = '<div class="catch-popup">';
     
     // Photo
-    if (catch$.photo) {
-        html += `<img src="${catch$.photo}" alt="${catch$.species}">`;
+    if (catchData.photo) {
+        html += `<img src="${catchData.photo}" alt="${catchData.species}">`;
     }
     
     // Species
-    html += `<h3>${catch$.species}</h3>`;
+    html += `<h3>${catchData.species}</h3>`;
     
     // Details
     html += '<div class="catch-info">';
-    html += `<div><strong>Weight:</strong> ${catch$.weight}kg</div>`;
-    if (catch$.length) {
-        html += `<div><strong>Length:</strong> ${catch$.length}cm</div>`;
+    html += `<div><strong>Weight:</strong> ${catchData.weight}kg</div>`;
+    if (catchData.length) {
+        html += `<div><strong>Length:</strong> ${catchData.length}cm</div>`;
     }
-    html += `<div><strong>Location:</strong> ${catch$.locationName}</div>`;
-    if (catch$.bait) {
-        html += `<div><strong>Bait:</strong> ${catch$.bait}</div>`;
+    html += `<div><strong>Location:</strong> ${catchData.locationName}</div>`;
+    if (catchData.bait) {
+        html += `<div><strong>Bait:</strong> ${catchData.bait}</div>`;
     }
-    html += `<div><strong>When:</strong> ${formatDate(catch$.timestamp)}</div>`;
+    html += `<div><strong>When:</strong> ${formatDate(catchData.timestamp)}</div>`;
     html += '</div>';
     
     // C&R badge
-    if (catch$.released) {
+    if (catchData.released) {
         html += '<div class="catch-released">✓ Catch & Release</div>';
     }
     

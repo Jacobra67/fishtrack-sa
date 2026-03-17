@@ -13,6 +13,5 @@ firebase.initializeApp(firebaseConfig);
 
 // Get references to Firebase services
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 console.log('Firebase initialized successfully');
