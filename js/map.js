@@ -176,7 +176,6 @@ function filterCatches() {
 async function loadCatches() {
     try {
         const snapshot = await db.collection('catches')
-            .orderBy('timestamp', 'desc')
             .limit(500) // Limit to recent 500 catches
             .get();
         
@@ -198,14 +197,18 @@ async function loadCatches() {
 
 // Initialize everything
 async function init() {
-    // Initialize map
-    initMap();
-    
-    // Load catches
-    await loadCatches();
-    
-    // Hide loading overlay
-    document.getElementById('loadingOverlay').classList.add('hidden');
+    try {
+        // Initialize map
+        initMap();
+        
+        // Load catches
+        await loadCatches();
+    } catch (error) {
+        console.error('Initialization error:', error);
+    } finally {
+        // Always hide loading overlay
+        document.getElementById('loadingOverlay').classList.add('hidden');
+    }
     
     // Set up filter listeners
     document.getElementById('speciesFilter').addEventListener('change', filterCatches);
