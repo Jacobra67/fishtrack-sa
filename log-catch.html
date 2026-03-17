@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Your Catch - FishTrack SA</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/logger.css">
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <a href="index.html" class="back-link">← Back</a>
+            <h1>🎣 Log Your Catch</h1>
+        </div>
+    </header>
+
+    <main class="logger-main">
+        <div class="container">
+            <form id="catchForm" class="catch-form">
+                
+                <!-- Step 1: Photo -->
+                <section class="form-section">
+                    <h2>📸 Step 1: Photo</h2>
+                    <div class="photo-upload">
+                        <input type="file" id="photoInput" accept="image/*" capture="environment" required>
+                        <label for="photoInput" class="photo-upload-label" id="photoLabel">
+                            <div class="upload-icon">📷</div>
+                            <span>Take Photo</span>
+                        </label>
+                        <div id="photoPreview" class="photo-preview" style="display: none;">
+                            <img id="previewImage" src="" alt="Preview">
+                            <button type="button" class="change-photo" id="changePhoto">Change Photo</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step 2: Details -->
+                <section class="form-section">
+                    <h2>📝 Step 2: Details</h2>
+                    
+                    <div class="form-group">
+                        <label for="species">Species *</label>
+                        <select id="species" required>
+                            <option value="">Select species...</option>
+                            <optgroup label="Bottom Fish">
+                                <option value="Galjoen">Galjoen</option>
+                                <option value="Steenbras">Steenbras (White/Silver)</option>
+                                <option value="Kabeljou">Kabeljou (Kob)</option>
+                                <option value="Mosselkraker">Mosselkraker (Musselcracker)</option>
+                                <option value="Rock Cod">Rock Cod (Klipkabeljou)</option>
+                                <option value="Blacktail">Blacktail (Dassie)</option>
+                            </optgroup>
+                            <optgroup label="Sharks">
+                                <option value="Bronze Whaler">Bronze Whaler (Bronzy)</option>
+                                <option value="Spotted Gully">Spotted Gully (Spotty)</option>
+                                <option value="Copper Shark">Copper Shark</option>
+                                <option value="Smooth-Hound">Smooth-Hound</option>
+                            </optgroup>
+                            <optgroup label="Gamefish">
+                                <option value="Elf">Elf (Shad)</option>
+                                <option value="Garrick">Garrick (Leervis)</option>
+                                <option value="Springer">Springer</option>
+                                <option value="Snoek">Snoek</option>
+                            </optgroup>
+                            <optgroup label="Rays">
+                                <option value="Eagle Ray">Eagle Ray</option>
+                                <option value="Blue Stingray">Blue Stingray</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weight">Weight (kg) *</label>
+                            <input type="number" id="weight" step="0.1" min="0" max="200" placeholder="5.5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="length">Length (cm)</label>
+                            <input type="number" id="length" step="1" min="0" max="500" placeholder="80">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="locationName">Location Name *</label>
+                        <input type="text" id="locationName" placeholder="e.g., Struisbaai Beach, Mile 72" required>
+                        <small class="form-hint">GPS coordinates will be captured automatically</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bait">Bait Used</label>
+                        <select id="bait">
+                            <option value="">Select bait...</option>
+                            <option value="Sardine">Sardine (Pilchard)</option>
+                            <option value="White Mussel">White Mussel</option>
+                            <option value="Octopus">Octopus</option>
+                            <option value="Redbait">Redbait</option>
+                            <option value="Squid">Squid</option>
+                            <option value="Crab">Crab</option>
+                            <option value="Bloodworm">Bloodworm</option>
+                            <option value="Mackerel">Mackerel</option>
+                            <option value="Lure">Lure</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="released">
+                            <span>Catch & Release (fish was released)</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Step 3: Privacy -->
+                <section class="form-section">
+                    <h2>🔒 Step 3: Privacy</h2>
+                    <div class="privacy-options">
+                        <label class="radio-card">
+                            <input type="radio" name="privacy" value="public" checked>
+                            <div class="radio-content">
+                                <strong>Public</strong>
+                                <small>Everyone can see this catch on the map</small>
+                            </div>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="privacy" value="friends">
+                            <div class="radio-content">
+                                <strong>Friends Only</strong>
+                                <small>Only your friends can see (coming soon)</small>
+                            </div>
+                        </label>
+                        <label class="radio-card">
+                            <input type="radio" name="privacy" value="private">
+                            <div class="radio-content">
+                                <strong>Private</strong>
+                                <small>Only you can see (personal log)</small>
+                            </div>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Submit -->
+                <div class="form-actions">
+                    <button type="submit" class="submit-button" id="submitBtn">
+                        <span id="submitText">Log Catch 🎣</span>
+                        <span id="submitSpinner" class="spinner" style="display: none;">⏳ Saving...</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Success Message -->
+            <div id="successMessage" class="success-message" style="display: none;">
+                <div class="success-icon">✅</div>
+                <h3>Catch Logged!</h3>
+                <p>Your catch has been saved successfully.</p>
+                <div class="success-actions">
+                    <a href="map.html" class="button-primary">View on Map →</a>
+                    <button type="button" class="button-secondary" id="logAnother">Log Another Catch</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/catch-logger.js"></script>
+</body>
+</html>

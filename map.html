@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch Map - FishTrack SA</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/map.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body class="map-page">
+    <header class="map-header">
+        <div class="header-content">
+            <a href="index.html" class="back-link">← Home</a>
+            <h1>🎣 Catch Map</h1>
+            <a href="log-catch.html" class="log-catch-btn">+ Log Catch</a>
+        </div>
+    </header>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <div class="filters-content">
+            <select id="speciesFilter" class="filter-select">
+                <option value="all">All Species</option>
+                <optgroup label="Bottom Fish">
+                    <option value="Galjoen">Galjoen</option>
+                    <option value="Steenbras">Steenbras</option>
+                    <option value="Kabeljou">Kabeljou</option>
+                </optgroup>
+                <optgroup label="Sharks">
+                    <option value="Bronze Whaler">Bronze Whaler</option>
+                    <option value="Spotted Gully">Spotted Gully</option>
+                </optgroup>
+                <optgroup label="Gamefish">
+                    <option value="Elf">Elf</option>
+                    <option value="Garrick">Garrick</option>
+                </optgroup>
+            </select>
+
+            <select id="timeFilter" class="filter-select">
+                <option value="all">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+
+            <button id="refreshBtn" class="refresh-btn" title="Refresh catches">
+                🔄
+            </button>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map" class="map-container"></div>
+
+    <!-- Stats Overlay -->
+    <div class="map-stats">
+        <div class="stat-pill">
+            <span id="catchCount">Loading...</span> catches displayed
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="map-legend">
+        <h4>Species</h4>
+        <div class="legend-items">
+            <div class="legend-item">
+                <span class="legend-marker" style="background: #2ecc71;"></span>
+                <span>Galjoen</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-marker" style="background: #3498db;"></span>
+                <span>Steenbras</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-marker" style="background: #e74c3c;"></span>
+                <span>Kob</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-marker" style="background: #95a5a6;"></span>
+                <span>Sharks</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-marker" style="background: #f39c12;"></span>
+                <span>Gamefish</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">🎣</div>
+        <p>Loading catches...</p>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/map.js"></script>
+</body>
+</html>

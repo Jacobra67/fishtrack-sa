@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FishTrack SA - Where Are They Biting?</title>
+    <meta name="description" content="Real-time fishing data for South African anglers. See where fish are biting right now.">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container">
+            <div class="logo">
+                <h1>🎣 FishTrack SA</h1>
+            </div>
+            
+            <div class="hero-content">
+                <h2 class="headline">Where are they biting?</h2>
+                <p class="subheadline">Find out. Right now.</p>
+                <p class="tagline">Real catches. Real spots. Real time.</p>
+                
+                <a href="log-catch.html" class="cta-button">Log Your Catch</a>
+                
+                <div class="live-stats">
+                    <div class="stat">
+                        <span class="stat-number" id="totalCatches">247</span>
+                        <span class="stat-label">catches this week</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number" id="todayHotspot">23 Galjoen</span>
+                        <span class="stat-label">at Struisbaai today</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h3>Why FishTrack SA?</h3>
+            
+            <div class="feature-grid">
+                <div class="feature">
+                    <div class="feature-icon">📍</div>
+                    <h4>See Where Fish Are Biting</h4>
+                    <p>Real-time catch map shows you exactly where anglers are landing fish right now.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h4>Your Secret Spots Stay Secret</h4>
+                    <p>Privacy controls let you share with friends or keep your best spots private.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🏆</div>
+                    <h4>Join the Community</h4>
+                    <p>500+ SA anglers already tracking catches. Compete on leaderboards, win prizes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h3>Ready to catch more fish?</h3>
+            <p>Start tracking your catches today. 100% free.</p>
+            <a href="log-catch.html" class="cta-button">Start Tracking →</a>
+            <a href="map.html" class="secondary-button">Browse Catches</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>🇿🇦 Built in South Africa, for South African anglers</p>
+            <p class="small">FishTrack SA © 2026 | <a href="#">Privacy</a> | <a href="#">Terms</a></p>
+        </div>
+    </footer>
+
+    <script src="js/stats.js"></script>
+</body>
+</html>

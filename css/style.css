@@ -1,0 +1,263 @@
+/* FishTrack SA - Mobile-First Styles */
+
+/* CSS Variables */
+:root {
+    --ocean-blue: #0077be;
+    --sandy-beige: #f4e4c1;
+    --fish-green: #2ecc71;
+    --dark-grey: #2c3e50;
+    --white: #ffffff;
+    --light-grey: #ecf0f1;
+}
+
+/* Reset & Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--dark-grey);
+    background: var(--white);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, var(--ocean-blue) 0%, #005a8c 100%);
+    color: var(--white);
+    padding: 60px 20px 80px;
+    text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.logo h1 {
+    font-size: 28px;
+    margin-bottom: 40px;
+    font-weight: 700;
+}
+
+.headline {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.2;
+}
+
+.subheadline {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.tagline {
+    font-size: 18px;
+    opacity: 0.9;
+    margin-bottom: 40px;
+}
+
+/* CTA Button */
+.cta-button {
+    display: inline-block;
+    background: var(--fish-green);
+    color: var(--white);
+    padding: 18px 40px;
+    font-size: 20px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 40px;
+    min-height: 56px;
+    line-height: 1;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.cta-button:active {
+    transform: translateY(0);
+}
+
+/* Live Stats */
+.live-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+/* Features Section */
+.features {
+    padding: 80px 20px;
+    background: var(--white);
+}
+
+.features h3 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 50px;
+    color: var(--dark-grey);
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.feature {
+    text-align: center;
+    padding: 20px;
+}
+
+.feature-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.feature h4 {
+    font-size: 22px;
+    margin-bottom: 12px;
+    color: var(--dark-grey);
+}
+
+.feature p {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* CTA Section */
+.cta-section {
+    background: var(--sandy-beige);
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.cta-section h3 {
+    font-size: 32px;
+    margin-bottom: 16px;
+    color: var(--dark-grey);
+}
+
+.cta-section p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    color: #555;
+}
+
+.secondary-button {
+    display: inline-block;
+    background: var(--white);
+    color: var(--ocean-blue);
+    padding: 16px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 2px solid var(--ocean-blue);
+    transition: all 0.2s;
+    margin-left: 16px;
+    min-height: 52px;
+}
+
+.secondary-button:hover {
+    background: var(--ocean-blue);
+    color: var(--white);
+}
+
+/* Footer */
+footer {
+    background: var(--dark-grey);
+    color: var(--white);
+    padding: 40px 20px;
+    text-align: center;
+}
+
+footer p {
+    margin-bottom: 8px;
+}
+
+footer .small {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+footer a {
+    color: var(--white);
+    text-decoration: none;
+    opacity: 0.7;
+}
+
+footer a:hover {
+    opacity: 1;
+}
+
+/* Tablet & Desktop */
+@media (min-width: 768px) {
+    .headline {
+        font-size: 48px;
+    }
+    
+    .subheadline {
+        font-size: 36px;
+    }
+    
+    .tagline {
+        font-size: 20px;
+    }
+    
+    .feature-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .hero {
+        min-height: 90vh;
+    }
+}
+
+/* Loading Animation */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
