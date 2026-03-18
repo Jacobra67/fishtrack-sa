@@ -60,7 +60,7 @@
 /* Filters Bar */
 .filters-bar {
     position: fixed;
-    top: 52px;
+    top: 104px;
     left: 0;
     right: 0;
     background: var(--white);
@@ -111,7 +111,7 @@
 /* Map Container */
 .map-container {
     position: fixed;
-    top: 112px;
+    top: 164px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -121,7 +121,7 @@
 /* Map Stats Overlay */
 .map-stats {
     position: fixed;
-    top: 124px;
+    top: 176px;
     left: 16px;
     z-index: 500;
 }

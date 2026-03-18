@@ -1,13 +1,15 @@
-/* FishTrack SA - Mobile-First Styles */
+/* FishTrack SA - Vintage Fishing Heritage Theme */
 
-/* CSS Variables */
+/* CSS Variables - Vintage Fishing Palette */
 :root {
-    --ocean-blue: #0077be;
-    --sandy-beige: #f4e4c1;
-    --fish-green: #2ecc71;
-    --dark-grey: #2c3e50;
+    --navy-blue: #1a2f4a;
+    --cream: #f5e6d3;
+    --rust-orange: #d97642;
+    --dark-text: #2c3e50;
     --white: #ffffff;
-    --light-grey: #ecf0f1;
+    --light-navy: #2d4a68;
+    --dark-navy: #0f1f30;
+    --border-color: #d4c5ab;
 }
 
 /* Reset & Base Styles */
@@ -18,10 +20,10 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Georgia', 'Times New Roman', serif;
     line-height: 1.6;
-    color: var(--dark-grey);
-    background: var(--white);
+    color: var(--dark-text);
+    background: var(--cream);
 }
 
 .container {
@@ -30,120 +32,267 @@ body {
     padding: 0 20px;
 }
 
-/* Hero Section */
-.hero {
-    background: linear-gradient(135deg, var(--ocean-blue) 0%, #005a8c 100%);
-    color: var(--white);
-    padding: 60px 20px 80px;
-    text-align: center;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+/* Header with Logo */
+.main-header {
+    background: var(--navy-blue);
+    padding: 20px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    position: relative;
 }
 
-.logo h1 {
-    font-size: 28px;
-    margin-bottom: 40px;
+.main-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--rust-orange) 0%, var(--cream) 50%, var(--rust-orange) 100%);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid var(--cream);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.logo-text h1 {
+    font-size: 24px;
+    color: var(--cream);
     font-weight: 700;
+    margin: 0;
+    font-family: 'Georgia', serif;
+    letter-spacing: 1px;
+}
+
+.logo-text p {
+    font-size: 12px;
+    color: var(--cream);
+    opacity: 0.9;
+    margin: 0;
+    font-style: italic;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.nav-links a {
+    color: var(--cream);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    transition: color 0.2s;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.nav-links a:hover {
+    color: var(--rust-orange);
+}
+
+/* Hero Section - Vintage Badge Style */
+.hero {
+    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--dark-navy) 100%);
+    color: var(--cream);
+    padding: 80px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px);
+    pointer-events: none;
+}
+
+.hero-badge {
+    max-width: 300px;
+    margin: 0 auto 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-badge img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
 }
 
 .headline {
-    font-size: 36px;
+    font-size: 42px;
     font-weight: 700;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     line-height: 1.2;
+    color: var(--cream);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    font-family: 'Georgia', serif;
+    position: relative;
+    z-index: 1;
 }
 
 .subheadline {
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 8px;
+    font-size: 24px;
+    font-weight: 400;
+    margin-bottom: 12px;
+    color: var(--cream);
+    font-style: italic;
+    opacity: 0.95;
+    position: relative;
+    z-index: 1;
 }
 
 .tagline {
     font-size: 18px;
-    opacity: 0.9;
+    opacity: 0.85;
     margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: relative;
+    z-index: 1;
 }
 
-/* CTA Button */
+/* CTA Button - Vintage Badge Style */
 .cta-button {
     display: inline-block;
-    background: var(--fish-green);
-    color: var(--white);
+    background: var(--rust-orange);
+    color: var(--cream);
     padding: 18px 40px;
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
     border-radius: 8px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     margin-bottom: 40px;
-    min-height: 56px;
-    line-height: 1;
+    border: 3px solid var(--cream);
+    font-family: 'Georgia', serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
 }
 
 .cta-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    background: #e08550;
 }
 
 .cta-button:active {
-    transform: translateY(0);
+    transform: translateY(-1px);
 }
 
-/* Live Stats */
+/* Live Stats - Vintage Style */
 .live-stats {
     display: flex;
     justify-content: center;
     gap: 40px;
     flex-wrap: wrap;
-    margin-top: 40px;
+    margin-top: 50px;
+    padding-top: 40px;
+    border-top: 2px solid rgba(245, 230, 211, 0.3);
+    position: relative;
+    z-index: 1;
 }
 
 .stat {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 20px;
+    background: rgba(245, 230, 211, 0.1);
+    border-radius: 8px;
+    border: 2px solid rgba(245, 230, 211, 0.3);
+    min-width: 120px;
 }
 
 .stat-number {
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 700;
     display: block;
     margin-bottom: 4px;
+    color: var(--rust-orange);
+    font-family: 'Georgia', serif;
 }
 
 .stat-label {
     font-size: 14px;
     opacity: 0.9;
+    color: var(--cream);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Features Section */
+/* Features Section - Vintage Cards */
 .features {
     padding: 80px 20px;
-    background: var(--white);
+    background: var(--cream);
 }
 
 .features h3 {
     text-align: center;
-    font-size: 32px;
+    font-size: 36px;
     margin-bottom: 50px;
-    color: var(--dark-grey);
+    color: var(--navy-blue);
+    font-family: 'Georgia', serif;
+    font-weight: 700;
+    position: relative;
+}
+
+.features h3::after {
+    content: '⚓';
+    display: block;
+    font-size: 24px;
+    margin-top: 12px;
+    opacity: 0.5;
 }
 
 .feature-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 40px;
-    max-width: 900px;
+    gap: 30px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
 .feature {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 8px;
+    border: 3px solid var(--border-color);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
     text-align: center;
-    padding: 20px;
+}
+
+.feature:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
 .feature-icon {
@@ -154,64 +303,93 @@ body {
 .feature h4 {
     font-size: 22px;
     margin-bottom: 12px;
-    color: var(--dark-grey);
+    color: var(--navy-blue);
+    font-family: 'Georgia', serif;
+    font-weight: 700;
 }
 
 .feature p {
     font-size: 16px;
     color: #555;
     line-height: 1.6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* CTA Section */
+/* CTA Section - Vintage Banner */
 .cta-section {
-    background: var(--sandy-beige);
+    background: var(--navy-blue);
     padding: 60px 20px;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px);
+    pointer-events: none;
 }
 
 .cta-section h3 {
     font-size: 32px;
     margin-bottom: 16px;
-    color: var(--dark-grey);
+    color: var(--cream);
+    font-family: 'Georgia', serif;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
 }
 
 .cta-section p {
     font-size: 18px;
     margin-bottom: 30px;
-    color: #555;
+    color: var(--cream);
+    opacity: 0.9;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: relative;
+    z-index: 1;
 }
 
 .secondary-button {
     display: inline-block;
-    background: var(--white);
-    color: var(--ocean-blue);
+    background: var(--cream);
+    color: var(--navy-blue);
     padding: 16px 32px;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
     border-radius: 8px;
-    border: 2px solid var(--ocean-blue);
+    border: 3px solid var(--rust-orange);
     transition: all 0.2s;
     margin-left: 16px;
-    min-height: 52px;
+    font-family: 'Georgia', serif;
+    position: relative;
+    z-index: 1;
 }
 
 .secondary-button:hover {
-    background: var(--ocean-blue);
-    color: var(--white);
+    background: var(--rust-orange);
+    color: var(--cream);
 }
 
-/* Footer */
+/* Footer - Vintage Style */
 footer {
-    background: var(--dark-grey);
-    color: var(--white);
+    background: var(--dark-navy);
+    color: var(--cream);
     padding: 40px 20px;
     text-align: center;
+    border-top: 4px solid var(--rust-orange);
 }
 
 footer p {
     margin-bottom: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 footer .small {
@@ -220,23 +398,46 @@ footer .small {
 }
 
 footer a {
-    color: var(--white);
+    color: var(--cream);
     text-decoration: none;
     opacity: 0.7;
+    transition: opacity 0.2s;
 }
 
 footer a:hover {
     opacity: 1;
+    color: var(--rust-orange);
 }
 
 /* Tablet & Desktop */
 @media (min-width: 768px) {
+    .logo-image {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .logo-text h1 {
+        font-size: 28px;
+    }
+    
+    .logo-text p {
+        font-size: 14px;
+    }
+    
+    .nav-links {
+        margin-top: 0;
+    }
+    
+    .hero-badge {
+        max-width: 400px;
+    }
+    
     .headline {
-        font-size: 48px;
+        font-size: 56px;
     }
     
     .subheadline {
-        font-size: 36px;
+        font-size: 32px;
     }
     
     .tagline {
@@ -245,10 +446,6 @@ footer a:hover {
     
     .feature-grid {
         grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .hero {
-        min-height: 90vh;
     }
 }
 
@@ -260,4 +457,21 @@ footer a:hover {
 
 .loading {
     animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Vintage Texture Overlay */
+.vintage-texture {
+    position: relative;
+}
+
+.vintage-texture::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABZJREFUeNpi2r9//38gYGAEESAAEGAAasgJOgzJFPgAAAAASUVORK5CYII=');
+    opacity: 0.03;
+    pointer-events: none;
 }

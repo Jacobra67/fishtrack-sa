@@ -11,11 +11,19 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body class="map-page">
-    <header class="map-header">
-        <div class="header-content">
-            <a href="index.html" class="back-link">← Home</a>
-            <h1>🎣 Catch Map</h1>
-            <a href="log-catch.html" class="log-catch-btn">+ Log Catch</a>
+    <header class="main-header" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000;">
+        <div class="container header-content">
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="FishTrack SA Logo" class="logo-image" style="width: 50px; height: 50px;">
+                <div class="logo-text">
+                    <h1 style="font-size: 18px;">FISHTRACK SA</h1>
+                    <p style="font-size: 10px;">Waar Die Vis Byt</p>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="log-catch.html" style="background: var(--rust-orange); padding: 8px 16px; border-radius: 6px;">+ Log Catch</a>
+            </nav>
         </div>
     </header>
 
