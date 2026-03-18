@@ -327,6 +327,7 @@ catchForm.addEventListener('submit', async (e) => {
         // Get form data
         const formData = {
             catcherName: document.getElementById('catcherName').value,
+            country: document.getElementById('country').value,
             species: document.getElementById('species').value,
             weight: parseFloat(document.getElementById('weight').value),
             length: document.getElementById('length').value ? parseInt(document.getElementById('length').value) : null,

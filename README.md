@@ -1,6 +1,6 @@
-# FishTrack SA - Fishing Data Platform
+# FishTrack Africa - Fishing Data Platform
 
-Real-time fishing data for South African anglers. See where fish are biting right now.
+Real-time fishing data for African anglers. Starting with South Africa and Namibia. See where fish are biting right now.
 
 ## Features (MVP v0.1)
 

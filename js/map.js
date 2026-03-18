@@ -99,6 +99,9 @@ function createPopupContent(catchData) {
     
     // Details
     html += '<div class="catch-info">';
+    if (catchData.country) {
+        html += `<div><strong>Country:</strong> ${catchData.country}</div>`;
+    }
     html += `<div><strong>Weight:</strong> ${catchData.weight}kg</div>`;
     if (catchData.length) {
         html += `<div><strong>Length:</strong> ${catchData.length}cm</div>`;
