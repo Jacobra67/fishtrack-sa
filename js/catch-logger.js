@@ -33,19 +33,69 @@ photoInput.addEventListener('change', (e) => {
     if (file) {
         photoFile = file;
         
-        // Create preview
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            photoDataURL = event.target.result;
+        // Compress and resize photo
+        compressPhoto(file, (compressedDataURL) => {
+            photoDataURL = compressedDataURL;
             previewImage.src = photoDataURL;
             photoLabel.style.display = 'none';
             photoPreview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+            
+            // Show file size info
+            const originalSizeKB = Math.round(file.size / 1024);
+            const compressedSizeKB = Math.round(photoDataURL.length / 1024);
+            console.log(`Photo compressed: ${originalSizeKB}KB → ${compressedSizeKB}KB (${Math.round((1 - compressedSizeKB/originalSizeKB) * 100)}% reduction)`);
+        });
     }
 });
 
+// Compress photo to reduce file size (max 1200px width, 85% quality)
+function compressPhoto(file, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            // Calculate new dimensions (max 1200px width, maintain aspect ratio)
+            const MAX_WIDTH = 1200;
+            const MAX_HEIGHT = 1200;
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height = Math.round(height * MAX_WIDTH / width);
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width = Math.round(width * MAX_HEIGHT / height);
+                    height = MAX_HEIGHT;
+                }
+            }
+            
+            // Create canvas and draw resized image
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            // Use better image smoothing
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Convert to compressed JPEG (85% quality)
+            const compressedDataURL = canvas.toDataURL('image/jpeg', 0.85);
+            
+            callback(compressedDataURL);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
 changePhotoBtn.addEventListener('click', () => {
+    photoInput.value = ''; // Reset input so same photo can be re-selected
     photoInput.click();
 });
 
@@ -159,8 +209,8 @@ cancelEditBtn.addEventListener('click', () => {
 
 // Done editing - save edited photo
 doneEditBtn.addEventListener('click', () => {
-    // Get edited image as data URL
-    photoDataURL = editorCanvas.toDataURL('image/jpeg', 0.9);
+    // Get edited image as data URL (compressed to 85% quality)
+    photoDataURL = editorCanvas.toDataURL('image/jpeg', 0.85);
     
     // Update preview
     previewImage.src = photoDataURL;
@@ -168,7 +218,8 @@ doneEditBtn.addEventListener('click', () => {
     // Close editor
     photoEditorModal.style.display = 'none';
     
-    console.log('Photo edited and saved');
+    const sizeKB = Math.round(photoDataURL.length / 1024);
+    console.log('Photo edited and saved. Size:', sizeKB, 'KB');
 });
 
 // Initialize editor on page load
@@ -346,8 +397,9 @@ catchForm.addEventListener('submit', async (e) => {
             const photoSizeKB = Math.round(photoDataURL.length / 1024);
             console.log('Photo size:', photoSizeKB, 'KB');
             
-            if (photoSizeKB > 900) {
-                alert(`Warning: Photo is large (${photoSizeKB}KB). This may fail to save. Try a smaller photo or compress it.`);
+            if (photoSizeKB > 950) {
+                // This should rarely happen with compression, but check anyway
+                throw new Error(`Photo too large (${photoSizeKB}KB). Maximum 950KB. Please try a different photo or contact support.`);
             }
             
             formData.photo = photoDataURL; // For MVP, store as base64
