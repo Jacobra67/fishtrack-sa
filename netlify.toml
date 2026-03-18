@@ -1,0 +1,10 @@
+# Netlify configuration for FishTrack SA
+
+[build]
+  # No build command needed (static site)
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
