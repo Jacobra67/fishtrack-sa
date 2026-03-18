@@ -53,3 +53,30 @@ Test workflow:
 6. Fill form
 7. Submit
 8. View on map - exact location shows!
+
+---
+
+## March 18, 2026 - 10:15 AM
+
+### Admin Console & Catcher Names ✅
+
+**New Features:**
+1. ✅ Added "Catcher Name" field to catch logger
+2. ✅ Catcher name displayed on map cards ("🎣 Caught by [Name]")
+3. ✅ Created admin console (`admin.html`)
+   - Password-protected (password: `fishtrack2026`)
+   - View all catches with stats
+   - Delete individual catches
+   - Bulk delete test data
+4. ✅ Documented monetization plan (MONETIZATION_PLAN.md)
+
+**Deployment:**
+- Site live at: https://fishtrack-sa.netlify.app
+- Working on mobile (tested on phone with 4G)
+- Local DNS issue (ISP cache, will resolve in 1-2h)
+
+**Admin Console Access:**
+- URL: https://fishtrack-sa.netlify.app/admin.html
+- Password: `fishtrack2026`
+
+**Next:** Deploy to Netlify, test features live

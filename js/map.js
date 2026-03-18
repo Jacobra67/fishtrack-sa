@@ -92,6 +92,11 @@ function createPopupContent(catchData) {
     // Species
     html += `<h3>${catchData.species}</h3>`;
     
+    // Catcher name (if available)
+    if (catchData.catcherName) {
+        html += `<div class="catcher-name">🎣 Caught by <strong>${catchData.catcherName}</strong></div>`;
+    }
+    
     // Details
     html += '<div class="catch-info">';
     html += `<div><strong>Weight:</strong> ${catchData.weight}kg</div>`;

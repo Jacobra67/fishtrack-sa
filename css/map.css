@@ -242,6 +242,14 @@
     color: var(--dark-grey);
 }
 
+.catcher-name {
+    font-size: 13px;
+    color: var(--ocean-blue);
+    margin-bottom: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid #eee;
+}
+
 .catch-info {
     display: flex;
     flex-direction: column;

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console - FishTrack SA</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Admin-specific styles */
+        .admin-body {
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--ocean-blue), var(--fish-green));
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-card h1 {
+            margin-bottom: 8px;
+            color: var(--dark-grey);
+        }
+
+        .login-card p {
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .login-input {
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--ocean-blue);
+        }
+
+        .login-btn {
+            background: var(--ocean-blue);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #2574a9;
+        }
+
+        .login-error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: -8px;
+            display: none;
+        }
+
+        /* Admin Dashboard */
+        .admin-dashboard {
+            display: none;
+        }
+
+        .admin-header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            color: var(--dark-grey);
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--ocean-blue);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .actions-bar {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .catches-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 16px 20px;
+            background: var(--ocean-blue);
+            color: white;
+            font-weight: 600;
+        }
+
+        .catches-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .catch-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 120px 80px;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+
+        .catch-item:hover {
+            background: #f8f9fa;
+        }
+
+        .catch-photo {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #f0f0f0;
+        }
+
+        .catch-details h4 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            color: var(--dark-grey);
+        }
+
+        .catch-details p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .catch-meta {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .catch-item {
+                grid-template-columns: 60px 1fr 80px;
+                gap: 8px;
+            }
+
+            .catch-meta {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="admin-body">
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <h1>🔒 Admin Login</h1>
+            <p>Enter password to access admin console</p>
+            <form id="loginForm" class="login-form">
+                <input 
+                    type="password" 
+                    id="passwordInput" 
+                    class="login-input" 
+                    placeholder="Enter password"
+                    required
+                    autocomplete="current-password"
+                >
+                <button type="submit" class="login-btn">Login</button>
+                <div id="loginError" class="login-error">❌ Incorrect password</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="admin-dashboard">
+        <div class="admin-container">
+            
+            <!-- Header -->
+            <div class="admin-header">
+                <div>
+                    <h1>🎣 Admin Console</h1>
+                    <p style="margin: 4px 0 0 0; color: #666;">Manage catches and view stats</p>
+                </div>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCatches">0</div>
+                    <div class="stat-label">Total Catches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="publicCatches">0</div>
+                    <div class="stat-label">Public Catches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="todayCatches">0</div>
+                    <div class="stat-label">Today's Catches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="topSpecies">-</div>
+                    <div class="stat-label">Most Popular Species</div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions-bar">
+                <button id="refreshBtn" class="action-btn btn-secondary">🔄 Refresh</button>
+                <button id="deleteAllBtn" class="action-btn btn-danger">🗑️ Delete All Test Data</button>
+            </div>
+
+            <!-- Catches Table -->
+            <div class="catches-table">
+                <div class="table-header">
+                    All Catches
+                </div>
+                <div id="catchesList" class="catches-list">
+                    <div class="loading">Loading catches...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        // Admin password (change this!)
+        const ADMIN_PASSWORD = 'fishtrack2026';
+        
+        // Session storage key
+        const SESSION_KEY = 'fishtrack_admin_auth';
+        
+        // Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const adminDashboard = document.getElementById('adminDashboard');
+        const loginForm = document.getElementById('loginForm');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const catchesList = document.getElementById('catchesList');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const deleteAllBtn = document.getElementById('deleteAllBtn');
+        
+        // Check if already logged in
+        if (sessionStorage.getItem(SESSION_KEY) === 'true') {
+            showDashboard();
+        }
+        
+        // Login form submit
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (passwordInput.value === ADMIN_PASSWORD) {
+                sessionStorage.setItem(SESSION_KEY, 'true');
+                loginError.style.display = 'none';
+                showDashboard();
+            } else {
+                loginError.style.display = 'block';
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        });
+        
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            sessionStorage.removeItem(SESSION_KEY);
+            adminDashboard.style.display = 'none';
+            loginScreen.style.display = 'flex';
+            passwordInput.value = '';
+        });
+        
+        // Show dashboard
+        function showDashboard() {
+            loginScreen.style.display = 'none';
+            adminDashboard.style.display = 'block';
+            loadCatches();
+        }
+        
+        // Format date
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Unknown';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleString();
+        }
+        
+        // Load catches from Firebase
+        async function loadCatches() {
+            try {
+                catchesList.innerHTML = '<div class="loading">Loading catches...</div>';
+                
+                const snapshot = await db.collection('catches')
+                    .limit(500)
+                    .get();
+                
+                const catches = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                // Update stats
+                updateStats(catches);
+                
+                // Display catches
+                if (catches.length === 0) {
+                    catchesList.innerHTML = '<div class="empty-state">No catches yet</div>';
+                } else {
+                    catchesList.innerHTML = '';
+                    catches.forEach(catchData => {
+                        catchesList.appendChild(createCatchItem(catchData));
+                    });
+                }
+                
+                console.log(`Loaded ${catches.length} catches`);
+                
+            } catch (error) {
+                console.error('Error loading catches:', error);
+                catchesList.innerHTML = '<div class="empty-state">Error loading catches</div>';
+            }
+        }
+        
+        // Update statistics
+        function updateStats(catches) {
+            // Total catches
+            document.getElementById('totalCatches').textContent = catches.length;
+            
+            // Public catches
+            const publicCount = catches.filter(c => c.privacy === 'public').length;
+            document.getElementById('publicCatches').textContent = publicCount;
+            
+            // Today's catches
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayCount = catches.filter(c => {
+                const catchDate = c.timestamp?.toDate ? c.timestamp.toDate() : new Date(c.timestamp);
+                return catchDate >= today;
+            }).length;
+            document.getElementById('todayCatches').textContent = todayCount;
+            
+            // Top species
+            const speciesCount = {};
+            catches.forEach(c => {
+                speciesCount[c.species] = (speciesCount[c.species] || 0) + 1;
+            });
+            const topSpecies = Object.keys(speciesCount).sort((a, b) => speciesCount[b] - speciesCount[a])[0];
+            document.getElementById('topSpecies').textContent = topSpecies || '-';
+        }
+        
+        // Create catch item element
+        function createCatchItem(catchData) {
+            const item = document.createElement('div');
+            item.className = 'catch-item';
+            
+            item.innerHTML = `
+                <img src="${catchData.photo || ''}" class="catch-photo" alt="${catchData.species}">
+                <div class="catch-details">
+                    <h4>${catchData.species} (${catchData.weight}kg)</h4>
+                    <p>
+                        ${catchData.catcherName ? `🎣 ${catchData.catcherName} • ` : ''}
+                        📍 ${catchData.locationName}
+                    </p>
+                </div>
+                <div class="catch-meta">
+                    ${catchData.privacy || 'public'}
+                </div>
+                <div class="catch-meta">
+                    ${formatDate(catchData.timestamp)}
+                </div>
+                <button class="delete-btn" data-id="${catchData.id}">Delete</button>
+            `;
+            
+            // Delete button handler
+            item.querySelector('.delete-btn').addEventListener('click', () => {
+                deleteCatch(catchData.id);
+            });
+            
+            return item;
+        }
+        
+        // Delete single catch
+        async function deleteCatch(catchId) {
+            if (!confirm('Delete this catch? This cannot be undone.')) return;
+            
+            try {
+                await db.collection('catches').doc(catchId).delete();
+                console.log('Catch deleted:', catchId);
+                loadCatches(); // Reload
+            } catch (error) {
+                console.error('Error deleting catch:', error);
+                alert('Error deleting catch. Please try again.');
+            }
+        }
+        
+        // Delete all catches
+        deleteAllBtn.addEventListener('click', async () => {
+            const confirmed = confirm('⚠️ DELETE ALL TEST DATA?\n\nThis will permanently delete ALL catches from the database.\n\nType "DELETE" to confirm:');
+            
+            if (!confirmed) return;
+            
+            const confirmation = prompt('Type DELETE to confirm (all caps):');
+            if (confirmation !== 'DELETE') {
+                alert('Deletion cancelled.');
+                return;
+            }
+            
+            try {
+                deleteAllBtn.disabled = true;
+                deleteAllBtn.textContent = '⏳ Deleting...';
+                
+                const snapshot = await db.collection('catches').limit(500).get();
+                
+                // Delete in batches
+                const batch = db.batch();
+                snapshot.docs.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                
+                await batch.commit();
+                
+                console.log(`Deleted ${snapshot.docs.length} catches`);
+                alert(`✅ Deleted ${snapshot.docs.length} catches`);
+                
+                loadCatches(); // Reload
+                
+            } catch (error) {
+                console.error('Error deleting all catches:', error);
+                alert('Error deleting catches. Please try again.');
+            } finally {
+                deleteAllBtn.disabled = false;
+                deleteAllBtn.textContent = '🗑️ Delete All Test Data';
+            }
+        });
+        
+        // Refresh button
+        refreshBtn.addEventListener('click', loadCatches);
+    </script>
+</body>
+</html>
