@@ -41,7 +41,7 @@
 .photo-upload-label {
     display: block;
     background: var(--light-grey);
-    border: 2px dashed var(--ocean-blue);
+    border: 2px dashed var(--navy-blue);
     border-radius: 12px;
     padding: 60px 20px;
     text-align: center;
@@ -63,7 +63,7 @@
     display: block;
     font-size: 18px;
     font-weight: 600;
-    color: var(--ocean-blue);
+    color: var(--navy-blue);
 }
 
 .photo-preview {
@@ -87,7 +87,7 @@
     border-radius: 8px;
     font-size: 16px;
     font-weight: 600;
-    color: var(--ocean-blue);
+    color: var(--navy-blue);
     cursor: pointer;
     transition: background 0.2s;
 }
@@ -99,7 +99,7 @@
 .edit-photo {
     width: 100%;
     padding: 12px;
-    background: var(--ocean-blue);
+    background: var(--navy-blue);
     border: none;
     border-radius: 8px;
     font-size: 16px;
@@ -142,7 +142,7 @@
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: var(--ocean-blue);
+    border-color: var(--navy-blue);
 }
 
 .form-hint {
@@ -178,21 +178,22 @@
 }
 
 .location-btn.primary {
-    background: var(--ocean-blue);
-    color: var(--white);
+    background: var(--navy-blue);
+    color: var(--cream);
+    border: 2px solid var(--rust-orange);
 }
 
 .location-btn.primary:hover {
-    background: #005a8c;
+    background: var(--light-navy);
 }
 
 .location-btn.secondary {
-    background: var(--light-grey);
-    color: var(--dark-grey);
+    background: var(--rust-orange);
+    color: var(--cream);
 }
 
 .location-btn.secondary:hover {
-    background: #d5dde0;
+    background: #c06538;
 }
 
 /* Pin Map */
@@ -207,13 +208,14 @@
 
 .coordinates-display {
     padding: 8px 12px;
-    background: #f0f8fc;
+    background: var(--white);
+    border: 2px solid var(--rust-orange);
     border-radius: 6px;
     margin-bottom: 4px;
 }
 
 .coordinates-display small {
-    color: var(--ocean-blue);
+    color: var(--navy-blue);
     font-weight: 600;
 }
 
@@ -254,7 +256,7 @@
 }
 
 .radio-card:hover {
-    border-color: var(--ocean-blue);
+    border-color: var(--navy-blue);
     background: #f8fbfc;
 }
 
@@ -268,11 +270,11 @@
 }
 
 .radio-card input[type="radio"]:checked + .radio-content {
-    color: var(--ocean-blue);
+    color: var(--navy-blue);
 }
 
 .radio-card:has(input:checked) {
-    border-color: var(--ocean-blue);
+    border-color: var(--navy-blue);
     background: #f0f8fc;
 }
 
@@ -297,7 +299,7 @@
     padding: 18px;
     font-size: 20px;
     font-weight: 600;
-    background: var(--fish-green);
+    background: var(--rust-orange);
     color: var(--white);
     border: none;
     border-radius: 8px;
@@ -374,7 +376,7 @@
 }
 
 .button-primary {
-    background: var(--ocean-blue);
+    background: var(--navy-blue);
     color: var(--white);
 }
 
@@ -520,7 +522,7 @@
 .editor-done {
     flex: 2;
     padding: 14px 24px;
-    background: var(--fish-green);
+    background: var(--rust-orange);
     color: var(--white);
     border: none;
     border-radius: 8px;
