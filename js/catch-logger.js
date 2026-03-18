@@ -342,9 +342,27 @@ catchForm.addEventListener('submit', async (e) => {
         
         // Upload photo to Firebase Storage if provided
         if (photoDataURL) {
+            // Check photo size (Firebase has 1MB document limit)
+            const photoSizeKB = Math.round(photoDataURL.length / 1024);
+            console.log('Photo size:', photoSizeKB, 'KB');
+            
+            if (photoSizeKB > 900) {
+                alert(`Warning: Photo is large (${photoSizeKB}KB). This may fail to save. Try a smaller photo or compress it.`);
+            }
+            
             formData.photo = photoDataURL; // For MVP, store as base64
             // TODO: Later, upload to Firebase Storage for better performance
         }
+        
+        // Debug: Log form data before saving
+        console.log('Attempting to save catch:', {
+            catcherName: formData.catcherName,
+            country: formData.country,
+            species: formData.species,
+            weight: formData.weight,
+            locationName: formData.locationName,
+            hasPhoto: !!formData.photo
+        });
         
         // Save to Firestore
         const docRef = await db.collection('catches').add(formData);
@@ -360,7 +378,19 @@ catchForm.addEventListener('submit', async (e) => {
         
     } catch (error) {
         console.error('Error logging catch:', error);
-        alert('Error saving catch. Please try again.');
+        console.error('Error details:', error.message, error.code);
+        
+        // Show more specific error message
+        let errorMsg = 'Error saving catch. ';
+        if (error.code === 'permission-denied') {
+            errorMsg += 'Database permission denied. Please contact support.';
+        } else if (error.message) {
+            errorMsg += error.message;
+        } else {
+            errorMsg += 'Please try again.';
+        }
+        
+        alert(errorMsg);
         
         // Re-enable submit button
         submitBtn.disabled = false;
