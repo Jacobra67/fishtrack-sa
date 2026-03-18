@@ -99,10 +99,11 @@
 
 .photo-preview img {
     width: 100%;
-    max-height: 400px;
-    object-fit: cover;
+    max-height: 500px;
+    object-fit: contain;
     border-radius: 12px;
     margin-bottom: 12px;
+    background: #f5f5f5;
 }
 
 .change-photo {
