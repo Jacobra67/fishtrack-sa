@@ -122,6 +122,24 @@
     background: #d5dde0;
 }
 
+.edit-photo {
+    width: 100%;
+    padding: 12px;
+    background: var(--ocean-blue);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--white);
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+}
+
+.edit-photo:hover {
+    background: #005a8c;
+}
+
 /* Form Groups */
 .form-group {
     margin-bottom: 20px;
@@ -403,5 +421,157 @@
     .success-actions {
         flex-direction: row;
         justify-content: center;
+    }
+}
+
+/* Photo Editor Modal */
+.photo-editor-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.editor-container {
+    background: var(--white);
+    border-radius: 12px;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.editor-header h3 {
+    font-size: 20px;
+    color: var(--dark-grey);
+    margin: 0;
+}
+
+.close-editor {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+    color: #666;
+}
+
+.close-editor:hover {
+    color: var(--dark-grey);
+}
+
+.editor-canvas-container {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f5f5f5;
+}
+
+#editorCanvas {
+    max-width: 100%;
+    max-height: 100%;
+    border: 2px solid #ddd;
+}
+
+.editor-controls {
+    padding: 16px 20px;
+    display: flex;
+    gap: 12px;
+    border-top: 1px solid #ddd;
+    flex-wrap: wrap;
+}
+
+.editor-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    background: var(--light-grey);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.editor-btn:hover {
+    background: #d5dde0;
+}
+
+.editor-btn:active {
+    transform: scale(0.98);
+}
+
+.editor-actions {
+    padding: 16px 20px;
+    display: flex;
+    gap: 12px;
+}
+
+.editor-cancel {
+    flex: 1;
+    padding: 14px 24px;
+    background: var(--light-grey);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.editor-cancel:hover {
+    background: #d5dde0;
+}
+
+.editor-done {
+    flex: 2;
+    padding: 14px 24px;
+    background: var(--fish-green);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.editor-done:hover {
+    background: #27ae60;
+}
+
+@media (max-width: 600px) {
+    .editor-container {
+        width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .editor-controls {
+        flex-direction: column;
+    }
+    
+    .editor-btn {
+        width: 100%;
     }
 }

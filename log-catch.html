@@ -32,6 +32,7 @@
                         <div id="photoPreview" class="photo-preview" style="display: none;">
                             <img id="previewImage" src="" alt="Preview">
                             <button type="button" class="change-photo" id="changePhoto">Change Photo</button>
+                            <button type="button" class="edit-photo" id="editPhoto">Edit Photo</button>
                         </div>
                     </div>
                 </section>
@@ -179,6 +180,31 @@
             </div>
         </div>
     </main>
+
+    <!-- Photo Editor Modal -->
+    <div id="photoEditorModal" class="photo-editor-modal" style="display: none;">
+        <div class="editor-container">
+            <div class="editor-header">
+                <h3>Edit Photo</h3>
+                <button type="button" class="close-editor" id="closeEditor">✕</button>
+            </div>
+            
+            <div class="editor-canvas-container">
+                <canvas id="editorCanvas"></canvas>
+            </div>
+            
+            <div class="editor-controls">
+                <button type="button" class="editor-btn" id="rotateLeft">↶ Rotate Left</button>
+                <button type="button" class="editor-btn" id="rotateRight">Rotate Right ↷</button>
+                <button type="button" class="editor-btn" id="cropBtn">Crop</button>
+            </div>
+            
+            <div class="editor-actions">
+                <button type="button" class="editor-cancel" id="cancelEdit">Cancel</button>
+                <button type="button" class="editor-done" id="doneEdit">Done ✓</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

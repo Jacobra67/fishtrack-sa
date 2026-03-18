@@ -49,6 +49,135 @@ changePhotoBtn.addEventListener('click', () => {
     photoInput.click();
 });
 
+// ===== PHOTO EDITOR FUNCTIONALITY =====
+
+let editorCanvas = null;
+let editorCtx = null;
+let currentImage = null;
+let rotation = 0;
+
+const photoEditorModal = document.getElementById('photoEditorModal');
+const editPhotoBtn = document.getElementById('editPhoto');
+const closeEditorBtn = document.getElementById('closeEditor');
+const cancelEditBtn = document.getElementById('cancelEdit');
+const doneEditBtn = document.getElementById('doneEdit');
+const rotateLeftBtn = document.getElementById('rotateLeft');
+const rotateRightBtn = document.getElementById('rotateRight');
+
+// Initialize editor canvas
+function initEditor() {
+    editorCanvas = document.getElementById('editorCanvas');
+    editorCtx = editorCanvas.getContext('2d');
+}
+
+// Open photo editor
+editPhotoBtn?.addEventListener('click', () => {
+    if (!photoDataURL) return;
+    
+    // Load image into editor
+    const img = new Image();
+    img.onload = () => {
+        currentImage = img;
+        rotation = 0;
+        drawImageOnCanvas();
+        photoEditorModal.style.display = 'flex';
+    };
+    img.src = photoDataURL;
+});
+
+// Draw image on canvas with current rotation
+function drawImageOnCanvas() {
+    if (!currentImage) return;
+    
+    const maxWidth = 500;
+    const maxHeight = 400;
+    
+    let width = currentImage.width;
+    let height = currentImage.height;
+    
+    // Scale to fit canvas
+    if (width > maxWidth || height > maxHeight) {
+        const ratio = Math.min(maxWidth / width, maxHeight / height);
+        width *= ratio;
+        height *= ratio;
+    }
+    
+    // Swap dimensions if rotated 90 or 270 degrees
+    if (rotation === 90 || rotation === 270) {
+        editorCanvas.width = height;
+        editorCanvas.height = width;
+    } else {
+        editorCanvas.width = width;
+        editorCanvas.height = height;
+    }
+    
+    // Clear canvas
+    editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+    
+    // Save context
+    editorCtx.save();
+    
+    // Move to center
+    editorCtx.translate(editorCanvas.width / 2, editorCanvas.height / 2);
+    
+    // Rotate
+    editorCtx.rotate((rotation * Math.PI) / 180);
+    
+    // Draw image centered
+    editorCtx.drawImage(
+        currentImage,
+        -width / 2,
+        -height / 2,
+        width,
+        height
+    );
+    
+    // Restore context
+    editorCtx.restore();
+}
+
+// Rotate left (counter-clockwise)
+rotateLeftBtn.addEventListener('click', () => {
+    rotation = (rotation - 90 + 360) % 360;
+    drawImageOnCanvas();
+});
+
+// Rotate right (clockwise)
+rotateRightBtn.addEventListener('click', () => {
+    rotation = (rotation + 90) % 360;
+    drawImageOnCanvas();
+});
+
+// Close editor (cancel)
+closeEditorBtn.addEventListener('click', () => {
+    photoEditorModal.style.display = 'none';
+});
+
+cancelEditBtn.addEventListener('click', () => {
+    photoEditorModal.style.display = 'none';
+});
+
+// Done editing - save edited photo
+doneEditBtn.addEventListener('click', () => {
+    // Get edited image as data URL
+    photoDataURL = editorCanvas.toDataURL('image/jpeg', 0.9);
+    
+    // Update preview
+    previewImage.src = photoDataURL;
+    
+    // Close editor
+    photoEditorModal.style.display = 'none';
+    
+    console.log('Photo edited and saved');
+});
+
+// Initialize editor on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEditor);
+} else {
+    initEditor();
+}
+
 // ===== MAP PIN DROP FUNCTIONALITY =====
 
 let pinMap = null;
