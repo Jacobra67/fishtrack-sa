@@ -169,19 +169,24 @@ if ('serviceWorker' in navigator) {
       .then(registration => {
         console.log('✅ Service Worker registered:', registration.scope);
         
-        // Check for updates every 30 seconds
+        // Force immediate update check
+        registration.update();
+        
+        // Check for updates every 10 seconds (aggressive for testing)
         setInterval(() => {
           registration.update();
-        }, 30000);
+        }, 10000);
         
         // Auto-reload when new service worker is installed
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New service worker available, reload the page
-              console.log('🔄 New version available, reloading...');
-              window.location.reload();
+              // New service worker available, force reload
+              console.log('🔄 New version available, reloading in 1 second...');
+              setTimeout(() => {
+                window.location.reload(true);
+              }, 1000);
             }
           });
         });
@@ -191,6 +196,30 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
+
+// Manual cache clear function (for debugging)
+window.clearAppCache = async function() {
+  if ('serviceWorker' in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    for (let registration of registrations) {
+      await registration.unregister();
+      console.log('🗑️ Service worker unregistered');
+    }
+  }
+  
+  if ('caches' in window) {
+    const cacheNames = await caches.keys();
+    for (let cacheName of cacheNames) {
+      await caches.delete(cacheName);
+      console.log('🗑️ Cache cleared:', cacheName);
+    }
+  }
+  
+  console.log('✅ All caches cleared! Reloading...');
+  setTimeout(() => {
+    window.location.reload(true);
+  }, 500);
+};
 
 // Initialize install prompt
 initPWAInstall();
