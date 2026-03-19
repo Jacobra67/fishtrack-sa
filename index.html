@@ -176,47 +176,61 @@
         </div>
     </footer>
 
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    
     <!-- Live Stats Script -->
     <script>
         // Fetch live stats from Firebase
         async function updateStats() {
             try {
-                // Import Firebase (if needed)
-                const script1 = document.createElement('script');
-                script1.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js';
-                document.head.appendChild(script1);
-                
-                const script2 = document.createElement('script');
-                script2.src = 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js';
-                document.head.appendChild(script2);
-                
-                const script3 = document.createElement('script');
-                script3.src = 'js/firebase-config.js';
-                document.head.appendChild(script3);
-                
-                // Wait for Firebase to load
-                setTimeout(async () => {
+                // Wait for Firebase to be ready
+                let attempts = 0;
+                const checkFirebase = setInterval(async () => {
+                    attempts++;
+                    
                     if (typeof db !== 'undefined') {
-                        const snapshot = await db.collection('catches').get();
-                        const catches = snapshot.docs;
+                        clearInterval(checkFirebase);
                         
-                        // Total catches
-                        document.getElementById('totalCatches').textContent = catches.length;
-                        
-                        // Unique anglers (by catcher name)
-                        const uniqueAnglers = new Set(catches.map(doc => doc.data().catcherName).filter(Boolean));
-                        document.getElementById('activeAnglers').textContent = uniqueAnglers.size || catches.length;
-                        
-                        // Unique locations
-                        const uniqueLocations = new Set(catches.map(doc => doc.data().locationName).filter(Boolean));
-                        document.getElementById('hotspots').textContent = uniqueLocations.size;
-                        
-                        console.log('Stats updated:', catches.length, 'catches');
+                        try {
+                            const snapshot = await db.collection('catches').get();
+                            const catches = snapshot.docs;
+                            
+                            // Total catches
+                            document.getElementById('totalCatches').textContent = catches.length;
+                            
+                            // Unique anglers (by catcher name)
+                            const uniqueAnglers = new Set(catches.map(doc => doc.data().catcherName).filter(Boolean));
+                            document.getElementById('activeAnglers').textContent = uniqueAnglers.size || catches.length;
+                            
+                            // Unique locations
+                            const uniqueLocations = new Set(catches.map(doc => doc.data().locationName).filter(Boolean));
+                            document.getElementById('hotspots').textContent = uniqueLocations.size;
+                            
+                            console.log('✅ Stats updated:', catches.length, 'catches');
+                        } catch (err) {
+                            console.error('❌ Error fetching stats:', err);
+                            // Show placeholder if error
+                            document.getElementById('totalCatches').textContent = '--';
+                            document.getElementById('activeAnglers').textContent = '--';
+                            document.getElementById('hotspots').textContent = '--';
+                        }
                     }
-                }, 2000);
+                    
+                    // Give up after 10 attempts (5 seconds)
+                    if (attempts > 10) {
+                        clearInterval(checkFirebase);
+                        console.error('❌ Firebase not loaded after 5 seconds');
+                        document.getElementById('totalCatches').textContent = '--';
+                        document.getElementById('activeAnglers').textContent = '--';
+                        document.getElementById('hotspots').textContent = '--';
+                    }
+                }, 500);
                 
             } catch (error) {
-                console.error('Error loading stats:', error);
+                console.error('❌ Error loading stats:', error);
             }
         }
         
