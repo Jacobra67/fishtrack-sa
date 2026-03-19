@@ -15,6 +15,7 @@
     
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/logger.css">
+    <link rel="stylesheet" href="css/weight-calculator.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
@@ -161,12 +162,19 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="weight">Weight (kg) *</label>
-                            <input type="number" id="weight" step="0.1" min="0" max="200" placeholder="5.5" required>
-                        </div>
-                        <div class="form-group">
                             <label for="length">Length (cm)</label>
                             <input type="number" id="length" step="1" min="0" max="500" placeholder="80">
+                            <small class="form-hint">Measure from nose to tail tip</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight">Weight (kg) *</label>
+                            <input type="number" id="weight" step="0.1" min="0" max="200" placeholder="5.5" required>
+                            <button type="button" id="calculateWeightBtn" class="calculate-weight-btn" style="display:none;">
+                                📏 Calculate from Length
+                            </button>
+                            <small id="weightEstimateNotice" class="form-hint" style="display:none; color: #f39c12;">
+                                ⚠️ Estimated weight - may vary ±10%
+                            </small>
                         </div>
                     </div>
 
@@ -340,6 +348,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
+    
+    <!-- Fish Weight Calculator -->
+    <script src="js/fish-weight-calculator.js"></script>
+    
     <script src="js/catch-logger.js"></script>
     
     <!-- PWA Install Script -->

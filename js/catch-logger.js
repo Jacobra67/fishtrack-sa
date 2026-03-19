@@ -50,6 +50,59 @@ document.addEventListener('DOMContentLoaded', () => {
             el.style.display = show ? '' : 'none';
         });
     }
+    
+    // Weight Calculator Logic
+    const lengthInput = document.getElementById('length');
+    const weightInput = document.getElementById('weight');
+    const calculateWeightBtn = document.getElementById('calculateWeightBtn');
+    const weightEstimateNotice = document.getElementById('weightEstimateNotice');
+    
+    // Show/hide calculate button based on species and length
+    function updateCalculateButton() {
+        const species = speciesSelect.value;
+        const length = lengthInput.value;
+        
+        if (species && length && length > 0 && hasWeightFormula(species)) {
+            calculateWeightBtn.style.display = 'block';
+        } else {
+            calculateWeightBtn.style.display = 'none';
+        }
+    }
+    
+    // Listen for changes
+    speciesSelect.addEventListener('change', updateCalculateButton);
+    lengthInput.addEventListener('input', updateCalculateButton);
+    
+    // Calculate weight when button clicked
+    calculateWeightBtn.addEventListener('click', () => {
+        const species = speciesSelect.value;
+        const length = parseFloat(lengthInput.value);
+        
+        if (!species || !length) {
+            alert('Please select a species and enter length first');
+            return;
+        }
+        
+        const estimatedWeight = calculateFishWeight(species, length);
+        
+        if (estimatedWeight === null) {
+            alert('Weight calculation not available for this species');
+            return;
+        }
+        
+        // Fill weight field
+        weightInput.value = estimatedWeight;
+        
+        // Show estimate notice
+        weightEstimateNotice.style.display = 'block';
+        
+        // Hide notice after 5 seconds
+        setTimeout(() => {
+            weightEstimateNotice.style.display = 'none';
+        }, 5000);
+        
+        console.log(`Calculated weight for ${species} (${length}cm): ${estimatedWeight}kg`);
+    });
 });
 
 // Get user's location on page load
