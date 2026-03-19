@@ -1,6 +1,9 @@
 // FishTrack Africa - Tide & Wind Widget
 // Free tier forever - drives daily engagement
 
+// WorldTides API Key (free tier: 1000 requests/day)
+const WORLDTIDES_API_KEY = '77c0a0c4-8fca-41fa-8054-42ea3c80566b';
+
 const LOCATIONS = {
   capetown: {
     name: "Cape Town",
@@ -115,38 +118,34 @@ class TideWindWidget {
   }
   
   async fetchTides() {
-    // Using a simple tide prediction algorithm
-    // For production, use WorldTides API or similar
-    this.renderTides(this.calculateSimpleTides());
-  }
-  
-  calculateSimpleTides() {
-    // Simple tide calculation based on moon phase
-    // This is approximate - real API would be better
-    const now = new Date();
-    const msPerDay = 24 * 60 * 60 * 1000;
-    const lunarCycle = 29.53 * msPerDay; // ~29.53 days
-    const daysSinceNewMoon = (now.getTime() % lunarCycle) / msPerDay;
-    
-    // Approximate high tides (2 per day, ~12.5 hours apart)
-    const highTide1 = new Date(now);
-    highTide1.setHours(6, 30, 0, 0);
-    
-    const highTide2 = new Date(now);
-    highTide2.setHours(19, 0, 0, 0);
-    
-    const lowTide1 = new Date(now);
-    lowTide1.setHours(0, 45, 0, 0);
-    
-    const lowTide2 = new Date(now);
-    lowTide2.setHours(13, 15, 0, 0);
-    
-    return [
-      { time: lowTide1, height: 0.4, type: 'low' },
-      { time: highTide1, height: 1.6, type: 'high' },
-      { time: lowTide2, height: 0.5, type: 'low' },
-      { time: highTide2, height: 1.5, type: 'high' }
-    ].sort((a, b) => a.time - b.time);
+    try {
+      const { lat, lon } = this.location;
+      const now = Math.floor(Date.now() / 1000); // Unix timestamp
+      const dayStart = now - (now % 86400); // Start of today
+      const dayEnd = dayStart + 86400; // End of today
+      
+      // WorldTides API: Get extremes (high/low tides) for today
+      const url = `https://www.worldtides.info/api/v3?extremes&lat=${lat}&lon=${lon}&start=${dayStart}&length=${86400}&key=${WORLDTIDES_API_KEY}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.status !== 200) {
+        throw new Error(data.error || 'WorldTides API error');
+      }
+      
+      // Parse extremes into our format
+      const tides = data.extremes.map(extreme => ({
+        time: new Date(extreme.dt * 1000),
+        height: extreme.height,
+        type: extreme.type // 'High' or 'Low'
+      }));
+      
+      this.renderTides(tides);
+    } catch (error) {
+      console.error('Error fetching tides:', error);
+      this.renderTidesError();
+    }
   }
   
   renderWind(current) {
@@ -186,10 +185,11 @@ class TideWindWidget {
     // Find next tide
     const nextTide = tides.find(t => t.time > now) || tides[0];
     const timeUntil = this.getTimeUntil(nextTide.time);
+    const nextTideType = nextTide.type.toLowerCase();
     
     tideSection.innerHTML = `
       <div class="next-tide">
-        <div class="tide-label">Next ${nextTide.type === 'high' ? 'High' : 'Low'} Tide</div>
+        <div class="tide-label">Next ${nextTideType === 'high' ? 'High' : 'Low'} Tide</div>
         <div class="tide-time">${this.formatTime(nextTide.time)}</div>
         <div class="tide-countdown">${timeUntil}</div>
       </div>
@@ -198,9 +198,10 @@ class TideWindWidget {
         ${tides.map(tide => {
           const isPast = tide.time < now;
           const isCurrent = tide === nextTide;
+          const tideType = tide.type.toLowerCase();
           return `
             <div class="tide-item ${isPast ? 'past' : ''} ${isCurrent ? 'current' : ''}">
-              <span class="tide-type">${tide.type === 'high' ? '⬆️ High' : '⬇️ Low'}</span>
+              <span class="tide-type">${tideType === 'high' ? '⬆️ High' : '⬇️ Low'}</span>
               <span class="tide-time">${this.formatTime(tide.time)}</span>
               <span class="tide-height">${tide.height.toFixed(1)}m</span>
             </div>
@@ -209,7 +210,17 @@ class TideWindWidget {
       </div>
       
       <div class="tide-disclaimer">
-        ⚠️ Approximate times - check local forecasts
+        📍 Powered by WorldTides • Accurate to the minute
+      </div>
+    `;
+  }
+  
+  renderTidesError() {
+    const tideSection = this.container.querySelector('.tide-section');
+    tideSection.innerHTML = `
+      <div class="error">
+        ❌ Unable to load tide data<br>
+        <small>Check your internet connection</small>
       </div>
     `;
   }
