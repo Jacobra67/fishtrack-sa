@@ -5,11 +5,18 @@
 const WORLDTIDES_API_KEY = '77c0a0c4-8fca-41fa-8054-42ea3c80566b';
 
 const LOCATIONS = {
+  // Western Cape
   capetown: {
     name: "Cape Town",
     lat: -33.9249,
     lon: 18.4241,
     tideStation: "Cape Town"
+  },
+  hermanus: {
+    name: "Hermanus",
+    lat: -34.4187,
+    lon: 19.2345,
+    tideStation: "Hermanus"
   },
   struisbaai: {
     name: "Struisbaai",
@@ -17,23 +24,67 @@ const LOCATIONS = {
     lon: 20.0453,
     tideStation: "Struisbaai"
   },
-  hentiesbay: {
-    name: "Henties Bay",
-    lat: -22.1167,
-    lon: 14.2833,
-    tideStation: "Henties Bay"
+  mossel: {
+    name: "Mossel Bay",
+    lat: -34.1811,
+    lon: 22.1458,
+    tideStation: "Mossel Bay"
   },
+  
+  // West Coast
+  langebaan: {
+    name: "Langebaan",
+    lat: -33.0983,
+    lon: 17.9925,
+    tideStation: "Langebaan"
+  },
+  saldanha: {
+    name: "Saldanha Bay",
+    lat: -33.0117,
+    lon: 17.9442,
+    tideStation: "Saldanha Bay"
+  },
+  
+  // Eastern Cape
   jeffreysbay: {
     name: "Jeffreys Bay",
     lat: -34.0489,
     lon: 24.9089,
     tideStation: "Jeffreys Bay"
   },
-  mossel: {
-    name: "Mossel Bay",
-    lat: -34.1811,
-    lon: 22.1458,
-    tideStation: "Mossel Bay"
+  portelizabeth: {
+    name: "Port Elizabeth",
+    lat: -33.9608,
+    lon: 25.6022,
+    tideStation: "Port Elizabeth"
+  },
+  eastlondon: {
+    name: "East London",
+    lat: -33.0153,
+    lon: 27.9116,
+    tideStation: "East London"
+  },
+  transkei: {
+    name: "Transkei (Coffee Bay)",
+    lat: -31.9667,
+    lon: 29.1500,
+    tideStation: "Coffee Bay"
+  },
+  
+  // KwaZulu-Natal
+  durban: {
+    name: "Durban",
+    lat: -29.8587,
+    lon: 31.0218,
+    tideStation: "Durban"
+  },
+  
+  // Namibia
+  hentiesbay: {
+    name: "Henties Bay",
+    lat: -22.1167,
+    lon: 14.2833,
+    tideStation: "Henties Bay"
   }
 };
 
