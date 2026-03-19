@@ -4,6 +4,54 @@ let photoFile = null;
 let photoDataURL = null;
 let currentLocation = null;
 
+// Water Type Toggle Handler
+document.addEventListener('DOMContentLoaded', () => {
+    const waterTypeSelect = document.getElementById('waterType');
+    const speciesSelect = document.getElementById('species');
+    const locationTypeSelect = document.getElementById('locationType');
+    const baitSelect = document.getElementById('bait');
+    
+    waterTypeSelect.addEventListener('change', function() {
+        const waterType = this.value;
+        
+        if (waterType === 'Saltwater') {
+            // Show saltwater options, hide freshwater
+            showElementsByClass('saltwater-group', true);
+            showElementsByClass('freshwater-group', false);
+            showElementsByClass('saltwater-location', true);
+            showElementsByClass('freshwater-location', false);
+            showElementsByClass('saltwater-bait', true);
+            showElementsByClass('freshwater-bait', false);
+            
+            // Update placeholder
+            document.getElementById('locationName').placeholder = 'e.g., Struisbaai Beach, Mile 72';
+        } else if (waterType === 'Freshwater') {
+            // Show freshwater options, hide saltwater
+            showElementsByClass('saltwater-group', false);
+            showElementsByClass('freshwater-group', true);
+            showElementsByClass('saltwater-location', false);
+            showElementsByClass('freshwater-location', true);
+            showElementsByClass('saltwater-bait', false);
+            showElementsByClass('freshwater-bait', true);
+            
+            // Update placeholder
+            document.getElementById('locationName').placeholder = 'e.g., Hartbeespoort Dam, Vaal River';
+        }
+        
+        // Reset dependent fields
+        speciesSelect.value = '';
+        locationTypeSelect.value = '';
+        baitSelect.value = '';
+    });
+    
+    function showElementsByClass(className, show) {
+        const elements = document.querySelectorAll('.' + className);
+        elements.forEach(el => {
+            el.style.display = show ? '' : 'none';
+        });
+    }
+});
+
 // Get user's location on page load
 if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -377,11 +425,13 @@ catchForm.addEventListener('submit', async (e) => {
     try {
         // Get form data
         const formData = {
+            waterType: document.getElementById('waterType').value,
             catcherName: document.getElementById('catcherName').value,
             country: document.getElementById('country').value,
             species: document.getElementById('species').value,
             weight: parseFloat(document.getElementById('weight').value),
             length: document.getElementById('length').value ? parseInt(document.getElementById('length').value) : null,
+            locationType: document.getElementById('locationType').value,
             locationName: document.getElementById('locationName').value,
             bait: document.getElementById('bait').value || null,
             released: document.getElementById('released').checked,

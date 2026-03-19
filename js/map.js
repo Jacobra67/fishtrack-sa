@@ -3,6 +3,7 @@
 let map;
 let markersLayer;
 let allCatches = [];
+let currentFilter = 'all'; // 'all', 'saltwater', 'freshwater'
 
 // Species color mapping
 const speciesColors = {
@@ -47,14 +48,21 @@ function getMarkerColor(species) {
 }
 
 // Create custom marker icon
-function createMarkerIcon(species) {
-    const color = getMarkerColor(species);
+function createMarkerIcon(species, waterType) {
+    // Use different base colors for saltwater vs freshwater
+    let baseColor;
+    if (waterType === 'Freshwater') {
+        baseColor = '#27ae60'; // Green for freshwater
+    } else {
+        baseColor = getMarkerColor(species); // Species-specific color for saltwater
+    }
+    
     return L.divIcon({
         className: 'custom-marker',
         html: `<div style="
             width: 24px;
             height: 24px;
-            background: ${color};
+            background: ${baseColor};
             border: 3px solid white;
             border-radius: 50%;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -99,6 +107,10 @@ function createPopupContent(catchData) {
     
     // Details
     html += '<div class="catch-info">';
+    if (catchData.waterType) {
+        const waterIcon = catchData.waterType === 'Freshwater' ? '💧' : '🌊';
+        html += `<div><strong>Water:</strong> ${waterIcon} ${catchData.waterType}</div>`;
+    }
     if (catchData.country) {
         html += `<div><strong>Country:</strong> ${catchData.country}</div>`;
     }
@@ -106,9 +118,12 @@ function createPopupContent(catchData) {
     if (catchData.length) {
         html += `<div><strong>Length:</strong> ${catchData.length}cm</div>`;
     }
+    if (catchData.locationType) {
+        html += `<div><strong>Location Type:</strong> ${catchData.locationType}</div>`;
+    }
     html += `<div><strong>Location:</strong> ${catchData.locationName}</div>`;
     if (catchData.bait) {
-        html += `<div><strong>Bait:</strong> ${catchData.bait}</div>`;
+        html += `<div><strong>Bait/Lure:</strong> ${catchData.bait}</div>`;
     }
     html += `<div><strong>When:</strong> ${formatDate(catchData.timestamp)}</div>`;
     html += '</div>';
@@ -130,9 +145,15 @@ function displayCatches(catches) {
     // Add markers for each catch
     catches.forEach(catchData => {
         if (catchData.location && catchData.location.lat && catchData.location.lng) {
+            // Filter by water type if needed
+            if (currentFilter !== 'all') {
+                if (currentFilter === 'saltwater' && catchData.waterType !== 'Saltwater') return;
+                if (currentFilter === 'freshwater' && catchData.waterType !== 'Freshwater') return;
+            }
+            
             const marker = L.marker(
                 [catchData.location.lat, catchData.location.lng],
-                { icon: createMarkerIcon(catchData.species) }
+                { icon: createMarkerIcon(catchData.species, catchData.waterType) }
             );
             
             marker.bindPopup(createPopupContent(catchData));
@@ -219,6 +240,10 @@ async function init() {
     }
     
     // Set up filter listeners
+    document.getElementById('waterTypeFilter').addEventListener('change', function() {
+        currentFilter = this.value;
+        filterCatches();
+    });
     document.getElementById('speciesFilter').addEventListener('change', filterCatches);
     document.getElementById('timeFilter').addEventListener('change', filterCatches);
     document.getElementById('refreshBtn').addEventListener('click', loadCatches);

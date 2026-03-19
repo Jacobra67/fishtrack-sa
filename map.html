@@ -39,6 +39,12 @@
     <!-- Filters -->
     <div class="filters-bar">
         <div class="filters-content">
+            <select id="waterTypeFilter" class="filter-select">
+                <option value="all">🌊 All Water Types</option>
+                <option value="saltwater">🌊 Saltwater Only</option>
+                <option value="freshwater">💧 Freshwater Only</option>
+            </select>
+        
             <select id="speciesFilter" class="filter-select">
                 <option value="all">All Species</option>
                 <optgroup label="Bottom Fish">
@@ -53,6 +59,14 @@
                 <optgroup label="Gamefish">
                     <option value="Elf">Elf</option>
                     <option value="Garrick">Garrick</option>
+                </optgroup>
+                <optgroup label="Bass">
+                    <option value="Largemouth Bass">Largemouth Bass</option>
+                    <option value="Smallmouth Bass">Smallmouth Bass</option>
+                </optgroup>
+                <optgroup label="Carp">
+                    <option value="Mirror Carp">Mirror Carp</option>
+                    <option value="Common Carp">Common Carp</option>
                 </optgroup>
             </select>
 

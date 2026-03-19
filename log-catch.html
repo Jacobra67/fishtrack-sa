@@ -66,6 +66,16 @@
                     <h2>📝 Step 2: Details</h2>
                     
                     <div class="form-group">
+                        <label for="waterType">Water Type *</label>
+                        <select id="waterType" required>
+                            <option value="">Select water type...</option>
+                            <option value="Saltwater">🌊 Saltwater (Ocean/Coast)</option>
+                            <option value="Freshwater">💧 Freshwater (Dam/River/Lake)</option>
+                        </select>
+                        <small class="form-hint">Saltwater or freshwater fishing?</small>
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="catcherName">Your Name *</label>
                         <input type="text" id="catcherName" placeholder="e.g., John" required>
                         <small class="form-hint">This will be shown on the map</small>
@@ -85,29 +95,57 @@
                         <label for="species">Species *</label>
                         <select id="species" required>
                             <option value="">Select species...</option>
-                            <optgroup label="Bottom Fish">
-                                <option value="Galjoen">Galjoen</option>
-                                <option value="Steenbras">Steenbras (White/Silver)</option>
-                                <option value="Kabeljou">Kabeljou (Kob)</option>
-                                <option value="Mosselkraker">Mosselkraker (Musselcracker)</option>
-                                <option value="Rock Cod">Rock Cod (Klipkabeljou)</option>
-                                <option value="Blacktail">Blacktail (Dassie)</option>
+                            
+                            <!-- SALTWATER SPECIES -->
+                            <optgroup label="🌊 SALTWATER - Bottom Fish" class="saltwater-group">
+                                <option value="Galjoen" class="saltwater-species">Galjoen</option>
+                                <option value="Steenbras" class="saltwater-species">Steenbras (White/Silver)</option>
+                                <option value="Kabeljou" class="saltwater-species">Kabeljou (Kob)</option>
+                                <option value="Mosselkraker" class="saltwater-species">Mosselkraker (Musselcracker)</option>
+                                <option value="Rock Cod" class="saltwater-species">Rock Cod (Klipkabeljou)</option>
+                                <option value="Blacktail" class="saltwater-species">Blacktail (Dassie)</option>
                             </optgroup>
-                            <optgroup label="Sharks">
-                                <option value="Bronze Whaler">Bronze Whaler (Bronzy)</option>
-                                <option value="Spotted Gully">Spotted Gully (Spotty)</option>
-                                <option value="Copper Shark">Copper Shark</option>
-                                <option value="Smooth-Hound">Smooth-Hound</option>
+                            <optgroup label="🌊 SALTWATER - Sharks" class="saltwater-group">
+                                <option value="Bronze Whaler" class="saltwater-species">Bronze Whaler (Bronzy)</option>
+                                <option value="Spotted Gully" class="saltwater-species">Spotted Gully (Spotty)</option>
+                                <option value="Copper Shark" class="saltwater-species">Copper Shark</option>
+                                <option value="Smooth-Hound" class="saltwater-species">Smooth-Hound</option>
                             </optgroup>
-                            <optgroup label="Gamefish">
-                                <option value="Elf">Elf (Shad)</option>
-                                <option value="Garrick">Garrick (Leervis)</option>
-                                <option value="Springer">Springer</option>
-                                <option value="Snoek">Snoek</option>
+                            <optgroup label="🌊 SALTWATER - Gamefish" class="saltwater-group">
+                                <option value="Elf" class="saltwater-species">Elf (Shad)</option>
+                                <option value="Garrick" class="saltwater-species">Garrick (Leervis)</option>
+                                <option value="Springer" class="saltwater-species">Springer</option>
+                                <option value="Snoek" class="saltwater-species">Snoek</option>
                             </optgroup>
-                            <optgroup label="Rays">
-                                <option value="Eagle Ray">Eagle Ray</option>
-                                <option value="Blue Stingray">Blue Stingray</option>
+                            <optgroup label="🌊 SALTWATER - Rays" class="saltwater-group">
+                                <option value="Eagle Ray" class="saltwater-species">Eagle Ray</option>
+                                <option value="Blue Stingray" class="saltwater-species">Blue Stingray</option>
+                            </optgroup>
+                            
+                            <!-- FRESHWATER SPECIES -->
+                            <optgroup label="💧 FRESHWATER - Bass" class="freshwater-group" style="display:none;">
+                                <option value="Largemouth Bass" class="freshwater-species">Largemouth Bass</option>
+                                <option value="Smallmouth Bass" class="freshwater-species">Smallmouth Bass</option>
+                                <option value="Spotted Bass" class="freshwater-species">Spotted Bass</option>
+                            </optgroup>
+                            <optgroup label="💧 FRESHWATER - Carp" class="freshwater-group" style="display:none;">
+                                <option value="Mirror Carp" class="freshwater-species">Mirror Carp</option>
+                                <option value="Common Carp" class="freshwater-species">Common Carp</option>
+                                <option value="Koi Carp" class="freshwater-species">Koi Carp</option>
+                                <option value="Grass Carp" class="freshwater-species">Grass Carp</option>
+                            </optgroup>
+                            <optgroup label="💧 FRESHWATER - Trout" class="freshwater-group" style="display:none;">
+                                <option value="Rainbow Trout" class="freshwater-species">Rainbow Trout</option>
+                                <option value="Brown Trout" class="freshwater-species">Brown Trout</option>
+                            </optgroup>
+                            <optgroup label="💧 FRESHWATER - Indigenous" class="freshwater-group" style="display:none;">
+                                <option value="Smallmouth Yellowfish" class="freshwater-species">Smallmouth Yellowfish</option>
+                                <option value="Largemouth Yellowfish" class="freshwater-species">Largemouth Yellowfish</option>
+                                <option value="Sharptooth Catfish" class="freshwater-species">Sharptooth Catfish (Barbel)</option>
+                                <option value="Vundu" class="freshwater-species">Vundu</option>
+                                <option value="Mozambique Tilapia" class="freshwater-species">Mozambique Tilapia (Kurper)</option>
+                                <option value="Banded Tilapia" class="freshwater-species">Banded Tilapia</option>
+                                <option value="Bream" class="freshwater-species">Bream (Freshwater)</option>
                             </optgroup>
                         </select>
                     </div>
@@ -141,23 +179,64 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="locationType">Location Type *</label>
+                        <select id="locationType" required>
+                            <option value="">Select location type...</option>
+                            <!-- Saltwater options -->
+                            <option value="Beach" class="saltwater-location">🏖️ Beach</option>
+                            <option value="Rocks" class="saltwater-location">🪨 Rocks</option>
+                            <option value="Pier" class="saltwater-location">🌉 Pier/Jetty</option>
+                            <option value="Harbor" class="saltwater-location">⚓ Harbor</option>
+                            <option value="Estuary" class="saltwater-location">🌊 Estuary</option>
+                            <!-- Freshwater options -->
+                            <option value="Dam" class="freshwater-location" style="display:none;">🏞️ Dam/Reservoir</option>
+                            <option value="River" class="freshwater-location" style="display:none;">🌊 River</option>
+                            <option value="Lake" class="freshwater-location" style="display:none;">💧 Lake</option>
+                            <option value="Stream" class="freshwater-location" style="display:none;">💦 Stream</option>
+                        </select>
+                        <small class="form-hint">Type of water body</small>
+                    </div>
+                
+                    <div class="form-group">
                         <label for="locationName">Location Name *</label>
-                        <input type="text" id="locationName" placeholder="e.g., Struisbaai Beach, Mile 72" required>
+                        <input type="text" id="locationName" placeholder="e.g., Struisbaai Beach / Hartbeespoort Dam" required>
                         <small class="form-hint">Describe the fishing spot</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="bait">Bait Used</label>
+                        <label for="bait">Bait / Lure Used</label>
                         <select id="bait">
-                            <option value="">Select bait...</option>
-                            <option value="Sardine">Sardine (Pilchard)</option>
-                            <option value="White Mussel">White Mussel</option>
-                            <option value="Octopus">Octopus</option>
-                            <option value="Redbait">Redbait</option>
-                            <option value="Squid">Squid</option>
-                            <option value="Crab">Crab</option>
-                            <option value="Bloodworm">Bloodworm</option>
-                            <option value="Mackerel">Mackerel</option>
+                            <option value="">Select bait/lure...</option>
+                            <!-- Saltwater baits -->
+                            <optgroup label="🌊 Saltwater Bait" class="saltwater-bait">
+                                <option value="Sardine" class="saltwater-bait-option">Sardine (Pilchard)</option>
+                                <option value="White Mussel" class="saltwater-bait-option">White Mussel</option>
+                                <option value="Octopus" class="saltwater-bait-option">Octopus</option>
+                                <option value="Redbait" class="saltwater-bait-option">Redbait</option>
+                                <option value="Squid" class="saltwater-bait-option">Squid</option>
+                                <option value="Crab" class="saltwater-bait-option">Crab</option>
+                                <option value="Bloodworm" class="saltwater-bait-option">Bloodworm</option>
+                                <option value="Mackerel" class="saltwater-bait-option">Mackerel</option>
+                            </optgroup>
+                            <!-- Freshwater baits/lures -->
+                            <optgroup label="💧 Freshwater Lures" class="freshwater-bait" style="display:none;">
+                                <option value="Crankbait" class="freshwater-bait-option">Crankbait</option>
+                                <option value="Spinnerbait" class="freshwater-bait-option">Spinnerbait</option>
+                                <option value="Jig" class="freshwater-bait-option">Jig</option>
+                                <option value="Soft Plastic" class="freshwater-bait-option">Soft Plastic</option>
+                                <option value="Topwater" class="freshwater-bait-option">Topwater</option>
+                                <option value="Spoon" class="freshwater-bait-option">Spoon</option>
+                                <option value="Swimbait" class="freshwater-bait-option">Swimbait</option>
+                                <option value="Fly" class="freshwater-bait-option">Fly (Fly Fishing)</option>
+                            </optgroup>
+                            <optgroup label="💧 Freshwater Bait" class="freshwater-bait" style="display:none;">
+                                <option value="Worm" class="freshwater-bait-option">Worm</option>
+                                <option value="Mealies" class="freshwater-bait-option">Mealies (Corn)</option>
+                                <option value="Dough Ball" class="freshwater-bait-option">Dough Ball</option>
+                                <option value="Minnow" class="freshwater-bait-option">Live Minnow</option>
+                                <option value="Cricket" class="freshwater-bait-option">Cricket</option>
+                                <option value="Bread" class="freshwater-bait-option">Bread</option>
+                            </optgroup>
                             <option value="Lure">Lure</option>
                             <option value="Other">Other</option>
                         </select>
