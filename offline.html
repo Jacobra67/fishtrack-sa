@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - FishTrack Africa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a2840 0%, #2a4060 100%);
+            color: #e8dcc0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .offline-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #e8dcc0;
+        }
+        
+        p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            max-width: 500px;
+        }
+        
+        .retry-btn {
+            background: #e8dcc0;
+            color: #1a2840;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .retry-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .features {
+            margin-top: 50px;
+            max-width: 600px;
+        }
+        
+        .features h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+        }
+        
+        .feature-item {
+            background: rgba(232, 220, 192, 0.1);
+            padding: 12px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #e8dcc0;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-icon">📶❌</div>
+    <h1>You're Offline</h1>
+    <p>No internet connection detected. FishTrack Africa needs an active connection to load and save catches.</p>
+    
+    <button class="retry-btn" onclick="window.location.reload()">Try Again</button>
+    
+    <div class="features">
+        <h2>What you can do offline:</h2>
+        <div class="feature-list">
+            <div class="feature-item">📖 Browse cached pages you've visited before</div>
+            <div class="feature-item">🗺️ View the map (if previously loaded)</div>
+            <div class="feature-item">📋 View your catch history (Firebase permitting)</div>
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 14px; opacity: 0.7;">
+            Full offline catch logging coming soon! 🎣
+        </p>
+    </div>
+    
+    <script>
+        // Auto-retry connection every 5 seconds
+        setInterval(() => {
+            if (navigator.onLine) {
+                window.location.reload();
+            }
+        }, 5000);
+        
+        // Listen for online event
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

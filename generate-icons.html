@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Icon Generator</title>
+</head>
+<body>
+    <h2>Generating icons...</h2>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <div id="status"></div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const status = document.getElementById('status');
+        
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+            // Generate 192x192
+            canvas.width = 192;
+            canvas.height = 192;
+            ctx.drawImage(img, 0, 0, 192, 192);
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'icon-192.png';
+                a.click();
+                status.innerHTML += '✅ Downloaded icon-192.png<br>';
+            });
+            
+            // Generate 512x512
+            setTimeout(() => {
+                canvas.width = 512;
+                canvas.height = 512;
+                ctx.drawImage(img, 0, 0, 512, 512);
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'icon-512.png';
+                    a.click();
+                    status.innerHTML += '✅ Downloaded icon-512.png<br>';
+                });
+            }, 500);
+            
+            // Generate Apple touch icon
+            setTimeout(() => {
+                canvas.width = 180;
+                canvas.height = 180;
+                ctx.drawImage(img, 0, 0, 180, 180);
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'apple-touch-icon.png';
+                    a.click();
+                    status.innerHTML += '✅ Downloaded apple-touch-icon.png<br>';
+                    status.innerHTML += '<br><strong>Upload these 3 files to fishtrack-sa/assets/</strong>';
+                });
+            }, 1000);
+        };
+        
+        img.src = 'assets/logo-original.jpg';
+    </script>
+</body>
+</html>

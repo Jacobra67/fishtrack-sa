@@ -5,8 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="FishTrack Africa - Track your catches, find hotspots, connect with anglers across Africa. Waar die vis byt!">
     <title>FishTrack Africa - Waar Die Vis Byt 🎣</title>
-    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <meta name="theme-color" content="#1a2840">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FishTrack">
+    
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     
@@ -176,5 +184,8 @@
         // Update stats on page load
         updateStats();
     </script>
+    
+    <!-- PWA Install Script -->
+    <script src="js/pwa-install.js"></script>
 </body>
 </html>

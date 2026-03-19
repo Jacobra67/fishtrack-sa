@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FishTrack Africa - Branded QR Sticker</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial Black', Arial, sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .sticker-preview {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .sticker-canvas {
+            background: linear-gradient(135deg, #1a2840 0%, #2a4060 100%);
+            border: 8px solid #e8dcc0;
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .logo-text {
+            color: #e8dcc0;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .qr-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .tagline {
+            color: #e8dcc0;
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .url-text {
+            color: #e8dcc0;
+            font-size: 14px;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+        
+        .download-btn {
+            background: #1a2840;
+            color: #e8dcc0;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .download-btn:hover {
+            background: #2a4060;
+        }
+        
+        .instructions {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        .instructions h3 {
+            color: #1a2840;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: #1a2840;">FishTrack Africa - QR Sticker</h1>
+    
+    <div class="sticker-preview">
+        <div class="sticker-canvas" id="stickerCanvas">
+            <div class="logo-text">FISHTRACK AFRICA</div>
+            <div class="qr-container">
+                <img src="qr_base.png" alt="QR Code" id="qrImage">
+            </div>
+            <div class="tagline">TRACK THE BITE</div>
+            <div class="url-text">fishtrack-sa.netlify.app</div>
+        </div>
+    </div>
+    
+    <button class="download-btn" onclick="downloadSticker()">Download High-Res Sticker</button>
+    
+    <div class="instructions">
+        <h3>📋 Printing Instructions</h3>
+        <p><strong>For Best Results:</strong></p>
+        <ul>
+            <li>Print at <strong>300 DPI minimum</strong></li>
+            <li>Recommended sticker size: <strong>3" x 3"</strong> (75mm x 75mm)</li>
+            <li>Use weatherproof vinyl sticker paper</li>
+            <li>Test scan QR code before mass printing</li>
+        </ul>
+        
+        <p><strong>🎯 Where to Place:</strong></p>
+        <ul>
+            <li>Tackle shop windows & counters</li>
+            <li>Boat launch slipways</li>
+            <li>Fishing pier notice boards</li>
+            <li>Popular beach access points</li>
+            <li>Bait & tackle boxes (with permission)</li>
+        </ul>
+        
+        <p><strong>💡 Pro Tip:</strong> Add "Log your catch, see where fish are biting!" below the sticker</p>
+    </div>
+    
+    <script>
+        async function downloadSticker() {
+            // Create a high-res canvas
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set size for 3x3 inch at 300 DPI = 900x900px
+            const size = 900;
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#1a2840');
+            gradient.addColorStop(1, '#2a4060');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Border
+            ctx.strokeStyle = '#e8dcc0';
+            ctx.lineWidth = 16;
+            const borderRadius = 40;
+            ctx.beginPath();
+            ctx.roundRect(8, 8, size-16, size-16, borderRadius);
+            ctx.stroke();
+            
+            // Logo text
+            ctx.fillStyle = '#e8dcc0';
+            ctx.font = 'bold 60px Arial';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 4;
+            ctx.fillText('FISHTRACK AFRICA', size/2, 100);
+            
+            // Load and draw QR code
+            const qrImg = document.getElementById('qrImage');
+            const qrSize = 500;
+            const qrX = (size - qrSize) / 2;
+            const qrY = 160;
+            
+            // White background for QR
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = 'white';
+            const qrPadding = 30;
+            ctx.beginPath();
+            ctx.roundRect(qrX - qrPadding, qrY - qrPadding, qrSize + qrPadding*2, qrSize + qrPadding*2, 20);
+            ctx.fill();
+            
+            // Draw QR code
+            ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+            
+            // Tagline
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = '#e8dcc0';
+            ctx.font = 'bold 48px Arial';
+            ctx.fillText('TRACK THE BITE', size/2, 760);
+            
+            // URL
+            ctx.font = '28px Arial';
+            ctx.shadowBlur = 4;
+            ctx.fillText('fishtrack-sa.netlify.app', size/2, 820);
+            
+            // Download
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'fishtrack-qr-sticker-300dpi.png';
+                a.click();
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }
+        
+        // Polyfill for roundRect (Safari compatibility)
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                this.beginPath();
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                this.closePath();
+                return this;
+            }
+        }
+    </script>
+</body>
+</html>
