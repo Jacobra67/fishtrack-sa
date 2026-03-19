@@ -453,6 +453,112 @@ document.getElementById('clearPin').addEventListener('click', () => {
     console.log('Pin cleared');
 });
 
+// Location Search Functionality (Geocoding)
+const locationSearchInput = document.getElementById('locationSearch');
+const searchLocationBtn = document.getElementById('searchLocationBtn');
+const searchResultsDiv = document.getElementById('searchResults');
+
+// Search on button click
+searchLocationBtn.addEventListener('click', searchLocation);
+
+// Search on Enter key
+locationSearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        searchLocation();
+    }
+});
+
+async function searchLocation() {
+    const query = locationSearchInput.value.trim();
+    
+    if (!query) {
+        alert('Please enter a location to search');
+        return;
+    }
+    
+    // Show loading state
+    searchResultsDiv.style.display = 'block';
+    searchResultsDiv.innerHTML = '<div class="search-loading">Searching</div>';
+    searchLocationBtn.disabled = true;
+    searchLocationBtn.textContent = 'Searching...';
+    
+    try {
+        // Use Nominatim (OpenStreetMap geocoding) - FREE, no API key needed
+        // Bias results to South Africa
+        const url = `https://nominatim.openstreetmap.org/search?` +
+            `q=${encodeURIComponent(query)}&` +
+            `format=json&` +
+            `limit=5&` +
+            `countrycodes=za,na&` + // South Africa + Namibia
+            `addressdetails=1`;
+        
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'FishTrack Africa (fishtrack-sa.netlify.app)' // Required by Nominatim
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Search failed');
+        }
+        
+        const results = await response.json();
+        
+        if (results.length === 0) {
+            searchResultsDiv.innerHTML = '<div class="search-no-results">No locations found. Try "Hartbeespoort Dam" or "Struisbaai Beach"</div>';
+            return;
+        }
+        
+        // Display results
+        let html = '';
+        results.forEach(result => {
+            const name = result.name || result.display_name.split(',')[0];
+            const address = result.display_name;
+            
+            html += `
+                <div class="search-result-item" data-lat="${result.lat}" data-lon="${result.lon}">
+                    <div class="search-result-name">${name}</div>
+                    <div class="search-result-address">${address}</div>
+                </div>
+            `;
+        });
+        
+        searchResultsDiv.innerHTML = html;
+        
+        // Handle result clicks
+        searchResultsDiv.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const lat = parseFloat(item.dataset.lat);
+                const lon = parseFloat(item.dataset.lon);
+                
+                // Drop pin at selected location
+                dropPin(lat, lon);
+                
+                // Center and zoom map
+                pinMap.setView([lat, lon], 14);
+                
+                // Hide results
+                searchResultsDiv.style.display = 'none';
+                searchResultsDiv.innerHTML = '';
+                
+                // Clear search input
+                locationSearchInput.value = '';
+                
+                console.log('Selected location:', lat, lon);
+            });
+        });
+        
+    } catch (error) {
+        console.error('Location search error:', error);
+        searchResultsDiv.innerHTML = '<div class="search-error">Search failed. Please try again or drop a pin manually.</div>';
+    } finally {
+        // Reset button
+        searchLocationBtn.disabled = false;
+        searchLocationBtn.textContent = 'Search';
+    }
+}
+
 // Initialize map when page loads
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initPinMap);

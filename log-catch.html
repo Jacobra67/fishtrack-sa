@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/logger.css">
     <link rel="stylesheet" href="css/weight-calculator.css">
+    <link rel="stylesheet" href="css/location-search.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
@@ -180,6 +181,14 @@
 
                     <div class="form-group">
                         <label>Drop Pin on Map 📍</label>
+                        
+                        <!-- Location Search Bar -->
+                        <div class="location-search-container">
+                            <input type="text" id="locationSearch" class="location-search-input" placeholder="🔍 Search location (e.g., Hartbeespoort Dam, Struisbaai Beach)...">
+                            <button type="button" id="searchLocationBtn" class="search-location-btn">Search</button>
+                        </div>
+                        <div id="searchResults" class="search-results" style="display: none;"></div>
+                        
                         <div class="location-buttons">
                             <button type="button" id="useCurrentLocation" class="location-btn primary">
                                 📍 Use My Current Location
@@ -192,7 +201,7 @@
                         <div id="coordinatesDisplay" class="coordinates-display" style="display: none;">
                             <small>📍 Coordinates: <span id="latLng"></span></small>
                         </div>
-                        <small class="form-hint">Tap map to drop pin, or use your current location</small>
+                        <small class="form-hint">Search for a location, use GPS, or tap map to drop pin</small>
                     </div>
 
                     <div class="form-group">

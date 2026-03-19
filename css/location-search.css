@@ -1,0 +1,138 @@
+/* Location Search Styles */
+
+.location-search-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.location-search-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.location-search-input:focus {
+    border-color: var(--navy-blue);
+}
+
+.location-search-input::placeholder {
+    color: #999;
+}
+
+.search-location-btn {
+    background: var(--navy-blue);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.search-location-btn:hover {
+    background: #0f1a2e;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.search-location-btn:active {
+    transform: translateY(0);
+}
+
+.search-location-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Search Results Dropdown */
+.search-results {
+    background: white;
+    border: 2px solid var(--navy-blue);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.search-result-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-item:hover {
+    background: #f5f5f5;
+}
+
+.search-result-name {
+    font-weight: bold;
+    color: var(--navy-blue);
+    margin-bottom: 4px;
+}
+
+.search-result-address {
+    font-size: 12px;
+    color: #666;
+}
+
+.search-no-results {
+    padding: 16px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+.search-error {
+    padding: 16px;
+    text-align: center;
+    color: #e74c3c;
+    background: #fee;
+    border-radius: 8px;
+}
+
+/* Loading state */
+.search-loading {
+    padding: 16px;
+    text-align: center;
+    color: #666;
+}
+
+.search-loading::after {
+    content: '...';
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+    .location-search-container {
+        flex-direction: column;
+    }
+    
+    .search-location-btn {
+        width: 100%;
+    }
+    
+    .location-search-input {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
