@@ -1,5 +1,53 @@
 /* Location Search Styles */
 
+/* Popular Spots Section */
+.popular-spots-section {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(26, 40, 64, 0.05) 0%, rgba(42, 64, 96, 0.05) 100%);
+    border-radius: 8px;
+    border: 1px solid rgba(26, 40, 64, 0.1);
+}
+
+.popular-spots-label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--navy-blue);
+    margin-bottom: 10px;
+}
+
+.popular-spots-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.popular-spot-btn {
+    background: var(--navy-blue);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    white-space: nowrap;
+}
+
+.popular-spot-btn:hover {
+    background: #0f1a2e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.popular-spot-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
 .location-search-container {
     display: flex;
     gap: 8px;

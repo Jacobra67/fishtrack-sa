@@ -453,6 +453,28 @@ document.getElementById('clearPin').addEventListener('click', () => {
     console.log('Pin cleared');
 });
 
+// Popular Fishing Spots (Quick Jump)
+const popularSpotButtons = document.querySelectorAll('.popular-spot-btn');
+
+popularSpotButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const lat = parseFloat(button.dataset.lat);
+        const lon = parseFloat(button.dataset.lon);
+        const name = button.dataset.name;
+        
+        // Drop pin at popular spot
+        dropPin(lat, lon);
+        
+        // Center and zoom map
+        pinMap.setView([lat, lon], 14);
+        
+        // Auto-fill location name
+        document.getElementById('locationName').value = name;
+        
+        console.log('Jumped to popular spot:', name, lat, lon);
+    });
+});
+
 // Location Search Functionality (Geocoding)
 const locationSearchInput = document.getElementById('locationSearch');
 const searchLocationBtn = document.getElementById('searchLocationBtn');

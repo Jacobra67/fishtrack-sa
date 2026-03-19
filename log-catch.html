@@ -182,9 +182,28 @@
                     <div class="form-group">
                         <label>Drop Pin on Map 📍</label>
                         
+                        <!-- Popular Fishing Spots -->
+                        <div class="popular-spots-section">
+                            <label class="popular-spots-label">🌟 Popular Spots (Quick Jump):</label>
+                            <div class="popular-spots-buttons">
+                                <button type="button" class="popular-spot-btn" data-lat="-34.389416" data-lon="21.157877" data-name="Piet Bok se Hok">
+                                    🎣 Piet Bok se Hok
+                                </button>
+                                <button type="button" class="popular-spot-btn" data-lat="-34.7933" data-lon="20.0453" data-name="Struisbaai Beach">
+                                    🌊 Struisbaai Beach
+                                </button>
+                                <button type="button" class="popular-spot-btn" data-lat="-25.7479" data-lon="27.8546" data-name="Hartbeespoort Dam">
+                                    🏞️ Hartbeespoort Dam
+                                </button>
+                                <button type="button" class="popular-spot-btn" data-lat="-22.1167" data-lon="14.2833" data-name="Henties Bay">
+                                    🦈 Henties Bay
+                                </button>
+                            </div>
+                        </div>
+                        
                         <!-- Location Search Bar -->
                         <div class="location-search-container">
-                            <input type="text" id="locationSearch" class="location-search-input" placeholder="🔍 Search location (e.g., Hartbeespoort Dam, Struisbaai Beach)...">
+                            <input type="text" id="locationSearch" class="location-search-input" placeholder="🔍 Or search any location...">
                             <button type="button" id="searchLocationBtn" class="search-location-btn">Search</button>
                         </div>
                         <div id="searchResults" class="search-results" style="display: none;"></div>
