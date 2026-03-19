@@ -1,16 +1,19 @@
 // FishTrack Africa - Service Worker
-// Version 1.1.0
+// Version 1.2.0
 
-const CACHE_NAME = 'fishtrack-v1.1';
+const CACHE_NAME = 'fishtrack-v1.2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/log-catch.html',
   '/map.html',
   '/css/styles.css',
+  '/css/tide-wind.css',
   '/js/firebase-config.js',
   '/js/catch-logger.js',
   '/js/map.js',
+  '/js/tide-wind.js',
+  '/js/pwa-install.js',
   '/assets/icon-192.png',
   '/assets/icon-512.png',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
