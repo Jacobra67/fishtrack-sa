@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FishTrack Africa - Track Your Catches</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <meta name="theme-color" content="#1a2840">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FishTrack">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Africa's ultimate fishing logbook - saltwater & freshwater. Track catches, find hotspots, connect with anglers across South Africa and Namibia.">
+    <meta name="keywords" content="fishing app, south africa fishing, namibia fishing, catch tracker, fishing log, galjoen, bass fishing, shark fishing">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --gold: #d4af37;
+            --cream: #e8dcc0;
+            --navy: #0f1c2e;
+            --navy-light: #1a2840;
+            --rust: #c8814f;
+            --rust-dark: #a0613f;
+        }
+        
+        body {
+            font-family: 'Lato', sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(15, 28, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .nav-logo {
+            width: 50px;
+            height: 50px;
+            filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.3));
+        }
+        
+        .nav-text h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--cream);
+            letter-spacing: 1px;
+        }
+        
+        .nav-text p {
+            font-family: Georgia, serif;
+            font-style: italic;
+            font-size: 0.85rem;
+            color: var(--gold);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: var(--cream);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--gold);
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            background: 
+                linear-gradient(135deg, rgba(15, 28, 46, 0.85) 0%, rgba(26, 40, 64, 0.75) 100%),
+                url('assets/ocean-hero.jpg') center/cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8rem 2rem 4rem;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(15, 28, 46, 0.4) 100%);
+            pointer-events: none;
+        }
+        
+        .hero-content {
+            max-width: 900px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-logo {
+            width: 400px;
+            max-width: 90vw;
+            height: auto;
+            margin-bottom: 3rem;
+            filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.6));
+            animation: fadeInUp 1s ease-out;
+            mix-blend-mode: screen;
+            /* Remove white background */
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 900;
+            color: var(--cream);
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+        
+        .hero h2 {
+            font-family: Georgia, serif;
+            font-style: italic;
+            font-size: clamp(1.3rem, 3vw, 2rem);
+            color: var(--gold);
+            margin-bottom: 2rem;
+            font-weight: 400;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+        
+        .hero p {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            line-height: 1.8;
+            color: rgba(232, 220, 192, 0.95);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--rust) 0%, var(--rust-dark) 100%);
+            color: white;
+            padding: 1.5rem 3.5rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 50px;
+            box-shadow: 0 8px 24px rgba(200, 129, 79, 0.4);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: fadeInUp 1s ease-out 0.8s both;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(200, 129, 79, 0.6);
+            background: linear-gradient(135deg, #d89560 0%, var(--rust) 100%);
+        }
+        
+        .cta-button:active {
+            transform: translateY(-1px);
+        }
+        
+        /* Features Section */
+        .features {
+            background: var(--navy);
+            padding: 6rem 2rem;
+        }
+        
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            text-align: center;
+            color: var(--cream);
+            margin-bottom: 4rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+        
+        .feature-card {
+            background: rgba(26, 40, 64, 0.6);
+            padding: 2.5rem;
+            border-radius: 12px;
+            border: 2px solid rgba(212, 175, 55, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(212, 175, 55, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card p {
+            color: rgba(232, 220, 192, 0.9);
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #0a1218;
+            padding: 3rem 2rem;
+            text-align: center;
+            color: rgba(232, 220, 192, 0.7);
+        }
+        
+        .footer p {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .footer-links a {
+            color: var(--gold);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--cream);
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                padding: 1rem;
+            }
+            
+            .nav-text h1 {
+                font-size: 1.1rem;
+            }
+            
+            .nav-text p {
+                font-size: 0.7rem;
+            }
+            
+            .nav-links {
+                gap: 1rem;
+            }
+            
+            .nav-links a {
+                font-size: 1rem;
+            }
+            
+            .hero {
+                padding: 6rem 1.5rem 3rem;
+            }
+            
+            .hero-logo {
+                width: 280px;
+                margin-bottom: 2rem;
+            }
+            
+            .cta-button {
+                padding: 1.2rem 2.5rem;
+                font-size: 1.2rem;
+            }
+            
+            .features {
+                padding: 4rem 1.5rem;
+            }
+            
+            .features-grid {
+                gap: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-brand">
+            <img src="assets/logo.png" alt="FishTrack Africa" class="nav-logo">
+            <div class="nav-text">
+                <h1>FISHTRACK AFRICA</h1>
+                <p>Waar Die Vis Byt</p>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="map.html">Map</a>
+            <a href="log-catch.html">Log Catch</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <img src="assets/logo.png" alt="FishTrack Africa - Track the Bite" class="hero-logo">
+            <h1>Track Your Catches</h1>
+            <h2>Find Hotspots. Connect with Anglers.</h2>
+            <p>
+                Africa's ultimate fishing logbook – saltwater & freshwater.<br>
+                From coastal shore fishing to bass tournaments. Share catches,<br>
+                discover hotspots, connect with the community.
+            </p>
+            <a href="log-catch.html" class="cta-button">LOG YOUR CATCH 🎣</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="features-container">
+            <h2 class="features-title">Why FishTrack Africa?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secret Spot Mode</h3>
+                    <p>Share catches publicly without revealing exact GPS coordinates. Your honey holes stay secret with our unique fuzzy location feature.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🌊</div>
+                    <h3>Auto-Fill Conditions</h3>
+                    <p>Real-time tide, wind, and water temp data fetched automatically from your GPS location. Find patterns, catch more fish.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎣</div>
+                    <h3>African-Focused</h3>
+                    <p>Built for SA & Namibia anglers. Our species database includes Galjoen, Steenbras, Kabeljou, bass, carp – fish YOU actually catch.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🗺️</div>
+                    <h3>Interactive Map</h3>
+                    <p>See where fish are biting. Smart clustering, advanced filters, real-time updates. Discover new hotspots across the coast and inland.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Free Forever</h3>
+                    <p>No ads, no premium BS. Built by anglers, for anglers. Community-driven, African-owned. Your data helps everyone catch more.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Works Everywhere</h3>
+                    <p>PWA technology means it works on any phone – Android, iPhone, no app store needed. Install from your browser, use offline.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 FishTrack Africa. Built by anglers, for anglers.</p>
+        <p>Waar Die Vis Byt 🎣 Track the Bite</p>
+        <div class="footer-links">
+            <a href="map.html">Map</a>
+            <a href="log-catch.html">Log Catch</a>
+            <a href="https://github.com/Jacobra67/fishtrack-sa" target="_blank">GitHub</a>
+        </div>
+    </footer>
+
+    <!-- PWA Install Script -->
+    <script src="js/pwa-install.js"></script>
+</body>
+</html>
