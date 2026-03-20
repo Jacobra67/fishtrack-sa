@@ -116,9 +116,9 @@ function formatDate(timestamp) {
 function createPopupContent(catchData) {
     let html = '<div class="catch-popup">';
     
-    // Photo
+    // Photo (clickable)
     if (catchData.photo) {
-        html += `<img src="${catchData.photo}" alt="${catchData.species}">`;
+        html += `<img src="${catchData.photo}" alt="${catchData.species}" class="catch-photo-clickable" data-catch-id="${catchData.id}" style="cursor: pointer;">`;
     }
     
     // Species
@@ -174,6 +174,22 @@ function createPopupContent(catchData) {
     // C&R badge
     if (catchData.released) {
         html += '<div class="catch-released">✓ Catch & Release</div>';
+    }
+    
+    // Edit/Delete buttons (only shown if user is owner)
+    // Check if this catch belongs to current user (simple localStorage check for now)
+    const currentUser = localStorage.getItem('fishtrack_user_name');
+    if (currentUser && catchData.catcherName === currentUser) {
+        html += `
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee; display: flex; gap: 8px;">
+                <button class="catch-action-btn edit-btn" data-catch-id="${catchData.id}" style="flex: 1; background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                    ✏️ Edit
+                </button>
+                <button class="catch-action-btn delete-btn" data-catch-id="${catchData.id}" style="flex: 1; background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                    🗑️ Delete
+                </button>
+            </div>
+        `;
     }
     
     html += '</div>';
@@ -326,6 +342,85 @@ async function init() {
             }
         });
     });
+    
+    // Handle photo clicks (open lightbox)
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('catch-photo-clickable')) {
+            const catchId = e.target.dataset.catchId;
+            const catchData = allCatches.find(c => c.id === catchId);
+            if (catchData && catchData.photo && typeof photoLightbox !== 'undefined') {
+                photoLightbox.open(catchData.photo, catchData);
+            }
+        }
+    });
+    
+    // Handle edit button clicks
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn') || e.target.closest('.edit-btn')) {
+            const btn = e.target.classList.contains('edit-btn') ? e.target : e.target.closest('.edit-btn');
+            const catchId = btn.dataset.catchId;
+            editCatch(catchId);
+        }
+    });
+    
+    // Handle delete button clicks
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+            const btn = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
+            const catchId = btn.dataset.catchId;
+            deleteCatch(catchId);
+        }
+    });
+}
+
+// Edit catch function
+function editCatch(catchId) {
+    const catchData = allCatches.find(c => c.id === catchId);
+    if (!catchData) {
+        alert('Catch not found');
+        return;
+    }
+    
+    // For now, redirect to log-catch page with edit parameter
+    // Later we can create a dedicated edit modal
+    window.location.href = `log-catch.html?edit=${catchId}`;
+}
+
+// Delete catch function
+async function deleteCatch(catchId) {
+    const catchData = allCatches.find(c => c.id === catchId);
+    if (!catchData) {
+        alert('Catch not found');
+        return;
+    }
+    
+    // Confirm deletion
+    const confirmed = confirm(
+        `Delete this catch?\n\n` +
+        `${catchData.species} (${catchData.weight}kg)\n` +
+        `Caught by ${catchData.catcherName}\n\n` +
+        `This action cannot be undone.`
+    );
+    
+    if (!confirmed) return;
+    
+    try {
+        // Delete from Firebase
+        await db.collection('catches').doc(catchId).delete();
+        
+        // Remove from local array
+        allCatches = allCatches.filter(c => c.id !== catchId);
+        
+        // Refresh map
+        filterCatches();
+        
+        alert('Catch deleted successfully');
+        console.log('Catch deleted:', catchId);
+        
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('Failed to delete catch. Please try again.');
+    }
 }
 
 // Start when page loads

@@ -782,6 +782,9 @@ catchForm.addEventListener('submit', async (e) => {
         
         console.log('Catch logged with ID:', docRef.id);
         
+        // Save user name to localStorage (for edit/delete ownership check)
+        localStorage.setItem('fishtrack_user_name', formData.catcherName);
+        
         // Show success message
         catchForm.style.display = 'none';
         successMessage.style.display = 'block';
