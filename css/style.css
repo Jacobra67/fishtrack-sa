@@ -150,6 +150,7 @@ body {
     /* Clean shadow without multiply since it's a transparent PNG */
     filter: drop-shadow(0 15px 45px rgba(0,0,0,0.8));
     opacity: 1;
+    mix-blend-mode: screen;
 }
 
 .headline {
