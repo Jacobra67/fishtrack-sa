@@ -116,11 +116,13 @@ body {
 .hero {
     background: url('../assets/hero-combined.jpg') center/cover no-repeat;
     color: var(--cream);
-    padding: 20px 20px 80px;
+    padding: 20px 20px 0;
     text-align: center;
     position: relative;
     overflow: hidden;
-    min-height: 90vh;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .hero::before {
