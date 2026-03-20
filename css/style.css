@@ -66,9 +66,13 @@ body {
 .logo-image {
     width: 60px;
     height: 60px;
+    object-fit: cover;
+    object-position: center;
     border-radius: 50%;
     border: 3px solid var(--cream);
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
 }
 
 .logo-text h1 {
@@ -140,6 +144,9 @@ body {
     width: 100%;
     height: auto;
     filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+    /* Remove white background effect */
+    mix-blend-mode: multiply;
+    background: transparent;
 }
 
 .headline {
