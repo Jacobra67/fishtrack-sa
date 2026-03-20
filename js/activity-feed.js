@@ -9,19 +9,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Wait for Firebase to be ready
         await waitForFirebase();
         
-        // Load all public catches (not private)
+        // Load catches - simplified query to avoid index requirement
+        // Note: We'll filter out private catches client-side
         const snapshot = await db.collection('catches')
-            .where('privacy', 'in', ['public', 'secret'])
             .orderBy('timestamp', 'desc')
-            .limit(50) // Get last 50 for stats
+            .limit(100) // Get last 100, filter client-side
             .get();
         
-        const catches = snapshot.docs.map(doc => ({
+        let catches = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
         
-        console.log('Loaded', catches.length, 'catches for activity feed');
+        // Filter out private catches (client-side filtering)
+        catches = catches.filter(c => c.privacy !== 'private');
+        
+        console.log('Loaded', catches.length, 'public/secret catches for activity feed');
         
         // Calculate stats
         updateActivityStats(catches);
