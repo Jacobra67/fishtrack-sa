@@ -134,42 +134,62 @@ function createPopupContent(catchData) {
         html += `<div class="catcher-name">🎣 Caught by <strong>${catchData.catcherName}</strong></div>`;
     }
     
-    // Details
+    // Essential details (always visible)
     html += '<div class="catch-info">';
-    if (catchData.waterType) {
-        const waterIcon = catchData.waterType === 'Freshwater' ? '💧' : '🌊';
-        html += `<div><strong>Water:</strong> ${waterIcon} ${catchData.waterType}</div>`;
-    }
-    if (catchData.country) {
-        html += `<div><strong>Country:</strong> ${catchData.country}</div>`;
-    }
     html += `<div><strong>Weight:</strong> ${catchData.weight}kg</div>`;
-    if (catchData.length) {
-        html += `<div><strong>Length:</strong> ${catchData.length}cm</div>`;
-    }
-    if (catchData.locationType) {
-        html += `<div><strong>Location Type:</strong> ${catchData.locationType}</div>`;
-    }
     html += `<div><strong>Location:</strong> ${catchData.locationName}</div>`;
-    if (catchData.bait) {
-        html += `<div><strong>Bait/Lure:</strong> ${catchData.bait}</div>`;
-    }
-    // Conditions data (if available)
-    if (catchData.waterTemp || catchData.tide || catchData.wind) {
-        html += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">';
-        if (catchData.waterTemp) {
-            html += `<div><strong>Water Temp:</strong> ${catchData.waterTemp}°C</div>`;
-        }
-        if (catchData.tide) {
-            html += `<div><strong>Tide:</strong> ${catchData.tide}</div>`;
-        }
-        if (catchData.wind) {
-            html += `<div><strong>Wind:</strong> ${catchData.wind}</div>`;
-        }
-        html += '</div>';
-    }
     html += `<div><strong>When:</strong> ${formatDate(catchData.timestamp)}</div>`;
     html += '</div>';
+    
+    // More Info toggle button
+    const hasExtraInfo = catchData.length || catchData.bait || catchData.waterTemp || catchData.tide || catchData.wind || catchData.waterType || catchData.country || catchData.locationType;
+    
+    if (hasExtraInfo) {
+        html += `
+            <div style="margin-top: 12px;">
+                <button class="more-info-toggle" data-catch-id="${catchData.id}" style="background: #f0f0f0; border: none; padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: space-between;">
+                    <span>📋 More Info</span>
+                    <span class="toggle-icon">▼</span>
+                </button>
+                <div class="more-info-content" id="more-info-${catchData.id}" style="display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+        `;
+        
+        // Extra details (hidden by default)
+        if (catchData.length) {
+            html += `<div style="font-size: 13px; color: #666; margin-bottom: 4px;"><strong>Length:</strong> ${catchData.length}cm</div>`;
+        }
+        if (catchData.waterType) {
+            const waterIcon = catchData.waterType === 'Freshwater' ? '💧' : '🌊';
+            html += `<div style="font-size: 13px; color: #666; margin-bottom: 4px;"><strong>Water:</strong> ${waterIcon} ${catchData.waterType}</div>`;
+        }
+        if (catchData.country) {
+            html += `<div style="font-size: 13px; color: #666; margin-bottom: 4px;"><strong>Country:</strong> ${catchData.country}</div>`;
+        }
+        if (catchData.locationType) {
+            html += `<div style="font-size: 13px; color: #666; margin-bottom: 4px;"><strong>Location Type:</strong> ${catchData.locationType}</div>`;
+        }
+        if (catchData.bait) {
+            html += `<div style="font-size: 13px; color: #666; margin-bottom: 4px;"><strong>Bait/Lure:</strong> ${catchData.bait}</div>`;
+        }
+        
+        // Conditions
+        if (catchData.waterTemp || catchData.tide || catchData.wind) {
+            html += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">';
+            html += '<div style="font-size: 12px; font-weight: bold; color: #3498db; margin-bottom: 4px;">🌊 Conditions</div>';
+            if (catchData.waterTemp) {
+                html += `<div style="font-size: 13px; color: #666; margin-bottom: 4px;"><strong>Water Temp:</strong> ${catchData.waterTemp}°C</div>`;
+            }
+            if (catchData.tide) {
+                html += `<div style="font-size: 13px; color: #666; margin-bottom: 4px;"><strong>Tide:</strong> ${catchData.tide}</div>`;
+            }
+            if (catchData.wind) {
+                html += `<div style="font-size: 13px; color: #666; margin-bottom: 4px;"><strong>Wind:</strong> ${catchData.wind}</div>`;
+            }
+            html += '</div>';
+        }
+        
+        html += '</div></div>'; // Close more-info-content and container
+    }
     
     // C&R badge
     if (catchData.released) {
@@ -350,6 +370,26 @@ async function init() {
             const catchData = allCatches.find(c => c.id === catchId);
             if (catchData && catchData.photo && typeof photoLightbox !== 'undefined') {
                 photoLightbox.open(catchData.photo, catchData);
+            }
+        }
+    });
+    
+    // Handle "More Info" toggle clicks
+    document.addEventListener('click', (e) => {
+        const toggleBtn = e.target.closest('.more-info-toggle');
+        if (toggleBtn) {
+            const catchId = toggleBtn.dataset.catchId;
+            const moreInfoDiv = document.getElementById(`more-info-${catchId}`);
+            const toggleIcon = toggleBtn.querySelector('.toggle-icon');
+            
+            if (moreInfoDiv) {
+                if (moreInfoDiv.style.display === 'none') {
+                    moreInfoDiv.style.display = 'block';
+                    toggleIcon.textContent = '▲';
+                } else {
+                    moreInfoDiv.style.display = 'none';
+                    toggleIcon.textContent = '▼';
+                }
             }
         }
     });
