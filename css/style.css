@@ -114,9 +114,9 @@ body {
 
 /* Hero Section - Vintage Badge Style */
 .hero {
-    background: url('../assets/hero-combined.jpg') center/cover no-repeat;
+    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--dark-navy) 100%);
     color: var(--cream);
-    padding: 20px 20px 0;
+    padding: 80px 20px;
     text-align: center;
     position: relative;
     overflow: hidden;
