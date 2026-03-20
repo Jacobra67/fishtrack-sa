@@ -21,6 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
         catchDateInput.value = `${year}-${month}-${day}`;
     }
     
+    // Show hint for auto-fill conditions (button is hidden until pin is dropped)
+    const autofillHint = document.getElementById('autofillHint');
+    if (autofillHint) {
+        autofillHint.style.display = 'block';
+    }
+    
     waterTypeSelect.addEventListener('change', function() {
         const waterType = this.value;
         
@@ -407,6 +413,15 @@ function dropPin(lat, lng) {
     // Show clear button
     document.getElementById('clearPin').style.display = 'inline-block';
     
+    // Show auto-fill button (once pin is dropped)
+    const autofillBtn = document.getElementById('autofillConditionsBtn');
+    const autofillHint = document.getElementById('autofillHint');
+    if (autofillBtn) {
+        autofillBtn.style.display = 'inline-block';
+        autofillBtn.disabled = false;
+        autofillHint.style.display = 'none'; // Hide hint once pin is dropped
+    }
+    
     // Handle marker drag
     pinMarker.on('dragend', (e) => {
         const pos = e.target.getLatLng();
@@ -475,6 +490,78 @@ document.getElementById('clearPin').addEventListener('click', () => {
     document.getElementById('clearPin').style.display = 'none';
     
     console.log('Pin cleared');
+});
+
+// Auto-fill Conditions Button
+document.getElementById('autofillConditionsBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('autofillConditionsBtn');
+    
+    // Check if pin is dropped
+    if (!pinnedLocation) {
+        alert('Please drop a pin on the map first');
+        return;
+    }
+    
+    // Get water type
+    const waterType = document.getElementById('waterType').value;
+    if (!waterType) {
+        alert('Please select water type (Saltwater or Freshwater) first');
+        return;
+    }
+    
+    // Show loading state
+    btn.classList.add('loading');
+    btn.disabled = true;
+    btn.textContent = '⏳ Fetching...';
+    
+    try {
+        // Fetch conditions using the auto-fill API
+        const conditions = await fetchConditions(
+            pinnedLocation.lat, 
+            pinnedLocation.lng, 
+            waterType
+        );
+        
+        // Fill in the fields
+        if (conditions.waterTemp) {
+            document.getElementById('waterTemp').value = conditions.waterTemp;
+        }
+        
+        if (conditions.tide && waterType === 'Saltwater') {
+            document.getElementById('tide').value = conditions.tide;
+        } else if (waterType === 'Freshwater') {
+            document.getElementById('tide').value = 'N/A';
+        }
+        
+        if (conditions.wind) {
+            document.getElementById('wind').value = conditions.wind;
+        }
+        
+        // Success feedback
+        btn.classList.remove('loading');
+        btn.textContent = '✓ Filled!';
+        btn.style.background = 'linear-gradient(135deg, #27ae60 0%, #229954 100%)';
+        
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            btn.textContent = '🔄 Auto-fill';
+            btn.disabled = false;
+        }, 2000);
+        
+        console.log('Conditions auto-filled:', conditions);
+        
+    } catch (error) {
+        console.error('Auto-fill error:', error);
+        btn.classList.remove('loading');
+        btn.textContent = '❌ Failed';
+        btn.disabled = false;
+        
+        setTimeout(() => {
+            btn.textContent = '🔄 Auto-fill';
+        }, 2000);
+        
+        alert('Could not fetch conditions. Please enter manually.');
+    }
 });
 
 // Popular Fishing Spots (Quick Jump)

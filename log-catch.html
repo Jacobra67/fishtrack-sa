@@ -293,7 +293,15 @@
 
                     <!-- Fishing Conditions (CRITICAL DATA) -->
                     <div class="form-group" style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #e8f4f8;">
-                        <h3 style="font-size: 16px; color: var(--ocean-blue); margin-bottom: 16px;">🌊 Conditions (Recommended - helps find patterns!)</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="font-size: 16px; color: var(--ocean-blue); margin: 0;">🌊 Conditions (Recommended - helps find patterns!)</h3>
+                            <button type="button" id="autofillConditionsBtn" class="autofill-btn" style="display: none;">
+                                🔄 Auto-fill
+                            </button>
+                        </div>
+                        <small class="form-hint" id="autofillHint" style="display: none; color: #27ae60; margin-top: -8px; margin-bottom: 12px;">
+                            💡 Drop a pin on the map first, then click Auto-fill
+                        </small>
                     </div>
 
                     <div class="form-row">
@@ -417,6 +425,9 @@
     
     <!-- Fish Weight Calculator -->
     <script src="js/fish-weight-calculator.js"></script>
+    
+    <!-- Conditions Auto-fill -->
+    <script src="js/conditions-autofill.js"></script>
     
     <script src="js/catch-logger.js"></script>
     

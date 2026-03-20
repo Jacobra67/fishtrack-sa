@@ -551,3 +551,41 @@
         width: 100%;
     }
 }
+
+/* Auto-fill Conditions Button */
+.autofill-btn {
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.autofill-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.autofill-btn:active {
+    transform: translateY(0);
+}
+
+.autofill-btn:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.autofill-btn.loading {
+    background: #3498db;
+}
+
+.autofill-btn.loading::before {
+    content: '⏳ ';
+    animation: spin 1s linear infinite;
+}
