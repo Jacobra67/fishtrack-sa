@@ -68,12 +68,12 @@ body {
     height: 60px;
     object-fit: contain;
     object-position: center;
-    /* No border - logo has natural fade effect */
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    /* Enhanced shadow for transparent logo */
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
-    /* Let the grunge fade blend naturally */
-    opacity: 0.95;
+    /* Full opacity for transparent PNG */
+    opacity: 1;
 }
 
 .logo-text h1 {
@@ -114,7 +114,9 @@ body {
 
 /* Hero Section - Vintage Badge Style */
 .hero {
-    background: linear-gradient(135deg, var(--navy-blue) 0%, var(--dark-navy) 100%);
+    background: 
+        linear-gradient(135deg, rgba(26, 47, 74, 0.85) 0%, rgba(15, 31, 48, 0.9) 100%),
+        url('../assets/ocean-waves.png') center/cover no-repeat;
     color: var(--cream);
     padding: 80px 20px;
     text-align: center;
@@ -144,10 +146,10 @@ body {
 .hero-badge img {
     width: 100%;
     height: auto;
-    /* Subtle shadow to enhance depth */
-    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
-    /* Let the natural grunge fade show through */
-    opacity: 0.98;
+    /* Enhanced shadow for logo with transparency */
+    filter: drop-shadow(0 8px 32px rgba(0,0,0,0.6));
+    /* Full opacity for crisp transparent logo */
+    opacity: 1;
 }
 
 .headline {
