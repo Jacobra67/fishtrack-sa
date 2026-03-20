@@ -37,8 +37,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         
     } catch (error) {
         console.error('Error loading activity feed:', error);
-        document.getElementById('latest-catches-feed').innerHTML = 
-            '<div style="text-align: center; padding: 40px; color: #e74c3c;">Unable to load catches. Please try again later.</div>';
+        
+        // Show friendly error message
+        const feed = document.getElementById('latest-catches-feed');
+        if (feed) {
+            feed.innerHTML = 
+                '<div style="text-align: center; padding: 40px; color: #e74c3c;">' +
+                'Unable to load catches. Please try again later.<br>' +
+                '<small style="color: #999; margin-top: 8px; display: block;">If this persists, check your internet connection.</small>' +
+                '</div>';
+        }
+        
+        // Reset stats to show zeros instead of dashes
+        document.getElementById('total-catches-stat').textContent = '0';
+        document.getElementById('week-catches-stat').textContent = '0';
+        document.getElementById('active-anglers-stat').textContent = '0';
+        document.getElementById('hot-spots-stat').textContent = '0';
     }
 });
 
@@ -61,7 +75,8 @@ function waitForFirebase() {
 
 function updateActivityStats(catches) {
     // Total catches
-    document.getElementById('total-catches-stat').textContent = catches.length;
+    const totalStat = document.getElementById('total-catches-stat');
+    if (totalStat) totalStat.textContent = catches.length || '0';
     
     // This week's catches
     const oneWeekAgo = new Date();
@@ -70,15 +85,18 @@ function updateActivityStats(catches) {
         const catchTime = c.timestamp?.toDate() || new Date();
         return catchTime >= oneWeekAgo;
     });
-    document.getElementById('week-catches-stat').textContent = weekCatches.length;
+    const weekStat = document.getElementById('week-catches-stat');
+    if (weekStat) weekStat.textContent = weekCatches.length || '0';
     
     // Active anglers (unique names)
     const uniqueAnglers = new Set(catches.map(c => c.catcherName).filter(Boolean));
-    document.getElementById('active-anglers-stat').textContent = uniqueAnglers.size;
+    const anglersStat = document.getElementById('active-anglers-stat');
+    if (anglersStat) anglersStat.textContent = uniqueAnglers.size || '0';
     
     // Hot spots (unique locations)
     const uniqueSpots = new Set(catches.map(c => c.locationName).filter(Boolean));
-    document.getElementById('hot-spots-stat').textContent = uniqueSpots.size;
+    const spotsStat = document.getElementById('hot-spots-stat');
+    if (spotsStat) spotsStat.textContent = uniqueSpots.size || '0';
 }
 
 function renderLatestCatches(catches) {
@@ -96,8 +114,8 @@ function renderLatestCatches(catches) {
         
         return `
             <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 20px; align-items: center;">
-                ${catchData.photoURL ? 
-                    `<img src="${catchData.photoURL}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" alt="${catchData.species}">` : 
+                ${catchData.photo ? 
+                    `<img src="${catchData.photo}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" alt="${catchData.species}">` : 
                     `<div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--navy-blue) 0%, #2a4060 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 48px; flex-shrink: 0;">🐟</div>`
                 }
                 <div style="flex: 1; min-width: 0;">
@@ -136,8 +154,8 @@ function renderBiggestCatch(catches) {
     const locationDisplay = isSecret ? `${biggest.locationName || 'Unknown'} 🔒` : `${biggest.locationName || 'Unknown'} 📍`;
     
     content.innerHTML = `
-        ${biggest.photoURL ? 
-            `<img src="${biggest.photoURL}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 12px; border: 4px solid white;" alt="${biggest.species}">` : 
+        ${biggest.photo ? 
+            `<img src="${biggest.photo}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 12px; border: 4px solid white;" alt="${biggest.species}">` : 
             `<div style="width: 150px; height: 150px; background: rgba(255,255,255,0.2); border-radius: 12px; border: 4px solid white; display: flex; align-items: center; justify-content: center; font-size: 64px;">🏆</div>`
         }
         <div style="flex: 1;">
