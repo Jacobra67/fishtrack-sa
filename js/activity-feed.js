@@ -1,0 +1,198 @@
+// FishTrack Africa - Activity Feed & Latest Catches
+// Shows recent catches, stats, and hot spots on homepage
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check if we're on the homepage
+    if (!document.getElementById('latest-catches-section')) return;
+    
+    try {
+        // Wait for Firebase to be ready
+        await waitForFirebase();
+        
+        // Load all public catches (not private)
+        const snapshot = await db.collection('catches')
+            .where('privacy', 'in', ['public', 'secret'])
+            .orderBy('timestamp', 'desc')
+            .limit(50) // Get last 50 for stats
+            .get();
+        
+        const catches = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        console.log('Loaded', catches.length, 'catches for activity feed');
+        
+        // Calculate stats
+        updateActivityStats(catches);
+        
+        // Show latest 10 catches
+        renderLatestCatches(catches.slice(0, 10));
+        
+        // Show biggest catch of the week
+        renderBiggestCatch(catches);
+        
+        // Show hot spots
+        renderHotSpots(catches);
+        
+    } catch (error) {
+        console.error('Error loading activity feed:', error);
+        document.getElementById('latest-catches-feed').innerHTML = 
+            '<div style="text-align: center; padding: 40px; color: #e74c3c;">Unable to load catches. Please try again later.</div>';
+    }
+});
+
+function waitForFirebase() {
+    return new Promise((resolve) => {
+        const check = setInterval(() => {
+            if (typeof db !== 'undefined') {
+                clearInterval(check);
+                resolve();
+            }
+        }, 100);
+        
+        // Timeout after 10 seconds
+        setTimeout(() => {
+            clearInterval(check);
+            resolve();
+        }, 10000);
+    });
+}
+
+function updateActivityStats(catches) {
+    // Total catches
+    document.getElementById('total-catches-stat').textContent = catches.length;
+    
+    // This week's catches
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const weekCatches = catches.filter(c => {
+        const catchTime = c.timestamp?.toDate() || new Date();
+        return catchTime >= oneWeekAgo;
+    });
+    document.getElementById('week-catches-stat').textContent = weekCatches.length;
+    
+    // Active anglers (unique names)
+    const uniqueAnglers = new Set(catches.map(c => c.catcherName).filter(Boolean));
+    document.getElementById('active-anglers-stat').textContent = uniqueAnglers.size;
+    
+    // Hot spots (unique locations)
+    const uniqueSpots = new Set(catches.map(c => c.locationName).filter(Boolean));
+    document.getElementById('hot-spots-stat').textContent = uniqueSpots.size;
+}
+
+function renderLatestCatches(catches) {
+    const feed = document.getElementById('latest-catches-feed');
+    
+    if (catches.length === 0) {
+        feed.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No catches yet. Be the first to log a catch!</div>';
+        return;
+    }
+    
+    feed.innerHTML = catches.map(catchData => {
+        const timeAgo = getTimeAgo(catchData.timestamp?.toDate() || new Date());
+        const isSecret = catchData.privacy === 'secret';
+        const locationDisplay = isSecret ? `${catchData.locationName || 'Unknown'} 🔒` : `${catchData.locationName || 'Unknown'} 📍`;
+        
+        return `
+            <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 20px; align-items: center;">
+                ${catchData.photoURL ? 
+                    `<img src="${catchData.photoURL}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" alt="${catchData.species}">` : 
+                    `<div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--navy-blue) 0%, #2a4060 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 48px; flex-shrink: 0;">🐟</div>`
+                }
+                <div style="flex: 1; min-width: 0;">
+                    <h4 style="font-size: 18px; color: var(--navy-blue); margin: 0 0 8px 0; font-weight: bold;">${catchData.species} - ${catchData.weight}kg</h4>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 4px;">${locationDisplay}</div>
+                    <div style="font-size: 13px; color: #999;">
+                        Caught by <strong>${catchData.catcherName || 'Anonymous'}</strong> • ${timeAgo}
+                    </div>
+                    ${isSecret ? '<div style="display: inline-block; background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-top: 8px;">SECRET SPOT</div>' : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderBiggestCatch(catches) {
+    if (catches.length === 0) return;
+    
+    // Get catches from this week
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const weekCatches = catches.filter(c => {
+        const catchTime = c.timestamp?.toDate() || new Date();
+        return catchTime >= oneWeekAgo;
+    });
+    
+    if (weekCatches.length === 0) return;
+    
+    // Find biggest by weight
+    const biggest = weekCatches.reduce((max, c) => c.weight > max.weight ? c : max, weekCatches[0]);
+    
+    const section = document.getElementById('biggest-catch-section');
+    const content = document.getElementById('biggest-catch-content');
+    
+    const isSecret = biggest.privacy === 'secret';
+    const locationDisplay = isSecret ? `${biggest.locationName || 'Unknown'} 🔒` : `${biggest.locationName || 'Unknown'} 📍`;
+    
+    content.innerHTML = `
+        ${biggest.photoURL ? 
+            `<img src="${biggest.photoURL}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 12px; border: 4px solid white;" alt="${biggest.species}">` : 
+            `<div style="width: 150px; height: 150px; background: rgba(255,255,255,0.2); border-radius: 12px; border: 4px solid white; display: flex; align-items: center; justify-content: center; font-size: 64px;">🏆</div>`
+        }
+        <div style="flex: 1;">
+            <h4 style="font-size: 28px; margin: 0 0 8px 0;">${biggest.species} - ${biggest.weight}kg</h4>
+            <div style="font-size: 16px; opacity: 0.95; margin-bottom: 4px;">${locationDisplay}</div>
+            <div style="font-size: 14px; opacity: 0.9;">Caught by <strong>${biggest.catcherName || 'Anonymous'}</strong></div>
+        </div>
+    `;
+    
+    section.style.display = 'block';
+}
+
+function renderHotSpots(catches) {
+    const list = document.getElementById('hot-spots-list');
+    
+    if (catches.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No catches yet</div>';
+        return;
+    }
+    
+    // Count catches per location
+    const spotCounts = {};
+    catches.forEach(c => {
+        const location = c.locationName || 'Unknown';
+        spotCounts[location] = (spotCounts[location] || 0) + 1;
+    });
+    
+    // Sort by count
+    const sorted = Object.entries(spotCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5); // Top 5
+    
+    list.innerHTML = sorted.map(([location, count], index) => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee;">
+            <div>
+                <div style="font-size: 16px; color: var(--navy-blue); font-weight: bold;">${index + 1}. ${location}</div>
+            </div>
+            <div style="background: ${index === 0 ? '#e74c3c' : '#f39c12'}; color: white; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: bold;">
+                ${count} ${count === 1 ? 'catch' : 'catches'}
+            </div>
+        </div>
+    `).join('');
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
+}

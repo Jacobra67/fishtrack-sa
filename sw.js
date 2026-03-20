@@ -1,7 +1,7 @@
 // FishTrack Africa - Service Worker
-// Version 2.6.0
+// Version 2.7.0
 
-const CACHE_NAME = 'fishtrack-v2.6';
+const CACHE_NAME = 'fishtrack-v2.7';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -18,6 +18,7 @@ const urlsToCache = [
   '/js/tide-wind.js',
   '/js/pwa-install.js',
   '/js/fish-weight-calculator.js',
+  '/js/activity-feed.js',
   '/assets/icon-192.png',
   '/assets/icon-512.png',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
