@@ -273,6 +273,67 @@
     margin-top: 4px;
 }
 
+/* Cluster Marker Styles */
+.marker-cluster {
+    background-clip: padding-box;
+}
+
+.marker-cluster div {
+    width: 36px;
+    height: 36px;
+    margin-left: 2px;
+    margin-top: 2px;
+    text-align: center;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.marker-cluster-small {
+    background-color: rgba(46, 204, 113, 0.6);
+}
+
+.marker-cluster-small div {
+    background-color: rgba(46, 204, 113, 0.9);
+    color: white;
+}
+
+.marker-cluster-medium {
+    background-color: rgba(52, 152, 219, 0.6);
+}
+
+.marker-cluster-medium div {
+    background-color: rgba(52, 152, 219, 0.9);
+    color: white;
+}
+
+.marker-cluster-large {
+    background-color: rgba(231, 76, 60, 0.6);
+}
+
+.marker-cluster-large div {
+    background-color: rgba(231, 76, 60, 0.9);
+    color: white;
+}
+
+/* Secret Spot Circle Animation */
+.secret-spot-circle {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
 /* Mobile Adjustments */
 @media (max-width: 600px) {
     .map-legend {

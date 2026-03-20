@@ -36,10 +36,34 @@ function initMap() {
         maxZoom: 18
     }).addTo(map);
     
-    // Create marker layer group
-    markersLayer = L.layerGroup().addTo(map);
+    // Create marker cluster group
+    markersLayer = L.markerClusterGroup({
+        maxClusterRadius: 60, // Cluster markers within 60px
+        spiderfyOnMaxZoom: true, // Spread out markers when fully zoomed
+        showCoverageOnHover: false, // Don't show cluster bounds on hover
+        zoomToBoundsOnClick: true, // Zoom in when clicking cluster
+        iconCreateFunction: function(cluster) {
+            const count = cluster.getChildCount();
+            let size = 'small';
+            let clusterClass = 'marker-cluster-small';
+            
+            if (count > 20) {
+                size = 'large';
+                clusterClass = 'marker-cluster-large';
+            } else if (count > 10) {
+                size = 'medium';
+                clusterClass = 'marker-cluster-medium';
+            }
+            
+            return L.divIcon({
+                html: `<div><span>${count}</span></div>`,
+                className: 'marker-cluster ' + clusterClass,
+                iconSize: L.point(40, 40)
+            });
+        }
+    }).addTo(map);
     
-    console.log('Map initialized');
+    console.log('Map initialized with clustering');
 }
 
 // Get marker color by species
