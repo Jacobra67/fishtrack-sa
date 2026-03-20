@@ -66,17 +66,14 @@ body {
 .logo-image {
     width: 60px;
     height: 60px;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center;
-    border-radius: 50%;
-    border: 3px solid var(--cream);
+    /* No border - logo has natural fade effect */
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
-    /* Remove white background */
-    background: transparent;
-    filter: brightness(0.95) contrast(1.1);
-    mix-blend-mode: darken;
+    /* Let the grunge fade blend naturally */
+    opacity: 0.95;
 }
 
 .logo-text h1 {
@@ -147,12 +144,10 @@ body {
 .hero-badge img {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) brightness(0.95);
-    /* Remove white background effect */
-    mix-blend-mode: multiply;
-    background: transparent;
-    /* Clip to circular shape to hide white corners */
-    border-radius: 50%;
+    /* Subtle shadow to enhance depth */
+    filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+    /* Let the natural grunge fade show through */
+    opacity: 0.98;
 }
 
 .headline {
