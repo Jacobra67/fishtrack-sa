@@ -73,6 +73,10 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    /* Remove white background */
+    background: transparent;
+    filter: brightness(0.95) contrast(1.1);
+    mix-blend-mode: darken;
 }
 
 .logo-text h1 {
@@ -143,10 +147,12 @@ body {
 .hero-badge img {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) brightness(0.95);
     /* Remove white background effect */
     mix-blend-mode: multiply;
     background: transparent;
+    /* Clip to circular shape to hide white corners */
+    border-radius: 50%;
 }
 
 .headline {
