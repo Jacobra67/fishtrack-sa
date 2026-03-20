@@ -1,7 +1,7 @@
 // FishTrack Africa - Service Worker
-// Version 2.4.0
+// Version 2.5.0
 
-const CACHE_NAME = 'fishtrack-v2.4';
+const CACHE_NAME = 'fishtrack-v2.5';
 const urlsToCache = [
   '/',
   '/index.html',

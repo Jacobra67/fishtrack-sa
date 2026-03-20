@@ -11,6 +11,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const locationTypeSelect = document.getElementById('locationType');
     const baitSelect = document.getElementById('bait');
     
+    // Set today's date as default for catch date
+    const catchDateInput = document.getElementById('catchDate');
+    if (catchDateInput) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        catchDateInput.value = `${year}-${month}-${day}`;
+    }
+    
     waterTypeSelect.addEventListener('change', function() {
         const waterType = this.value;
         
@@ -605,9 +615,13 @@ catchForm.addEventListener('submit', async (e) => {
     
     try {
         // Get form data
+        const catchDateValue = document.getElementById('catchDate').value;
+        const catchDate = catchDateValue ? new Date(catchDateValue + 'T12:00:00') : new Date(); // Use noon to avoid timezone issues
+        
         const formData = {
             waterType: document.getElementById('waterType').value,
             catcherName: document.getElementById('catcherName').value,
+            catchDate: catchDate,
             country: document.getElementById('country').value,
             species: document.getElementById('species').value,
             weight: parseFloat(document.getElementById('weight').value),
