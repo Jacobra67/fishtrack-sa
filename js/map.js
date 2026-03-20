@@ -154,6 +154,20 @@ function createPopupContent(catchData) {
     if (catchData.bait) {
         html += `<div><strong>Bait/Lure:</strong> ${catchData.bait}</div>`;
     }
+    // Conditions data (if available)
+    if (catchData.waterTemp || catchData.tide || catchData.wind) {
+        html += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">';
+        if (catchData.waterTemp) {
+            html += `<div><strong>Water Temp:</strong> ${catchData.waterTemp}°C</div>`;
+        }
+        if (catchData.tide) {
+            html += `<div><strong>Tide:</strong> ${catchData.tide}</div>`;
+        }
+        if (catchData.wind) {
+            html += `<div><strong>Wind:</strong> ${catchData.wind}</div>`;
+        }
+        html += '</div>';
+    }
     html += `<div><strong>When:</strong> ${formatDate(catchData.timestamp)}</div>`;
     html += '</div>';
     

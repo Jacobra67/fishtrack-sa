@@ -653,6 +653,10 @@ catchForm.addEventListener('submit', async (e) => {
             locationType: document.getElementById('locationType').value,
             locationName: document.getElementById('locationName').value,
             bait: document.getElementById('bait').value || null,
+            // Conditions data (critical for pattern analysis)
+            waterTemp: document.getElementById('waterTemp').value ? parseFloat(document.getElementById('waterTemp').value) : null,
+            tide: document.getElementById('tide').value || null,
+            wind: document.getElementById('wind').value || null,
             released: document.getElementById('released').checked,
             privacy: privacySetting,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),

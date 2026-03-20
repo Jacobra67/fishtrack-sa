@@ -23,11 +23,12 @@ const FISH_FORMULAS = {
   'Baardman': { a: 0.0128, b: 3.11 },
   'Santer': { a: 0.0155, b: 3.06 },
   
-  // Sharks (larger coefficient for heavy-bodied fish)
-  'Bronze Whaler': { a: 0.0085, b: 3.18 },
-  'Spotted Gully': { a: 0.0078, b: 3.20 },
-  'Copper Shark': { a: 0.0082, b: 3.19 },
-  'Smooth-Hound': { a: 0.0088, b: 3.17 },
+  // Sharks (revised formulas based on SA research data)
+  // Spotted Gully: 167cm = ~25kg (verified from literature)
+  'Bronze Whaler': { a: 0.0048, b: 3.02 },
+  'Spotted Gully': { a: 0.0054, b: 3.00 },
+  'Copper Shark': { a: 0.0050, b: 3.01 },
+  'Smooth-Hound': { a: 0.0055, b: 2.98 },
   
   // Gamefish (streamlined, lighter for length)
   'Elf': { a: 0.0065, b: 3.25 },

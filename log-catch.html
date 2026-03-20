@@ -291,6 +291,37 @@
                         </select>
                     </div>
 
+                    <!-- Fishing Conditions (CRITICAL DATA) -->
+                    <div class="form-group" style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #e8f4f8;">
+                        <h3 style="font-size: 16px; color: var(--ocean-blue); margin-bottom: 16px;">🌊 Conditions (Recommended - helps find patterns!)</h3>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="waterTemp">Water Temp (°C)</label>
+                            <input type="number" id="waterTemp" step="0.5" min="0" max="40" placeholder="18.5">
+                            <small class="form-hint">Surface water temperature</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="tide">Tide</label>
+                            <select id="tide">
+                                <option value="">Select tide...</option>
+                                <option value="High">🌊 High Tide</option>
+                                <option value="Low">⬇️ Low Tide</option>
+                                <option value="Rising">📈 Rising (Incoming)</option>
+                                <option value="Falling">📉 Falling (Outgoing)</option>
+                                <option value="N/A">N/A (Freshwater)</option>
+                            </select>
+                            <small class="form-hint">Tide state when caught</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="wind">Wind Conditions</label>
+                        <input type="text" id="wind" placeholder="e.g., Light SE / Strong NW / Calm" maxlength="50">
+                        <small class="form-hint">Wind speed + direction (helps with patterns)</small>
+                    </div>
+
                     <div class="form-group checkbox-group">
                         <label class="checkbox-label">
                             <input type="checkbox" id="released">
