@@ -138,8 +138,9 @@ body {
 }
 
 .hero-badge {
-    max-width: 550px;
-    margin: 0 auto 50px;
+    width: 95%;
+    max-width: 2400px;
+    margin: 0 auto 60px;
     position: relative;
     z-index: 1;
 }
