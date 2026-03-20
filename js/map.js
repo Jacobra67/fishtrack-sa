@@ -100,6 +100,11 @@ function createPopupContent(catchData) {
     // Species
     html += `<h3>${catchData.species}</h3>`;
     
+    // Secret Spot Badge
+    if (catchData.privacy === 'secret') {
+        html += `<div style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white; padding: 6px 12px; border-radius: 8px; margin-bottom: 10px; text-align: center; font-size: 12px; font-weight: bold;">🔒 SECRET SPOT - Exact location hidden (~2km area)</div>`;
+    }
+    
     // Catcher name (if available)
     if (catchData.catcherName) {
         html += `<div class="catcher-name">🎣 Caught by <strong>${catchData.catcherName}</strong></div>`;
@@ -151,13 +156,33 @@ function displayCatches(catches) {
                 if (currentFilter === 'freshwater' && catchData.waterType !== 'Freshwater') return;
             }
             
-            const marker = L.marker(
-                [catchData.location.lat, catchData.location.lng],
-                { icon: createMarkerIcon(catchData.species, catchData.waterType) }
-            );
-            
-            marker.bindPopup(createPopupContent(catchData));
-            marker.addTo(markersLayer);
+            // SECRET SPOT MODE: Show circle instead of exact pin
+            if (catchData.privacy === 'secret') {
+                const circle = L.circle(
+                    [catchData.location.lat, catchData.location.lng],
+                    {
+                        radius: 2000, // 2km radius
+                        color: '#f39c12',
+                        fillColor: '#f39c12',
+                        fillOpacity: 0.15,
+                        weight: 3,
+                        dashArray: '10, 5',
+                        className: 'secret-spot-circle'
+                    }
+                );
+                
+                circle.bindPopup(createPopupContent(catchData));
+                circle.addTo(markersLayer);
+            } else {
+                // Normal marker for public/private catches
+                const marker = L.marker(
+                    [catchData.location.lat, catchData.location.lng],
+                    { icon: createMarkerIcon(catchData.species, catchData.waterType) }
+                );
+                
+                marker.bindPopup(createPopupContent(catchData));
+                marker.addTo(markersLayer);
+            }
         }
     });
     

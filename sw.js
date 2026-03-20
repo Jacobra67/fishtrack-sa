@@ -1,7 +1,7 @@
 // FishTrack Africa - Service Worker
-// Version 2.5.0
+// Version 2.6.0
 
-const CACHE_NAME = 'fishtrack-v2.5';
+const CACHE_NAME = 'fishtrack-v2.6';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -11,6 +11,7 @@ const urlsToCache = [
   '/css/tide-wind.css',
   '/css/weight-calculator.css',
   '/css/location-search.css',
+  '/css/secret-spot.css',
   '/js/firebase-config.js',
   '/js/catch-logger.js',
   '/js/map.js',

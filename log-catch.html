@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="css/logger.css">
     <link rel="stylesheet" href="css/weight-calculator.css">
     <link rel="stylesheet" href="css/location-search.css">
+    <link rel="stylesheet" href="css/secret-spot.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
@@ -303,24 +304,34 @@
 
                 <!-- Step 3: Privacy -->
                 <section class="form-section">
-                    <h2>🔒 Step 3: Privacy</h2>
+                    <h2>🔒 Step 3: Privacy & Spot Protection</h2>
                     <div class="privacy-options">
                         <label class="radio-card">
                             <input type="radio" name="privacy" value="public" checked>
                             <div class="radio-content">
-                                <strong>Public</strong>
-                                <small>Everyone can see this catch on the map</small>
+                                <strong>📍 Public - Exact Location</strong>
+                                <small>Show exact GPS pin on map (help others find fish)</small>
                             </div>
+                        </label>
+                        <label class="radio-card radio-card-secret">
+                            <input type="radio" name="privacy" value="secret">
+                            <div class="radio-content">
+                                <strong>🔒 Public - Secret Spot</strong>
+                                <small>Share catch publicly, hide exact GPS (~2km fuzzy area)</small>
+                            </div>
+                            <div class="secret-badge">Perfect for tournaments!</div>
                         </label>
                         <label class="radio-card">
                             <input type="radio" name="privacy" value="private">
                             <div class="radio-content">
-                                <strong>Private</strong>
-                                <small>Only you can see (personal log)</small>
+                                <strong>👤 Private</strong>
+                                <small>Only you can see (personal logbook)</small>
                             </div>
                         </label>
                     </div>
-                    <small class="form-hint">Friends-only sharing coming soon!</small>
+                    <div class="privacy-explainer">
+                        <p><strong>🔒 Secret Spot Mode:</strong> Your catch shows on the map as a large circle (not a pin). Others know you caught there, but your exact honey hole stays secret. Perfect for competitive anglers!</p>
+                    </div>
                 </section>
 
                 <!-- Submit -->

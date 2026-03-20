@@ -346,6 +346,20 @@ let pinMap = null;
 let pinMarker = null;
 let pinnedLocation = null;
 
+// Secret Spot: Fuzz location to protect exact GPS
+function fuzzLocation(lat, lng) {
+    // Add random offset +/- 2km (roughly 0.018 degrees)
+    const fuzzFactor = 0.018; // ~2km
+    const randomLat = (Math.random() - 0.5) * 2 * fuzzFactor;
+    const randomLng = (Math.random() - 0.5) * 2 * fuzzFactor;
+    
+    return {
+        lat: lat + randomLat,
+        lng: lng + randomLng,
+        fuzzy: true // Flag to indicate this is a fuzzy location
+    };
+}
+
 // Initialize pin-drop map
 function initPinMap() {
     // Create map centered on South Africa
@@ -617,6 +631,16 @@ catchForm.addEventListener('submit', async (e) => {
         // Get form data
         const catchDateValue = document.getElementById('catchDate').value;
         const catchDate = catchDateValue ? new Date(catchDateValue + 'T12:00:00') : new Date(); // Use noon to avoid timezone issues
+        const privacySetting = document.querySelector('input[name="privacy"]:checked').value;
+        
+        // Handle location based on privacy setting
+        const realLocation = currentLocation || { lat: -34.0, lng: 18.5 };
+        let displayLocation = realLocation;
+        
+        // Secret Spot Mode: Fuzz the location for public display
+        if (privacySetting === 'secret') {
+            displayLocation = fuzzLocation(realLocation.lat, realLocation.lng);
+        }
         
         const formData = {
             waterType: document.getElementById('waterType').value,
@@ -630,9 +654,10 @@ catchForm.addEventListener('submit', async (e) => {
             locationName: document.getElementById('locationName').value,
             bait: document.getElementById('bait').value || null,
             released: document.getElementById('released').checked,
-            privacy: document.querySelector('input[name="privacy"]:checked').value,
+            privacy: privacySetting,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            location: currentLocation || { lat: -34.0, lng: 18.5 }, // Default to Cape Town if no GPS
+            location: displayLocation, // Fuzzed if secret, exact if public/private
+            locationExact: privacySetting === 'secret' ? realLocation : null, // Store exact location for secret spots (only owner can see)
             verified: false
         };
         
