@@ -114,11 +114,9 @@ body {
 
 /* Hero Section - Vintage Badge Style */
 .hero {
-    background: 
-        linear-gradient(135deg, rgba(26, 47, 74, 0.65) 0%, rgba(15, 31, 48, 0.7) 100%),
-        url('../assets/ocean-waves.png') center/cover no-repeat;
+    background: url('../assets/reference-mockup.png') center/cover no-repeat;
     color: var(--cream);
-    padding: 80px 20px;
+    padding: 100px 20px;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -137,8 +135,8 @@ body {
 }
 
 .hero-badge {
-    max-width: 450px;
-    margin: 0 auto 40px;
+    max-width: 550px;
+    margin: 0 auto 50px;
     position: relative;
     z-index: 1;
 }
@@ -146,9 +144,8 @@ body {
 .hero-badge img {
     width: 100%;
     height: auto;
-    /* Enhanced shadow for logo with transparency */
-    filter: drop-shadow(0 8px 32px rgba(0,0,0,0.6));
-    /* Full opacity for crisp transparent logo */
+    /* Clean shadow without multiply since it's a transparent PNG */
+    filter: drop-shadow(0 15px 45px rgba(0,0,0,0.8));
     opacity: 1;
 }
 
