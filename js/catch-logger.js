@@ -699,15 +699,30 @@ if (document.readyState === 'loading') {
     initPinMap();
 }
 
-// Form submission
-const catchForm = document.getElementById('catchForm');
-const submitBtn = document.getElementById('submitBtn');
-const submitText = document.getElementById('submitText');
-const submitSpinner = document.getElementById('submitSpinner');
-const successMessage = document.getElementById('successMessage');
+// Initialize form submission handler when DOM is ready
+function initFormSubmission() {
+    const catchForm = document.getElementById('catchForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const submitSpinner = document.getElementById('submitSpinner');
+    const successMessage = document.getElementById('successMessage');
 
-catchForm.addEventListener('submit', async (e) => {
+    // Debug: Verify form exists
+    console.log('Catch form element:', catchForm ? 'FOUND' : 'NOT FOUND');
+    console.log('Firebase initialized:', typeof firebase !== 'undefined');
+    console.log('Firestore db:', typeof db !== 'undefined');
+
+    if (!catchForm) {
+        console.error('ERROR: catchForm element not found!');
+        return;
+    }
+    
+    console.log('✓ Form element found, attaching submit handler...');
+
+    catchForm.addEventListener('submit', async (e) => {
+    console.log('FORM SUBMIT EVENT TRIGGERED');
     e.preventDefault();
+    console.log('Default prevented, processing form...');
     
     // Disable submit button
     submitBtn.disabled = true;
@@ -793,20 +808,24 @@ catchForm.addEventListener('submit', async (e) => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
     } catch (error) {
-        console.error('Error logging catch:', error);
-        console.error('Error details:', error.message, error.code);
+        console.error('❌ ERROR LOGGING CATCH:', error);
+        console.error('Error message:', error.message);
+        console.error('Error code:', error.code);
+        console.error('Error stack:', error.stack);
         
         // Show more specific error message
         let errorMsg = 'Error saving catch. ';
         if (error.code === 'permission-denied') {
             errorMsg += 'Database permission denied. Please contact support.';
+        } else if (error.code === 'unavailable') {
+            errorMsg += 'Firebase is offline. Check your internet connection.';
         } else if (error.message) {
             errorMsg += error.message;
         } else {
             errorMsg += 'Please try again.';
         }
         
-        alert(errorMsg);
+        alert(errorMsg + '\n\nError: ' + (error.message || 'Unknown error'));
         
         // Re-enable submit button
         submitBtn.disabled = false;
@@ -814,6 +833,51 @@ catchForm.addEventListener('submit', async (e) => {
         submitSpinner.style.display = 'none';
     }
 });
+
+    // Log another catch button
+    const logAnotherBtn = document.getElementById('logAnother');
+    if (logAnotherBtn) {
+        logAnotherBtn.addEventListener('click', () => {
+            // Reset form
+            catchForm.reset();
+            photoFile = null;
+            photoDataURL = null;
+            photoLabel.style.display = 'block';
+            photoPreview.style.display = 'none';
+            
+            // Show form, hide success message
+            successMessage.style.display = 'none';
+            catchForm.style.display = 'block';
+            
+            // Re-enable submit
+            submitBtn.disabled = false;
+            submitText.style.display = 'inline-block';
+            submitSpinner.style.display = 'none';
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+}
+
+// Call form init when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFormSubmission);
+} else {
+    // DOM already loaded
+    initFormSubmission();
+}
+
+// Debug: Test Firebase connection on page load
+console.log('Testing Firebase connection...');
+db.collection('catches').limit(1).get()
+    .then((snapshot) => {
+        console.log('✓ Firebase connection OK. Catches count:', snapshot.size);
+    })
+    .catch((err) => {
+        console.error('✗ Firebase connection ERROR:', err);
+        alert('WARNING: Cannot connect to Firebase. Check console for details.');
+    });
 
 // Log another catch button
 document.getElementById('logAnother')?.addEventListener('click', () => {
