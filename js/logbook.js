@@ -51,16 +51,26 @@ async function loadUserCatches() {
             .orderBy('timestamp', 'desc')
             .get();
         
-        // Filter to only catches from this device
+        // Check current user name from localStorage
+        const currentUserName = localStorage.getItem('fishtrack_user_name');
+        
+        // Filter to only catches from this device OR matching name
         allUserCatches = snapshot.docs
             .map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }))
             .filter(catchData => {
-                // Check if this catch belongs to this user
-                return catchData.deviceId === deviceId || 
-                       isOwnedCatch(catchData.id);
+                // 1. Check device ID
+                const isMyDevice = catchData.deviceId === deviceId;
+                
+                // 2. Check local ownership list
+                const isOwned = isOwnedCatch(catchData.id);
+                
+                // 3. Check matching name (as fallback for different devices/browsers)
+                const isMyName = currentUserName && catchData.catcherName === currentUserName;
+                
+                return isMyDevice || isOwned || isMyName;
             });
         
         console.log(`✅ Loaded ${allUserCatches.length} of your catches`);
@@ -80,8 +90,12 @@ function getUserDeviceId() {
     // Get or create device ID
     let deviceId = localStorage.getItem('fishtrack_device_id');
     if (!deviceId) {
+        // Try to get existing ID from production domain if possible, or create new
         deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('fishtrack_device_id', deviceId);
+        
+        // FOR TESTING: If logbook is empty, offer to link old data
+        console.log('🆕 New device ID created for staging');
     }
     return deviceId;
 }
