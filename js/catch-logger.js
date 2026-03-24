@@ -747,11 +747,12 @@ function initFormSubmission() {
     try {
         // Get form data
         const catchDateValue = document.getElementById('catchDate').value;
-        const catchDate = catchDateValue ? new Date(catchDateValue + 'T12:00:00') : new Date(); // Use noon to avoid timezone issues
+        // Use noon to avoid timezone shifting, but ensure it's a valid date string
+        const catchDate = catchDateValue ? new Date(catchDateValue + 'T12:00:00') : new Date();
         const privacySetting = document.querySelector('input[name="privacy"]:checked').value;
         
         // Handle location based on privacy setting
-        const realLocation = currentLocation || { lat: -34.0, lng: 18.5 };
+        const realLocation = currentLocation || pinnedLocation || { lat: -34.0, lng: 18.5 };
         let displayLocation = realLocation;
         
         // Secret Spot Mode: Fuzz the location for public display
@@ -765,20 +766,22 @@ function initFormSubmission() {
             catchDate: catchDate,
             country: document.getElementById('country').value,
             species: document.getElementById('species').value,
-            weight: parseFloat(document.getElementById('weight').value),
+            weight: parseFloat(document.getElementById('weight').value) || 0,
             length: document.getElementById('length').value ? parseInt(document.getElementById('length').value) : null,
             locationType: document.getElementById('locationType').value,
             locationName: document.getElementById('locationName').value,
             bait: document.getElementById('bait').value || null,
-            // Conditions data (critical for pattern analysis)
+            // Conditions data
             waterTemp: document.getElementById('waterTemp').value ? parseFloat(document.getElementById('waterTemp').value) : null,
             tide: document.getElementById('tide').value || null,
             wind: document.getElementById('wind').value || null,
             released: document.getElementById('released').checked,
             privacy: privacySetting,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            location: displayLocation, // Fuzzed if secret, exact if public/private
-            locationExact: privacySetting === 'secret' ? realLocation : null, // Store exact location for secret spots (only owner can see)
+            // We only update the server timestamp if it's a NEW catch
+            timestamp: isEditMode ? (window.existingTimestamp || firebase.firestore.FieldValue.serverTimestamp()) : firebase.firestore.FieldValue.serverTimestamp(),
+            location: displayLocation, 
+            locationExact: privacySetting === 'secret' ? realLocation : null,
+            deviceId: localStorage.getItem('fishtrack_device_id'), // Ensure device ID is saved
             verified: false
         };
         
@@ -919,6 +922,7 @@ async function checkForEditMode() {
             }
             
             const data = doc.data();
+            window.existingTimestamp = data.timestamp; // Store original timestamp
             populateFormForEdit(data);
             
         } catch (error) {
