@@ -716,18 +716,16 @@ function initFormSubmission() {
 
 // CRITICAL: Ensure edit mode runs AFTER Firebase and all scripts are loaded
 async function startApp() {
-    console.log('🚀 Starting Catch Logger App...');
+    console.log('🚀 STAGE 1: Starting App...');
     
-    // 1. Determine mode FIRST
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
     if (editId) {
-        console.log('📝 Edit ID detected in URL:', editId);
+        console.log('📝 STAGE 2: Edit ID detected:', editId);
         isEditMode = true;
         editCatchId = editId;
     }
 
-    // 2. Wait for db to be available
     let attempts = 0;
     while (typeof db === 'undefined' && attempts < 50) {
         await new Promise(r => setTimeout(r, 100));
@@ -735,67 +733,51 @@ async function startApp() {
     }
     
     if (typeof db === 'undefined') {
-        console.error('❌ Firebase DB not found!');
+        console.error('❌ STAGE 3: Firebase Failed');
         return;
     }
-    console.log('✅ Firebase ready');
 
-    // 3. Initialize UI Components
+    console.log('✅ STAGE 4: Firebase Ready');
     initPinMap();
     initFormLogic(); 
     initFormSubmission();
     initEditor();
     
-    // 4. Populate data if in edit mode
     if (isEditMode) {
-        console.log('🔄 Loading data for Edit Mode...');
+        console.log('🔄 STAGE 5: Triggering Data Load...');
         await checkForEditMode();
     }
 }
 
-// Replace the old onload logic
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startApp);
-} else {
-    startApp();
-}
-
-// Remove the old initializers at the bottom of the file
-// (They are now inside startApp)
-
-// ===== EDIT MODE FUNCTIONALITY =====
-
-let isEditMode = false;
-let editCatchId = null;
+// ... existing code ...
 
 async function checkForEditMode() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get('edit');
-    
-    if (editId) {
-        console.log('📝 Entering EDIT MODE for catch:', editId);
-        isEditMode = true;
-        editCatchId = editId;
+    console.log('📖 STAGE 6: Entering checkForEditMode');
+    if (editCatchId) {
+        // Change UI immediately
+        const title = document.querySelector('.page-title h2');
+        if (title) title.innerHTML = '✏️ Edit Your Catch';
         
-        // Change UI to reflect edit mode
-        document.querySelector('.page-title h2').innerHTML = '✏️ Edit Your Catch';
-        document.getElementById('submitText').textContent = 'Save Changes ✓';
+        const btn = document.getElementById('submitText');
+        if (btn) btn.textContent = 'Save Changes ✓';
         
         try {
-            // Load catch data
-            const doc = await db.collection('catches').doc(editId).get();
+            console.log('📡 STAGE 7: Fetching from DB...');
+            const doc = await db.collection('catches').doc(editCatchId).get();
             if (!doc.exists) {
+                console.error('❌ STAGE 8: Document not found');
                 alert('Catch not found!');
-                window.location.href = 'my-logbook.html';
                 return;
             }
             
             const data = doc.data();
-            window.existingTimestamp = data.timestamp; // Store original timestamp
+            console.log('✅ STAGE 9: Data received, populating form...');
+            window.existingTimestamp = data.timestamp; 
             populateFormForEdit(data);
+            console.log('🏁 STAGE 10: Population Complete');
             
         } catch (error) {
-            console.error('Error loading catch for edit:', error);
+            console.error('❌ STAGE 11: DB Error:', error);
             alert('Error loading catch data.');
         }
     }
