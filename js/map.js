@@ -271,7 +271,8 @@ function filterCatches() {
     const speciesFilter = document.getElementById('speciesFilter').value;
     const timeFilter = document.getElementById('timeFilter').value;
     
-    let filtered = allCatches.filter(c => c.privacy === 'public'); // Only show public catches
+    // Show PUBLIC and SECRET catches (secret catches show as circles)
+    let filtered = allCatches.filter(c => c.privacy === 'public' || c.privacy === 'secret'); 
     
     // Filter by species
     if (speciesFilter !== 'all') {
