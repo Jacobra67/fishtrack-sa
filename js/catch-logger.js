@@ -144,6 +144,7 @@ const photoLabel = document.getElementById('photoLabel');
 const photoPreview = document.getElementById('photoPreview');
 const previewImage = document.getElementById('previewImage');
 const changePhotoBtn = document.getElementById('changePhoto');
+const editPhotoBtn = document.getElementById('editPhoto');
 
 photoInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -157,11 +158,25 @@ photoInput.addEventListener('change', (e) => {
             photoLabel.style.display = 'none';
             photoPreview.style.display = 'block';
             
+            // NEW: Automatically open editor if it's a new photo
+            if (window.photoEditor) {
+                setTimeout(() => {
+                    window.photoEditor.open(photoDataURL);
+                }, 500);
+            }
+            
             // Show file size info
             const originalSizeKB = Math.round(file.size / 1024);
             const compressedSizeKB = Math.round(photoDataURL.length / 1024);
             console.log(`Photo compressed: ${originalSizeKB}KB → ${compressedSizeKB}KB (${Math.round((1 - compressedSizeKB/originalSizeKB) * 100)}% reduction)`);
         });
+    }
+});
+
+// Manual edit button
+editPhotoBtn?.addEventListener('click', () => {
+    if (photoDataURL && window.photoEditor) {
+        window.photoEditor.open(photoDataURL);
     }
 });
 
@@ -793,9 +808,13 @@ function initFormSubmission() {
         });
         
         // Save to Firestore
-        const docRef = await db.collection('catches').add(formData);
-        
-        console.log('Catch logged with ID:', docRef.id);
+        if (isEditMode && editCatchId) {
+            await db.collection('catches').doc(editCatchId).update(formData);
+            console.log('✅ Catch updated:', editCatchId);
+        } else {
+            const docRef = await db.collection('catches').add(formData);
+            console.log('Catch logged with ID:', docRef.id);
+        }
         
         // Save user name to localStorage (for edit/delete ownership check)
         localStorage.setItem('fishtrack_user_name', formData.catcherName);
@@ -862,10 +881,103 @@ function initFormSubmission() {
 
 // Call form init when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initFormSubmission);
+    document.addEventListener('DOMContentLoaded', () => {
+        initFormSubmission();
+        checkForEditMode();
+    });
 } else {
     // DOM already loaded
     initFormSubmission();
+    checkForEditMode();
+}
+
+// ===== EDIT MODE FUNCTIONALITY =====
+
+let isEditMode = false;
+let editCatchId = null;
+
+async function checkForEditMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    
+    if (editId) {
+        console.log('📝 Entering EDIT MODE for catch:', editId);
+        isEditMode = true;
+        editCatchId = editId;
+        
+        // Change UI to reflect edit mode
+        document.querySelector('.page-title h2').innerHTML = '✏️ Edit Your Catch';
+        document.getElementById('submitText').textContent = 'Save Changes ✓';
+        
+        try {
+            // Load catch data
+            const doc = await db.collection('catches').doc(editId).get();
+            if (!doc.exists) {
+                alert('Catch not found!');
+                window.location.href = 'my-logbook.html';
+                return;
+            }
+            
+            const data = doc.data();
+            populateFormForEdit(data);
+            
+        } catch (error) {
+            console.error('Error loading catch for edit:', error);
+            alert('Error loading catch data.');
+        }
+    }
+}
+
+function populateFormForEdit(data) {
+    // 1. Photo
+    if (data.photo) {
+        photoDataURL = data.photo;
+        previewImage.src = photoDataURL;
+        photoLabel.style.display = 'none';
+        photoPreview.style.display = 'block';
+    }
+    
+    // 2. Details
+    document.getElementById('waterType').value = data.waterType || '';
+    // Trigger water type change logic
+    document.getElementById('waterType').dispatchEvent(new Event('change'));
+    
+    document.getElementById('catcherName').value = data.catcherName || '';
+    document.getElementById('country').value = data.country || '';
+    document.getElementById('species').value = data.species || '';
+    document.getElementById('weight').value = data.weight || '';
+    document.getElementById('length').value = data.length || '';
+    document.getElementById('locationType').value = data.locationType || '';
+    document.getElementById('locationName').value = data.locationName || '';
+    document.getElementById('bait').value = data.bait || '';
+    document.getElementById('waterTemp').value = data.waterTemp || '';
+    document.getElementById('tide').value = data.tide || '';
+    document.getElementById('wind').value = data.wind || '';
+    document.getElementById('released').checked = !!data.released;
+    
+    // 3. Date
+    if (data.catchDate) {
+        const date = data.catchDate.toDate ? data.catchDate.toDate() : new Date(data.catchDate);
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        document.getElementById('catchDate').value = `${y}-${m}-${d}`;
+    }
+    
+    // 4. Privacy
+    const privacyRadio = document.querySelector(`input[name="privacy"][value="${data.privacy || 'public'}"]`);
+    if (privacyRadio) privacyRadio.checked = true;
+    
+    // 5. Map Pin
+    if (data.location && data.location.lat) {
+        // Wait a bit for map to be ready
+        setTimeout(() => {
+            if (typeof dropPin === 'function') {
+                dropPin(data.location.lat, data.location.lng);
+                pinMap.setView([data.location.lat, data.location.lng], 14);
+            }
+        }, 1000);
+    }
 }
 
 // Debug: Test Firebase connection on page load

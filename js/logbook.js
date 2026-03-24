@@ -297,9 +297,14 @@ function viewCatch(catchId) {
 }
 
 function editCatch(catchId) {
-    // TODO: Implement edit functionality
-    alert('✏️ Edit feature coming soon! This will let you update details, change photos, and modify privacy settings for your catches.');
-    console.log('Edit catch:', catchId);
+    const catchData = allUserCatches.find(c => c.id === catchId);
+    if (!catchData) {
+        alert('Catch not found');
+        return;
+    }
+    
+    // Redirect to log-catch page with edit parameter
+    window.location.href = `log-catch.html?edit=${catchId}`;
 }
 
 function deleteCatch(catchId) {

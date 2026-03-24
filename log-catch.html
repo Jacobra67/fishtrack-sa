@@ -18,7 +18,9 @@
     <link rel="stylesheet" href="css/weight-calculator.css">
     <link rel="stylesheet" href="css/location-search.css">
     <link rel="stylesheet" href="css/secret-spot.css">
+    <link rel="stylesheet" href="css/photo-editor.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
 </head>
 <body>
     <header class="main-header">
@@ -26,13 +28,14 @@
             <div class="logo-container">
                 <img src="assets/logo-final.png" alt="FishTrack Africa Logo" class="logo-image">
                 <div class="logo-text">
-                    <h1>FISHTRACK AFRICA</h1>
+                    <h1>FISHTRACK AFRICA <span style="color: #ff9800; font-size: 0.6em;">DEV</span></h1>
                     <p>Waar Die Vis Byt</p>
                 </div>
             </div>
             <nav class="nav-links">
                 <a href="index.html">Home</a>
                 <a href="map.html">Map</a>
+                <a href="my-logbook.html">My Logbook</a>
             </nav>
         </div>
     </header>
@@ -428,6 +431,10 @@
     
     <!-- Conditions Auto-fill -->
     <script src="js/conditions-autofill.js"></script>
+    
+    <!-- Photo Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="js/photo-editor.js"></script>
     
     <script src="js/catch-logger.js"></script>
     
