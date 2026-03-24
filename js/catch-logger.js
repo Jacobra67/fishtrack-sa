@@ -718,7 +718,16 @@ function initFormSubmission() {
 async function startApp() {
     console.log('🚀 Starting Catch Logger App...');
     
-    // Wait for db to be available
+    // 1. Determine mode FIRST
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+        console.log('📝 Edit ID detected in URL:', editId);
+        isEditMode = true;
+        editCatchId = editId;
+    }
+
+    // 2. Wait for db to be available
     let attempts = 0;
     while (typeof db === 'undefined' && attempts < 50) {
         await new Promise(r => setTimeout(r, 100));
@@ -729,13 +738,19 @@ async function startApp() {
         console.error('❌ Firebase DB not found!');
         return;
     }
+    console.log('✅ Firebase ready');
 
+    // 3. Initialize UI Components
     initPinMap();
+    initFormLogic(); 
     initFormSubmission();
     initEditor();
     
-    // NOW check for edit mode
-    await checkForEditMode();
+    // 4. Populate data if in edit mode
+    if (isEditMode) {
+        console.log('🔄 Loading data for Edit Mode...');
+        await checkForEditMode();
+    }
 }
 
 // Replace the old onload logic
