@@ -304,8 +304,10 @@ function filterCatches() {
 // Load catches from Firebase
 async function loadCatches() {
     try {
+        console.log('📡 Fetching catches for map...');
         const snapshot = await db.collection('catches')
-            .limit(500) // Limit to recent 500 catches
+            .orderBy('timestamp', 'desc')
+            .limit(500)
             .get();
         
         allCatches = snapshot.docs.map(doc => ({
@@ -313,14 +315,13 @@ async function loadCatches() {
             ...doc.data()
         }));
         
-        console.log(`Loaded ${allCatches.length} catches from Firebase`);
+        console.log(`✅ Loaded ${allCatches.length} catches from Firebase`);
         
-        // Apply filters and display
+        // Ensure initial filter shows public + secret
         filterCatches();
         
     } catch (error) {
         console.error('Error loading catches:', error);
-        alert('Error loading catches. Please refresh the page.');
     }
 }
 
