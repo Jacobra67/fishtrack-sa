@@ -1,4 +1,5 @@
-// Catch Logger - Form handling and Firebase submission
+// Catch Logger - Complete Unified Script
+// Handles Logging, Editing, Map Selection, and Photo Optimization
 
 let photoFile = null;
 let photoDataURL = null;
@@ -6,20 +7,27 @@ let currentLocation = null;
 let isEditMode = false;
 let editCatchId = null;
 
-// Initial setup
+let pinMap = null;
+let pinMarker = null;
+let pinnedLocation = null;
+
+// ==========================================
+// 🚀 APP INITIALIZATION
+// ==========================================
+
 async function startApp() {
-    console.log('🚀 STAGE 1: Starting App...');
+    console.log('🚀 STAGE 1: Starting Unified App...');
     
-    // Check for edit mode FIRST
+    // 1. Determine Mode
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
     if (editId) {
-        console.log('📝 STAGE 2: Edit ID detected:', editId);
         isEditMode = true;
         editCatchId = editId;
+        console.log('📝 Edit Mode enabled for:', editId);
     }
 
-    // Wait for Firebase
+    // 2. Wait for Firebase
     let attempts = 0;
     while (typeof db === 'undefined' && attempts < 50) {
         await new Promise(r => setTimeout(r, 100));
@@ -27,89 +35,160 @@ async function startApp() {
     }
     
     if (typeof db === 'undefined') {
-        console.error('❌ STAGE 3: Firebase Failed');
+        console.error('❌ Firebase DB not found!');
         return;
     }
-    console.log('✅ STAGE 4: Firebase Ready');
 
-    // Initialize Map and UI
+    // 3. Initialize Everything
     initPinMap();
     initFormLogic(); 
     initFormSubmission();
-    initEditor();
+    initPhotoHandlers();
     
-    // Load data if editing
+    // 4. Load Data if Editing
     if (isEditMode) {
-        console.log('🔄 STAGE 5: Triggering Data Load...');
         await loadCatchDataForEdit();
     }
 }
 
-function initFormLogic() {
-    const waterTypeSelect = document.getElementById('waterType');
-    const speciesSelect = document.getElementById('species');
-    const locationTypeSelect = document.getElementById('locationType');
-    const baitSelect = document.getElementById('bait');
-    
-    // Default date (only for NEW catches)
-    if (!isEditMode) {
-        const catchDateInput = document.getElementById('catchDate');
-        if (catchDateInput) {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            catchDateInput.value = `${year}-${month}-${day}`;
-        }
-    }
+// ==========================================
+// 📸 PHOTO HANDLING
+// ==========================================
 
-    waterTypeSelect.addEventListener('change', function() {
-        const waterType = this.value;
-        if (waterType === 'Saltwater') {
-            showElementsByClass('saltwater-group', true);
-            showElementsByClass('freshwater-group', false);
-            showElementsByClass('saltwater-location', true);
-            showElementsByClass('freshwater-location', false);
-            showElementsByClass('saltwater-bait', true);
-            showElementsByClass('freshwater-bait', false);
-            document.getElementById('locationName').placeholder = 'e.g., Struisbaai Beach, Mile 72';
-        } else if (waterType === 'Freshwater') {
-            showElementsByClass('saltwater-group', false);
-            showElementsByClass('freshwater-group', true);
-            showElementsByClass('saltwater-location', false);
-            showElementsByClass('freshwater-location', true);
-            showElementsByClass('saltwater-bait', false);
-            showElementsByClass('freshwater-bait', true);
-            document.getElementById('locationName').placeholder = 'e.g., Hartbeespoort Dam, Vaal River';
+function initPhotoHandlers() {
+    const photoInput = document.getElementById('photoInput');
+    const changePhotoBtn = document.getElementById('changePhoto');
+    const editPhotoBtn = document.getElementById('editPhoto');
+
+    photoInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            photoFile = file;
+            compressPhoto(file, (compressedDataURL) => {
+                photoDataURL = compressedDataURL;
+                document.getElementById('previewImage').src = photoDataURL;
+                document.getElementById('photoLabel').style.display = 'none';
+                document.getElementById('photoPreview').style.display = 'block';
+                
+                // Auto-open editor for new photos
+                if (window.photoEditor) {
+                    setTimeout(() => window.photoEditor.open(photoDataURL), 500);
+                }
+            });
+        }
+    });
+
+    changePhotoBtn.addEventListener('click', () => {
+        photoInput.value = '';
+        photoInput.click();
+    });
+
+    editPhotoBtn?.addEventListener('click', () => {
+        if (photoDataURL && window.photoEditor) {
+            window.photoEditor.open(photoDataURL);
         }
     });
 }
 
-function showElementsByClass(className, show) {
-    document.querySelectorAll('.' + className).forEach(el => {
-        el.style.display = show ? '' : 'none';
+function compressPhoto(file, callback) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            const MAX_WIDTH = 1200;
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > MAX_WIDTH) {
+                height = Math.round(height * MAX_WIDTH / width);
+                width = MAX_WIDTH;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            callback(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// ==========================================
+// 📍 MAP & LOCATION
+// ==========================================
+
+function initPinMap() {
+    pinMap = L.map('pinMap').setView([-33.5, 20.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(pinMap);
+    
+    pinMap.on('click', (e) => dropPin(e.latlng.lat, e.latlng.lng));
+}
+
+function dropPin(lat, lng) {
+    if (pinMarker) pinMap.removeLayer(pinMarker);
+    
+    pinMarker = L.marker([lat, lng], {
+        draggable: true,
+        icon: L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41]
+        })
+    }).addTo(pinMap);
+    
+    pinnedLocation = { lat, lng };
+    currentLocation = { lat, lng };
+    
+    document.getElementById('coordinatesDisplay').style.display = 'block';
+    document.getElementById('latLng').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    document.getElementById('clearPin').style.display = 'inline-block';
+    document.getElementById('autofillConditionsBtn').style.display = 'inline-block';
+    
+    pinMarker.on('dragend', (e) => {
+        const pos = e.target.getLatLng();
+        dropPin(pos.lat, pos.lng);
+    });
+}
+
+// ==========================================
+// 📝 FORM LOGIC & EDITING
+// ==========================================
+
+function initFormLogic() {
+    const waterTypeSelect = document.getElementById('waterType');
+    
+    if (!isEditMode) {
+        const catchDateInput = document.getElementById('catchDate');
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0];
+        if (catchDateInput) catchDateInput.value = dateStr;
+    }
+
+    waterTypeSelect.addEventListener('change', function() {
+        const isSalt = this.value === 'Saltwater';
+        document.querySelectorAll('.saltwater-group, .saltwater-location, .saltwater-bait').forEach(el => el.style.display = isSalt ? '' : 'none');
+        document.querySelectorAll('.freshwater-group, .freshwater-location, .freshwater-bait').forEach(el => el.style.display = isSalt ? 'none' : '');
+        document.getElementById('locationName').placeholder = isSalt ? 'e.g. Struisbaai Beach' : 'e.g. Vaal River';
     });
 }
 
 async function loadCatchDataForEdit() {
-    console.log('📖 STAGE 6: Fetching catch data...');
-    
-    // Change UI
     document.querySelector('.page-title h2').innerHTML = '✏️ Edit Your Catch';
     document.getElementById('submitText').textContent = 'Save Changes ✓';
     
     try {
         const doc = await db.collection('catches').doc(editCatchId).get();
-        if (!doc.exists) {
-            alert('Catch not found!');
-            return;
-        }
+        if (!doc.exists) return;
         
         const data = doc.data();
-        console.log('✅ STAGE 7: Data loaded:', data.species);
         window.existingTimestamp = data.timestamp; 
         
-        // 1. Photo
+        // Populate Photo
         if (data.photo) {
             photoDataURL = data.photo;
             document.getElementById('previewImage').src = photoDataURL;
@@ -117,53 +196,41 @@ async function loadCatchDataForEdit() {
             document.getElementById('photoPreview').style.display = 'block';
         }
         
-        // 2. Main Details
-        document.getElementById('waterType').value = data.waterType || '';
+        // Populate Details
+        const fields = ['waterType', 'catcherName', 'country', 'species', 'weight', 'length', 'locationType', 'locationName', 'bait', 'waterTemp', 'tide', 'wind'];
+        fields.forEach(f => {
+            const el = document.getElementById(f);
+            if (el) el.value = data[f] || '';
+        });
+        
         document.getElementById('waterType').dispatchEvent(new Event('change'));
-        document.getElementById('catcherName').value = data.catcherName || '';
-        document.getElementById('country').value = data.country || '';
-        document.getElementById('species').value = data.species || '';
-        document.getElementById('weight').value = data.weight || '';
-        document.getElementById('length').value = data.length || '';
-        document.getElementById('locationType').value = data.locationType || '';
-        document.getElementById('locationName').value = data.locationName || '';
-        document.getElementById('bait').value = data.bait || '';
-        document.getElementById('waterTemp').value = data.waterTemp || '';
-        document.getElementById('tide').value = data.tide || '';
-        document.getElementById('wind').value = data.wind || '';
         document.getElementById('released').checked = !!data.released;
         
-        // 3. Date
         if (data.catchDate) {
             const date = data.catchDate.toDate ? data.catchDate.toDate() : new Date(data.catchDate);
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            document.getElementById('catchDate').value = `${y}-${m}-${d}`;
+            document.getElementById('catchDate').value = date.toISOString().split('T')[0];
         }
         
-        // 4. Privacy
         const privacyRadio = document.querySelector(`input[name="privacy"][value="${data.privacy || 'public'}"]`);
         if (privacyRadio) privacyRadio.checked = true;
         
-        // 5. Map Pin
+        // Populate Map Location
         if (data.location && data.location.lat) {
+            const lat = data.location.lat;
+            const lng = data.location.lng;
+            // Force pin placement
             setTimeout(() => {
-                dropPin(data.location.lat, data.location.lng);
-                pinMap.setView([data.location.lat, data.location.lng], 14);
-            }, 1000);
+                dropPin(lat, lng);
+                pinMap.setView([lat, lng], 14);
+            }, 800);
         }
-        
-        console.log('🏁 STAGE 8: Done pre-filling form');
     } catch (err) {
-        console.error('❌ STAGE 9: Error:', err);
+        console.error('Error loading data:', err);
     }
 }
 
 function initFormSubmission() {
     const catchForm = document.getElementById('catchForm');
-    if (!catchForm) return;
-
     catchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitBtn = document.getElementById('submitBtn');
@@ -172,20 +239,13 @@ function initFormSubmission() {
         document.getElementById('submitSpinner').style.display = 'inline-block';
         
         try {
-            const catchDateValue = document.getElementById('catchDate').value;
-            const catchDate = catchDateValue ? new Date(catchDateValue + 'T12:00:00') : new Date();
-            const privacySetting = document.querySelector('input[name="privacy"]:checked').value;
-            const realLocation = currentLocation || pinnedLocation || { lat: -34.0, lng: 18.5 };
-            let displayLocation = realLocation;
-            
-            if (privacySetting === 'secret') {
-                displayLocation = fuzzLocation(realLocation.lat, realLocation.lng);
-            }
+            const privacy = document.querySelector('input[name="privacy"]:checked').value;
+            const realLoc = pinnedLocation || { lat: -34.0, lng: 18.5 };
             
             const formData = {
                 waterType: document.getElementById('waterType').value,
                 catcherName: document.getElementById('catcherName').value,
-                catchDate: catchDate,
+                catchDate: new Date(document.getElementById('catchDate').value + 'T12:00:00'),
                 country: document.getElementById('country').value,
                 species: document.getElementById('species').value,
                 weight: parseFloat(document.getElementById('weight').value) || 0,
@@ -197,16 +257,16 @@ function initFormSubmission() {
                 tide: document.getElementById('tide').value || null,
                 wind: document.getElementById('wind').value || null,
                 released: document.getElementById('released').checked,
-                privacy: privacySetting,
+                privacy: privacy,
                 timestamp: isEditMode ? (window.existingTimestamp || firebase.firestore.FieldValue.serverTimestamp()) : firebase.firestore.FieldValue.serverTimestamp(),
-                location: displayLocation, 
-                locationExact: privacySetting === 'secret' ? realLocation : null,
+                location: privacy === 'secret' ? fuzzLocation(realLoc.lat, realLoc.lng) : realLoc,
+                locationExact: privacy === 'secret' ? realLoc : null,
                 deviceId: localStorage.getItem('fishtrack_device_id'),
-                verified: false,
-                photo: photoDataURL || null
+                photo: photoDataURL || null,
+                verified: false
             };
             
-            if (isEditMode && editCatchId) {
+            if (isEditMode) {
                 await db.collection('catches').doc(editCatchId).update(formData);
             } else {
                 await db.collection('catches').add(formData);
@@ -218,7 +278,7 @@ function initFormSubmission() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
         } catch (error) {
-            console.error('❌ ERROR:', error);
+            console.error('Save Error:', error);
             alert('Error saving: ' + error.message);
             submitBtn.disabled = false;
             document.getElementById('submitText').style.display = 'inline-block';
@@ -227,28 +287,10 @@ function initFormSubmission() {
     });
 }
 
-// Global scope functions required by HTML or other scripts
-window.dropPin = function(lat, lng) {
-    if (pinMarker) pinMap.removeLayer(pinMarker);
-    pinMarker = L.marker([lat, lng], { draggable: true }).addTo(pinMap);
-    pinnedLocation = { lat, lng };
-    document.getElementById('coordinatesDisplay').style.display = 'block';
-    document.getElementById('latLng').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-    document.getElementById('clearPin').style.display = 'inline-block';
-    document.getElementById('autofillConditionsBtn').style.display = 'inline-block';
-};
-
-// ... (Rest of support functions like fuzzLocation, initPinMap, initEditor, compressPhoto, etc)
-// I will keep them but ensure they are correctly defined
-
-function initPinMap() {
-    pinMap = L.map('pinMap').setView([-33.5, 20.0], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(pinMap);
-    pinMap.on('click', (e) => window.dropPin(e.latlng.lat, e.latlng.lng));
+function fuzzLocation(lat, lng) {
+    const fuzz = 0.018; 
+    return { lat: lat + (Math.random() - 0.5) * 2 * fuzz, lng: lng + (Math.random() - 0.5) * 2 * fuzz, fuzzy: true };
 }
 
-function initEditor() { /* ... */ }
-function compressPhoto() { /* ... */ }
-
-// Start
+// Start the app
 startApp();
