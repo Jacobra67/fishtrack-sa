@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Logbook - FishTrack Africa</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <meta name="theme-color" content="#1a2840">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css?v=3.1">
+    <link rel="stylesheet" href="css/logbook.css?v=3.1">
+    <link rel="stylesheet" href="css/catch-modal.css?v=3.1">
+</head>
+<body>
+    
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo-container">
+                <img src="assets/logo-final.png" alt="FishTrack Africa Logo" class="logo-image">
+                <div class="logo-text">
+                    <h1>FISHTRACK AFRICA <span style="color: #ff9800; font-size: 0.6em;">DEV</span></h1>
+                    <p>Waar Die Vis Byt</p>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="map.html">Map</a>
+                <a href="log-catch.html">Log Catch</a>
+                <a href="my-logbook.html" class="active">My Logbook</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Logbook Hero -->
+    <section class="logbook-hero">
+        <div class="container">
+            <h1 class="logbook-title">📖 My Fishing Logbook</h1>
+            <p class="logbook-subtitle">Your personal fishing diary - every catch, every memory</p>
+        </div>
+    </section>
+
+    <!-- Stats Dashboard -->
+    <section class="logbook-stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🎣</div>
+                    <div class="stat-value" id="totalCatches">0</div>
+                    <div class="stat-label">Total Catches</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value" id="biggestCatch">-</div>
+                    <div class="stat-label">Biggest Catch</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🐟</div>
+                    <div class="stat-value" id="speciesCount">0</div>
+                    <div class="stat-label">Species Caught</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📍</div>
+                    <div class="stat-value" id="locationsCount">0</div>
+                    <div class="stat-label">Locations Visited</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters & Controls -->
+    <section class="logbook-controls">
+        <div class="container">
+            <div class="controls-bar">
+                <div class="search-filter">
+                    <input type="text" id="searchInput" placeholder="🔍 Search by species, location..." class="search-input">
+                    <select id="filterPrivacy" class="filter-select">
+                        <option value="all">All Catches</option>
+                        <option value="public">Public Only</option>
+                        <option value="secret">Secret Spots</option>
+                        <option value="private">Private Only</option>
+                    </select>
+                    <select id="sortBy" class="filter-select">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="biggest">Biggest First</option>
+                        <option value="species">By Species A-Z</option>
+                    </select>
+                </div>
+                <button id="viewToggle" class="view-toggle-btn">
+                    <span id="viewIcon">📋</span> <span id="viewText">List View</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Catches Display -->
+    <section class="logbook-catches">
+        <div class="container">
+            <div id="catchesGrid" class="catches-grid">
+                <!-- Populated by JavaScript -->
+            </div>
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">🎣</div>
+                <h3>No catches yet!</h3>
+                <p>Start your fishing journey by logging your first catch.</p>
+                <a href="log-catch.html" class="cta-button">Log Your First Catch</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- Scripts -->
+    <script src="js/catch-modal.js"></script>
+    <script src="js/logbook.js"></script>
+</body>
+</html>
