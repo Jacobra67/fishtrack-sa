@@ -46,20 +46,27 @@ async function loadUserCatches() {
         
         console.log('📱 Device ID:', deviceId);
         
-        // Load all catches
+        // Load all catches (limit to 200 for performance)
         const snapshot = await db.collection('catches')
             .orderBy('timestamp', 'desc')
+            .limit(200)
             .get();
         
         // Check current user name from localStorage
         const currentUserName = localStorage.getItem('fishtrack_user_name');
+        console.log('👤 Checking for user name:', currentUserName);
         
         // Filter to only catches from this device OR matching name
         allUserCatches = snapshot.docs
-            .map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }))
+            .map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    // Ensure numeric weight for stats
+                    weight: parseFloat(data.weight) || 0
+                };
+            })
             .filter(catchData => {
                 // 1. Check device ID
                 const isMyDevice = catchData.deviceId === deviceId;
@@ -67,13 +74,20 @@ async function loadUserCatches() {
                 // 2. Check local ownership list
                 const isOwned = isOwnedCatch(catchData.id);
                 
-                // 3. Check matching name (as fallback for different devices/browsers)
-                const isMyName = currentUserName && catchData.catcherName === currentUserName;
+                // 3. Check matching name (case-insensitive)
+                const isMyName = currentUserName && 
+                    catchData.catcherName && 
+                    catchData.catcherName.toLowerCase().trim() === currentUserName.toLowerCase().trim();
                 
                 return isMyDevice || isOwned || isMyName;
             });
         
-        console.log(`✅ Loaded ${allUserCatches.length} of your catches`);
+        console.log(`✅ Found ${allUserCatches.length} matches for you`);
+        
+        // If still 0, check if we're on the same domain
+        if (allUserCatches.length === 0 && !currentUserName) {
+            console.warn('⚠️ No name found in settings. Ask user to set their name.');
+        }
         
         // Initial display
         filteredCatches = [...allUserCatches];
