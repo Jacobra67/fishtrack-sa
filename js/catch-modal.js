@@ -199,9 +199,8 @@ class CatchModal {
 }
 
 // Initialize modal on page load
-let catchModal;
 document.addEventListener('DOMContentLoaded', () => {
-    catchModal = new CatchModal();
+    window.catchModal = new CatchModal();
     console.log('✅ Catch modal initialized');
 });
 
