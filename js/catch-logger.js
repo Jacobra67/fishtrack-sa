@@ -267,9 +267,13 @@ function initFormSubmission() {
             };
             
             if (isEditMode) {
-                await db.collection('catches').doc(editCatchId).update(formData);
+                console.log('📝 Updating existing catch:', editCatchId);
+                await db.collection('catches').doc(editCatchId).set(formData, { merge: true });
+                console.log('✅ Update successful');
             } else {
+                console.log('📝 Creating new catch');
                 await db.collection('catches').add(formData);
+                console.log('✅ Creation successful');
             }
             
             localStorage.setItem('fishtrack_user_name', formData.catcherName);
