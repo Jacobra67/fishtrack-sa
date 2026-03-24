@@ -110,13 +110,15 @@ function renderLatestCatches(catches) {
         return;
     }
     
-    feed.innerHTML = catches.map(catchData => {
+    feed.innerHTML = catches.map((catchData, index) => {
         const timeAgo = getTimeAgo(catchData.timestamp?.toDate() || new Date());
         const isSecret = catchData.privacy === 'secret';
         const locationDisplay = isSecret ? `${catchData.locationName || 'Unknown'} 🔒` : `${catchData.locationName || 'Unknown'} 📍`;
         
         return `
-            <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 20px; align-items: center;">
+            <div class="catch-card" data-catch-index="${index}" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; gap: 20px; align-items: center; cursor: pointer; transition: all 0.2s;" 
+                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'"
+                 onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">
                 ${catchData.photo ? 
                     `<img src="${catchData.photo}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" alt="${catchData.species}">` : 
                     `<div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--navy-blue) 0%, #2a4060 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 48px; flex-shrink: 0;">🐟</div>`
@@ -132,6 +134,30 @@ function renderLatestCatches(catches) {
             </div>
         `;
     }).join('');
+    
+    // Attach click listeners
+    document.querySelectorAll('.catch-card').forEach((card, index) => {
+        card.addEventListener('click', () => {
+            if (window.catchModal) {
+                const catchData = catches[index];
+                window.catchModal.open({
+                    photoURL: catchData.photo,
+                    species: catchData.species,
+                    weight: catchData.weight,
+                    location: catchData.locationName || 'Unknown',
+                    date: catchData.timestamp?.toDate() || new Date(),
+                    catcher: catchData.catcherName || 'Anonymous',
+                    privacy: catchData.privacy,
+                    waterTemp: catchData.waterTemp,
+                    tide: catchData.tide,
+                    windSpeed: catchData.windSpeed,
+                    windDirection: catchData.windDirection,
+                    bait: catchData.bait,
+                    time: catchData.time
+                });
+            }
+        });
+    });
 }
 
 function renderBiggestCatch(catches) {
@@ -167,6 +193,35 @@ function renderBiggestCatch(catches) {
             <div style="font-size: 14px; opacity: 0.9;">Caught by <strong>${biggest.catcherName || 'Anonymous'}</strong></div>
         </div>
     `;
+    
+    // Make clickable
+    content.style.cursor = 'pointer';
+    content.style.transition = 'transform 0.2s';
+    content.addEventListener('click', () => {
+        if (window.catchModal) {
+            window.catchModal.open({
+                photoURL: biggest.photo,
+                species: biggest.species,
+                weight: biggest.weight,
+                location: biggest.locationName || 'Unknown',
+                date: biggest.timestamp?.toDate() || new Date(),
+                catcher: biggest.catcherName || 'Anonymous',
+                privacy: biggest.privacy,
+                waterTemp: biggest.waterTemp,
+                tide: biggest.tide,
+                windSpeed: biggest.windSpeed,
+                windDirection: biggest.windDirection,
+                bait: biggest.bait,
+                time: biggest.time
+            });
+        }
+    });
+    content.addEventListener('mouseenter', () => {
+        content.style.transform = 'scale(1.02)';
+    });
+    content.addEventListener('mouseleave', () => {
+        content.style.transform = '';
+    });
     
     section.style.display = 'block';
 }
