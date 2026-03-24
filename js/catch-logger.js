@@ -707,192 +707,46 @@ async function searchLocation() {
     }
 }
 
-// Initialize map when page loads
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initPinMap);
-} else {
-    initPinMap();
-}
-
 // Initialize form submission handler when DOM is ready
 function initFormSubmission() {
+    console.log('--- INITIALIZING FORM SUBMISSION ---');
     const catchForm = document.getElementById('catchForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const submitText = document.getElementById('submitText');
-    const submitSpinner = document.getElementById('submitSpinner');
-    const successMessage = document.getElementById('successMessage');
+    // ... rest of function
+}
 
-    // Debug: Verify form exists
-    console.log('Catch form element:', catchForm ? 'FOUND' : 'NOT FOUND');
-    console.log('Firebase initialized:', typeof firebase !== 'undefined');
-    console.log('Firestore db:', typeof db !== 'undefined');
-
-    if (!catchForm) {
-        console.error('ERROR: catchForm element not found!');
+// CRITICAL: Ensure edit mode runs AFTER Firebase and all scripts are loaded
+async function startApp() {
+    console.log('🚀 Starting Catch Logger App...');
+    
+    // Wait for db to be available
+    let attempts = 0;
+    while (typeof db === 'undefined' && attempts < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        attempts++;
+    }
+    
+    if (typeof db === 'undefined') {
+        console.error('❌ Firebase DB not found!');
         return;
     }
-    
-    console.log('✓ Form element found, attaching submit handler...');
 
-    catchForm.addEventListener('submit', async (e) => {
-    console.log('FORM SUBMIT EVENT TRIGGERED');
-    e.preventDefault();
-    console.log('Default prevented, processing form...');
-    
-    // Disable submit button
-    submitBtn.disabled = true;
-    submitText.style.display = 'none';
-    submitSpinner.style.display = 'inline-block';
-    
-    try {
-        // Get form data
-        const catchDateValue = document.getElementById('catchDate').value;
-        // Use noon to avoid timezone shifting, but ensure it's a valid date string
-        const catchDate = catchDateValue ? new Date(catchDateValue + 'T12:00:00') : new Date();
-        const privacySetting = document.querySelector('input[name="privacy"]:checked').value;
-        
-        // Handle location based on privacy setting
-        const realLocation = currentLocation || pinnedLocation || { lat: -34.0, lng: 18.5 };
-        let displayLocation = realLocation;
-        
-        // Secret Spot Mode: Fuzz the location for public display
-        if (privacySetting === 'secret') {
-            displayLocation = fuzzLocation(realLocation.lat, realLocation.lng);
-        }
-        
-        const formData = {
-            waterType: document.getElementById('waterType').value,
-            catcherName: document.getElementById('catcherName').value,
-            catchDate: catchDate,
-            country: document.getElementById('country').value,
-            species: document.getElementById('species').value,
-            weight: parseFloat(document.getElementById('weight').value) || 0,
-            length: document.getElementById('length').value ? parseInt(document.getElementById('length').value) : null,
-            locationType: document.getElementById('locationType').value,
-            locationName: document.getElementById('locationName').value,
-            bait: document.getElementById('bait').value || null,
-            // Conditions data
-            waterTemp: document.getElementById('waterTemp').value ? parseFloat(document.getElementById('waterTemp').value) : null,
-            tide: document.getElementById('tide').value || null,
-            wind: document.getElementById('wind').value || null,
-            released: document.getElementById('released').checked,
-            privacy: privacySetting,
-            // We only update the server timestamp if it's a NEW catch
-            timestamp: isEditMode ? (window.existingTimestamp || firebase.firestore.FieldValue.serverTimestamp()) : firebase.firestore.FieldValue.serverTimestamp(),
-            location: displayLocation, 
-            locationExact: privacySetting === 'secret' ? realLocation : null,
-            deviceId: localStorage.getItem('fishtrack_device_id'), // Ensure device ID is saved
-            verified: false
-        };
-        
-        // Upload photo to Firebase Storage if provided
-        if (photoDataURL) {
-            // Check photo size (Firebase has 1MB document limit)
-            const photoSizeKB = Math.round(photoDataURL.length / 1024);
-            console.log('Photo size:', photoSizeKB, 'KB');
-            
-            if (photoSizeKB > 950) {
-                // This should rarely happen with compression, but check anyway
-                throw new Error(`Photo too large (${photoSizeKB}KB). Maximum 950KB. Please try a different photo or contact support.`);
-            }
-            
-            formData.photo = photoDataURL; // For MVP, store as base64
-            // TODO: Later, upload to Firebase Storage for better performance
-        }
-        
-        // Debug: Log form data before saving
-        console.log('Attempting to save catch:', {
-            catcherName: formData.catcherName,
-            country: formData.country,
-            species: formData.species,
-            weight: formData.weight,
-            locationName: formData.locationName,
-            hasPhoto: !!formData.photo
-        });
-        
-        // Save to Firestore
-        if (isEditMode && editCatchId) {
-            await db.collection('catches').doc(editCatchId).update(formData);
-            console.log('✅ Catch updated:', editCatchId);
-        } else {
-            const docRef = await db.collection('catches').add(formData);
-            console.log('Catch logged with ID:', docRef.id);
-        }
-        
-        // Save user name to localStorage (for edit/delete ownership check)
-        localStorage.setItem('fishtrack_user_name', formData.catcherName);
-        
-        // Show success message
-        catchForm.style.display = 'none';
-        successMessage.style.display = 'block';
-        
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-    } catch (error) {
-        console.error('❌ ERROR LOGGING CATCH:', error);
-        console.error('Error message:', error.message);
-        console.error('Error code:', error.code);
-        console.error('Error stack:', error.stack);
-        
-        // Show more specific error message
-        let errorMsg = 'Error saving catch. ';
-        if (error.code === 'permission-denied') {
-            errorMsg += 'Database permission denied. Please contact support.';
-        } else if (error.code === 'unavailable') {
-            errorMsg += 'Firebase is offline. Check your internet connection.';
-        } else if (error.message) {
-            errorMsg += error.message;
-        } else {
-            errorMsg += 'Please try again.';
-        }
-        
-        alert(errorMsg + '\n\nError: ' + (error.message || 'Unknown error'));
-        
-        // Re-enable submit button
-        submitBtn.disabled = false;
-        submitText.style.display = 'inline-block';
-        submitSpinner.style.display = 'none';
-    }
-});
-
-    // Log another catch button
-    const logAnotherBtn = document.getElementById('logAnother');
-    if (logAnotherBtn) {
-        logAnotherBtn.addEventListener('click', () => {
-            // Reset form
-            catchForm.reset();
-            photoFile = null;
-            photoDataURL = null;
-            photoLabel.style.display = 'block';
-            photoPreview.style.display = 'none';
-            
-            // Show form, hide success message
-            successMessage.style.display = 'none';
-            catchForm.style.display = 'block';
-            
-            // Re-enable submit
-            submitBtn.disabled = false;
-            submitText.style.display = 'inline-block';
-            submitSpinner.style.display = 'none';
-            
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
-}
-
-// Call form init when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        initFormSubmission();
-        checkForEditMode();
-    });
-} else {
-    // DOM already loaded
+    initPinMap();
     initFormSubmission();
-    checkForEditMode();
+    initEditor();
+    
+    // NOW check for edit mode
+    await checkForEditMode();
 }
+
+// Replace the old onload logic
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startApp);
+} else {
+    startApp();
+}
+
+// Remove the old initializers at the bottom of the file
+// (They are now inside startApp)
 
 // ===== EDIT MODE FUNCTIONALITY =====
 
