@@ -116,11 +116,11 @@ body {
 .hero {
     background: linear-gradient(135deg, var(--navy-blue) 0%, var(--dark-navy) 100%);
     color: var(--cream);
-    padding: 80px 20px;
+    padding: 20px 20px;
     text-align: center;
     position: relative;
     overflow: hidden;
-    min-height: 100vh;
+    min-height: auto;
     display: flex;
     flex-direction: column;
 }
