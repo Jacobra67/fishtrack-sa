@@ -139,7 +139,7 @@ body {
 
 .hero-badge {
     width: 100%;
-    max-width: 1200px;
+    max-width: 600px;
     margin: 0 auto 20px;
     position: relative;
     z-index: 1;
@@ -442,7 +442,7 @@ footer a:hover {
     }
     
     .hero-badge {
-        max-width: 800px;
+        max-width: 400px;
     }
     
     .headline {
