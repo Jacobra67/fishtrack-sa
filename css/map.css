@@ -334,6 +334,24 @@
     }
 }
 
+/* Mobile Popup Fixes */
+.custom-popup {
+    touch-action: auto !important;
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+    pointer-events: auto !important;
+}
+
+.custom-popup .leaflet-popup-close-button {
+    font-size: 24px !important;
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 28px !important;
+    color: #333 !important;
+    font-weight: bold !important;
+}
+
 /* Mobile Adjustments */
 @media (max-width: 600px) {
     .map-legend {
@@ -351,5 +369,29 @@
     
     .legend-item {
         flex: 0 0 calc(50% - 4px);
+    }
+    
+    /* Mobile popup adjustments */
+    .leaflet-popup-content {
+        width: 280px !important;
+        max-width: calc(100vw - 40px) !important;
+    }
+    
+    .catch-popup {
+        padding: 16px;
+    }
+    
+    .catch-popup img {
+        max-height: 250px;
+    }
+    
+    /* Bigger close button on mobile */
+    .leaflet-popup-close-button {
+        font-size: 28px !important;
+        width: 35px !important;
+        height: 35px !important;
+        line-height: 33px !important;
+        top: 5px !important;
+        right: 5px !important;
     }
 }

@@ -255,7 +255,17 @@ function displayCatches(catches) {
                     }
                 );
                 
-                circle.bindPopup(createPopupContent(catchData));
+                // Popup options to prevent auto-close on mobile
+                const popupOptions = {
+                    closeOnClick: false,      // Don't close when clicking map
+                    autoClose: false,         // Don't close when another popup opens
+                    autoPan: true,            // Pan map to show popup
+                    autoPanPadding: [50, 50], // Padding around popup
+                    maxWidth: 350,            // Max width
+                    className: 'custom-popup' // Custom class for styling
+                };
+                
+                circle.bindPopup(createPopupContent(catchData), popupOptions);
                 circle.addTo(markersLayer);
             } else {
                 // Normal marker for public/private catches
@@ -264,7 +274,17 @@ function displayCatches(catches) {
                     { icon: createMarkerIcon(catchData.species, catchData.waterType) }
                 );
                 
-                marker.bindPopup(createPopupContent(catchData));
+                // Popup options to prevent auto-close on mobile
+                const popupOptions = {
+                    closeOnClick: false,      // Don't close when clicking map
+                    autoClose: false,         // Don't close when another popup opens
+                    autoPan: true,            // Pan map to show popup
+                    autoPanPadding: [50, 50], // Padding around popup
+                    maxWidth: 350,            // Max width
+                    className: 'custom-popup' // Custom class for styling
+                };
+                
+                marker.bindPopup(createPopupContent(catchData), popupOptions);
                 marker.addTo(markersLayer);
             }
         }
@@ -340,6 +360,28 @@ async function init() {
     try {
         // Initialize map
         initMap();
+        
+        // Prevent popup auto-close on mobile
+        map.on('popupopen', function(e) {
+            const popup = e.popup;
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                console.log('📱 Mobile popup opened - preventing auto-close');
+                
+                // Prevent popup from closing when clicking inside it
+                const popupContainer = popup.getElement();
+                if (popupContainer) {
+                    popupContainer.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                    });
+                    
+                    popupContainer.addEventListener('touchstart', function(event) {
+                        event.stopPropagation();
+                    });
+                }
+            }
+        });
         
         // Load catches
         await loadCatches();
