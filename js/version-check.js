@@ -1,14 +1,14 @@
-// Version Checker v3.0 - Aggressive Update Detection
-// Checks version.txt every 30 seconds and forces reload on mismatch
+// Version Checker v3.1 - FIXED: Prevents infinite reload loops
+// Checks version.txt periodically but ONLY reloads once per session
 
-const VERSION_CHECK_INTERVAL = 30000; // Check every 30 seconds (aggressive)
+const VERSION_CHECK_INTERVAL = 60000; // Check every 60 seconds (reduced from 30s)
 const CURRENT_VERSION_META = document.querySelector('meta[name="app-version"]');
 const CURRENT_VERSION = CURRENT_VERSION_META ? CURRENT_VERSION_META.content : null;
 
-console.log('🔍 Version Checker v3.0 initialized');
+console.log('🔍 Version Checker v3.1 (Loop Protection) initialized');
 console.log('📋 Current version from meta tag:', CURRENT_VERSION);
 
-class AggressiveVersionChecker {
+class SafeVersionChecker {
     constructor() {
         if (!CURRENT_VERSION) {
             console.warn('⚠️ No app-version meta tag found - update checking disabled');
@@ -19,27 +19,50 @@ class AggressiveVersionChecker {
         this.updatePrompted = false;
         this.checkCount = 0;
         
+        // CRITICAL FIX: Check if we just reloaded (prevents infinite loop)
+        const justReloaded = sessionStorage.getItem('fishtrack_just_reloaded');
+        const reloadTime = sessionStorage.getItem('fishtrack_reload_time');
+        
+        if (justReloaded === 'true') {
+            const timeSinceReload = Date.now() - parseInt(reloadTime || '0');
+            
+            if (timeSinceReload < 10000) { // Within 10 seconds of reload
+                console.log('🛑 LOOP PROTECTION: Just reloaded, skipping version check for 5 minutes');
+                sessionStorage.removeItem('fishtrack_just_reloaded');
+                
+                // Don't check for updates for 5 minutes after a forced reload
+                setTimeout(() => {
+                    console.log('✅ Loop protection expired, resuming version checks');
+                    this.startChecking();
+                }, 300000); // 5 minutes
+                return;
+            }
+        }
+        
+        // Clear reload flags (if we got here, reload was successful)
+        sessionStorage.removeItem('fishtrack_just_reloaded');
+        sessionStorage.removeItem('fishtrack_reload_time');
+        
+        // Start normal checking
+        this.startChecking();
+    }
+    
+    startChecking() {
         // Listen for service worker updates
         this.listenForSWUpdates();
         
-        // Check immediately on load
-        setTimeout(() => this.checkForUpdates(), 2000);
+        // Wait 5 seconds before first check (let page fully load)
+        setTimeout(() => this.checkForUpdates(), 5000);
         
-        // Check every 30 seconds
+        // Check every 60 seconds
         setInterval(() => this.checkForUpdates(), VERSION_CHECK_INTERVAL);
         
-        // Check when tab becomes visible
+        // Check when tab becomes visible (but not immediately)
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
-                console.log('👀 Tab visible - checking for updates...');
-                this.checkForUpdates();
+                console.log('👀 Tab visible - checking for updates in 3s...');
+                setTimeout(() => this.checkForUpdates(), 3000);
             }
-        });
-        
-        // Check on focus
-        window.addEventListener('focus', () => {
-            console.log('🔍 Window focused - checking for updates...');
-            this.checkForUpdates();
         });
     }
     
@@ -48,30 +71,8 @@ class AggressiveVersionChecker {
             navigator.serviceWorker.addEventListener('message', event => {
                 if (event.data && event.data.type === 'SW_UPDATED') {
                     console.log('📢 Service Worker updated! New version:', event.data.version);
-                    this.forceUpdate();
+                    this.promptUpdate(event.data.version);
                 }
-            });
-            
-            // Check for waiting service worker
-            navigator.serviceWorker.ready.then(registration => {
-                if (registration.waiting) {
-                    console.log('⏳ Service worker waiting - activating now!');
-                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                }
-                
-                // Listen for new service workers
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    console.log('🆕 New service worker found - installing...');
-                    
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('✅ New service worker installed - reloading!');
-                            newWorker.postMessage({ type: 'SKIP_WAITING' });
-                            setTimeout(() => this.forceUpdate(), 1000);
-                        }
-                    });
-                });
             });
         }
     }
@@ -107,7 +108,7 @@ class AggressiveVersionChecker {
             console.log('   Latest:', latestVersion);
             
             if (latestVersion !== this.currentVersion) {
-                console.log('🚨 VERSION MISMATCH - UPDATE NEEDED!');
+                console.log('🚨 VERSION MISMATCH - UPDATE AVAILABLE');
                 this.promptUpdate(latestVersion);
             } else {
                 console.log('✅ Up to date');
@@ -120,7 +121,7 @@ class AggressiveVersionChecker {
     
     promptUpdate(newVersion) {
         if (this.updatePrompted) {
-            console.log('⏭️ Update already prompted');
+            console.log('⏭️ Update already prompted this session');
             return;
         }
         
@@ -142,7 +143,7 @@ class AggressiveVersionChecker {
             top: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
             padding: 20px;
             text-align: center;
@@ -150,23 +151,44 @@ class AggressiveVersionChecker {
             font-size: 16px;
             z-index: 999999;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            cursor: pointer;
             animation: slideDown 0.4s ease-out;
         `;
         
-        let countdown = 5;
         banner.innerHTML = `
             <div style="max-width: 600px; margin: 0 auto;">
-                <div style="font-size: 36px; margin-bottom: 10px;">🔄</div>
-                <div style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">
+                <div style="font-size: 36px; margin-bottom: 10px;">🆕</div>
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">
                     New version available!
                 </div>
-                <div style="font-size: 15px; opacity: 0.95; margin-bottom: 12px;">
-                    ${newVersion} → Tap to update now
+                <div style="font-size: 15px; opacity: 0.95; margin-bottom: 15px;">
+                    Version ${newVersion} is ready
                 </div>
-                <div style="font-size: 14px; opacity: 0.9;">
-                    Auto-updating in <span id="countdown" style="font-weight: bold; font-size: 18px;">${countdown}</span>s
-                </div>
+                <button id="updateNowBtn" style="
+                    background: white;
+                    color: #2980b9;
+                    border: none;
+                    padding: 12px 30px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                ">
+                    Update Now
+                </button>
+                <button id="updateLaterBtn" style="
+                    background: transparent;
+                    color: white;
+                    border: 2px solid white;
+                    padding: 12px 30px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    margin-left: 10px;
+                ">
+                    Later
+                </button>
             </div>
         `;
         
@@ -180,33 +202,30 @@ class AggressiveVersionChecker {
         `;
         document.head.appendChild(style);
         
-        // Click to update
-        banner.addEventListener('click', () => {
-            console.log('👆 User clicked update banner');
+        // Event listeners
+        banner.querySelector('#updateNowBtn').addEventListener('click', () => {
+            console.log('👆 User clicked Update Now');
             this.forceUpdate();
         });
         
-        // Countdown
-        const countdownEl = banner.querySelector('#countdown');
-        const interval = setInterval(() => {
-            countdown--;
-            if (countdownEl) countdownEl.textContent = countdown;
-            
-            if (countdown <= 0) {
-                clearInterval(interval);
-                console.log('⏰ Countdown finished - forcing update');
-                this.forceUpdate();
-            }
-        }, 1000);
+        banner.querySelector('#updateLaterBtn').addEventListener('click', () => {
+            console.log('👆 User clicked Later');
+            banner.remove();
+            this.updatePrompted = false; // Allow showing again next check
+        });
         
         document.body.insertBefore(banner, document.body.firstChild);
-        console.log('✅ Update banner shown - auto-reload in 5s');
+        console.log('✅ Update banner shown - user decides when to update');
     }
     
     forceUpdate() {
-        console.log('🔄 FORCING UPDATE - Clearing everything and reloading...');
+        console.log('🔄 FORCING UPDATE - Setting reload protection...');
         
-        // Unregister all service workers
+        // CRITICAL: Set flag to prevent infinite loop
+        sessionStorage.setItem('fishtrack_just_reloaded', 'true');
+        sessionStorage.setItem('fishtrack_reload_time', Date.now().toString());
+        
+        // Clear service worker cache
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(registrations => {
                 registrations.forEach(reg => {
@@ -226,9 +245,6 @@ class AggressiveVersionChecker {
             });
         }
         
-        // Clear localStorage update flag
-        localStorage.removeItem('fishtrack_update_available');
-        
         // Show loading message
         document.body.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #1a2840; color: white; flex-direction: column; font-family: Arial, sans-serif;">
@@ -238,18 +254,18 @@ class AggressiveVersionChecker {
             </div>
         `;
         
-        // Hard reload
+        // Hard reload (with loop protection in place)
         setTimeout(() => {
             window.location.reload(true);
         }, 500);
     }
 }
 
-// Initialize
+// Initialize (wait for DOM)
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        window.versionChecker = new AggressiveVersionChecker();
+        window.versionChecker = new SafeVersionChecker();
     });
 } else {
-    window.versionChecker = new AggressiveVersionChecker();
+    window.versionChecker = new SafeVersionChecker();
 }
