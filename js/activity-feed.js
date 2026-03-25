@@ -120,7 +120,7 @@ function renderLatestCatches(catches) {
                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'"
                  onmouseout="this.style.transform=''; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">
                 ${catchData.photo ? 
-                    `<img src="${catchData.photo}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" alt="${catchData.species}">` : 
+                    `<img src="${catchData.photo}" class="activity-feed-photo" data-catch-id="${catchData.id}" alt="${catchData.species}">` : 
                     `<div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--navy-blue) 0%, #2a4060 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 48px; flex-shrink: 0;">🐟</div>`
                 }
                 <div style="flex: 1; min-width: 0;">
@@ -134,6 +134,31 @@ function renderLatestCatches(catches) {
             </div>
         `;
     }).join('');
+    
+    // Apply smart aspect ratio detection to activity feed images
+    setTimeout(() => {
+        document.querySelectorAll('.activity-feed-photo').forEach(img => {
+            img.onload = function() {
+                const aspectRatio = this.naturalWidth / this.naturalHeight;
+                
+                if (aspectRatio < 0.9) {
+                    // Portrait (vertical) - width < height
+                    this.classList.add('portrait');
+                } else if (aspectRatio > 0.9 && aspectRatio < 1.1) {
+                    // Square
+                    this.classList.add('square');
+                } else {
+                    // Landscape (horizontal)
+                    this.classList.add('landscape');
+                }
+            };
+            
+            // Trigger onload if image is already cached
+            if (img.complete) {
+                img.onload();
+            }
+        });
+    }, 100);
     
     // Attach click listeners
     document.querySelectorAll('.catch-card').forEach((card, index) => {
@@ -185,7 +210,7 @@ function renderBiggestCatch(catches) {
     
     content.innerHTML = `
         ${biggest.photo ? 
-            `<img src="${biggest.photo}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 12px; border: 4px solid white;" alt="${biggest.species}">` : 
+            `<img src="${biggest.photo}" class="biggest-catch-photo" alt="${biggest.species}">` : 
             `<div style="width: 150px; height: 150px; background: rgba(255,255,255,0.2); border-radius: 12px; border: 4px solid white; display: flex; align-items: center; justify-content: center; font-size: 64px;">🏆</div>`
         }
         <div style="flex: 1;">
@@ -224,6 +249,32 @@ function renderBiggestCatch(catches) {
     content.addEventListener('mouseleave', () => {
         content.style.transform = '';
     });
+    
+    // Apply smart aspect ratio detection to biggest catch image
+    setTimeout(() => {
+        const img = document.querySelector('.biggest-catch-photo');
+        if (img) {
+            img.onload = function() {
+                const aspectRatio = this.naturalWidth / this.naturalHeight;
+                
+                if (aspectRatio < 0.9) {
+                    // Portrait (vertical)
+                    this.classList.add('portrait');
+                } else if (aspectRatio > 0.9 && aspectRatio < 1.1) {
+                    // Square
+                    this.classList.add('square');
+                } else {
+                    // Landscape (horizontal)
+                    this.classList.add('landscape');
+                }
+            };
+            
+            // Trigger onload if image is already cached
+            if (img.complete) {
+                img.onload();
+            }
+        }
+    }, 100);
     
     section.style.display = 'block';
 }
