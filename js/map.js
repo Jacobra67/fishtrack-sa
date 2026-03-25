@@ -32,10 +32,27 @@ function initMap() {
     // Create map centered on South Africa coastline
     // CRITICAL: closePopupOnClick MUST be false on mobile
     map = L.map('map', {
-        closePopupOnClick: isMobile ? false : true  // Disable on mobile, enable on desktop
+        closePopupOnClick: isMobile ? false : true,  // Disable on mobile, enable on desktop
+        closePopupOnEscapeKey: isMobile ? false : true  // Don't close on Escape on mobile
     }).setView([-33.5, 20.0], 7);
     
     console.log('📱 Mobile mode:', isMobile, '| closePopupOnClick:', !isMobile);
+    
+    // CRITICAL: Prevent popup close on map drag/pan on mobile
+    if (isMobile) {
+        map.on('drag', function(e) {
+            console.log('🗺️ Map dragging - keeping popup open');
+            // Don't close popups on drag
+        });
+        
+        map.on('dragstart', function(e) {
+            console.log('🗺️ Drag started');
+        });
+        
+        map.on('movestart', function(e) {
+            console.log('🗺️ Move started');
+        });
+    }
     
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -263,13 +280,16 @@ function displayCatches(catches) {
                 );
                 
                 // Popup options to prevent auto-close on mobile
+                const isMobile = window.innerWidth <= 768;
                 const popupOptions = {
                     closeOnClick: false,      // Don't close when clicking map
                     autoClose: false,         // Don't close when another popup opens
-                    autoPan: true,            // Pan map to show popup
+                    closeOnEscapeKey: false,  // Don't close on Escape
+                    autoPan: false,           // CRITICAL: Disable on mobile to prevent close on drag
                     autoPanPadding: [50, 50], // Padding around popup
                     maxWidth: 350,            // Max width
-                    className: 'custom-popup' // Custom class for styling
+                    className: 'custom-popup', // Custom class for styling
+                    keepInView: false         // Don't force in view (causes close on drag)
                 };
                 
                 circle.bindPopup(createPopupContent(catchData), popupOptions);
@@ -282,13 +302,16 @@ function displayCatches(catches) {
                 );
                 
                 // Popup options to prevent auto-close on mobile
+                const isMobile = window.innerWidth <= 768;
                 const popupOptions = {
                     closeOnClick: false,      // Don't close when clicking map
                     autoClose: false,         // Don't close when another popup opens
-                    autoPan: true,            // Pan map to show popup
+                    closeOnEscapeKey: false,  // Don't close on Escape
+                    autoPan: false,           // CRITICAL: Disable to prevent close on drag
                     autoPanPadding: [50, 50], // Padding around popup
                     maxWidth: 350,            // Max width
-                    className: 'custom-popup' // Custom class for styling
+                    className: 'custom-popup', // Custom class for styling
+                    keepInView: false         // Don't force in view (causes close on drag)
                 };
                 
                 marker.bindPopup(createPopupContent(catchData), popupOptions);
