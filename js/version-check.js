@@ -1,13 +1,19 @@
 // Version Checker - Auto-detect updates and prompt user to refresh
 // Prevents users from being stuck on old cached versions
+// Fixed: Reads version from HTML meta tag (less cached than JS)
 
-const CURRENT_VERSION = 'v3.5.0-2026-03-25';
-const VERSION_CHECK_INTERVAL = 60000; // Check every 60 seconds
+const VERSION_CHECK_INTERVAL = 15000; // Check every 15 seconds (aggressive!)
 const STORAGE_KEY = 'fishtrack_current_version';
 
 class VersionChecker {
     constructor() {
-        this.currentVersion = CURRENT_VERSION;
+        // Read version from HTML meta tag (survives JS caching!)
+        const metaVersion = document.querySelector('meta[name="app-version"]');
+        this.currentVersion = metaVersion ? metaVersion.content : 'unknown';
+        
+        console.log('🔍 Version Checker v2 - Reading from meta tag');
+        console.log('   Current version:', this.currentVersion);
+        
         this.init();
     }
 
@@ -30,34 +36,43 @@ class VersionChecker {
 
     async checkForUpdates() {
         try {
-            // Fetch latest version from server (bypass cache)
-            const response = await fetch('/version.txt?t=' + Date.now(), {
+            console.log('🔄 Checking for updates...');
+            
+            // Fetch latest version from server (AGGRESSIVE cache bypass)
+            const timestamp = Date.now();
+            const response = await fetch(`/version.txt?v=${timestamp}`, {
                 cache: 'no-store',
                 headers: {
-                    'Cache-Control': 'no-cache'
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
                 }
             });
             
             if (!response.ok) {
-                console.warn('⚠️ Could not check version (server unreachable)');
+                console.warn('⚠️ Could not check version (server returned', response.status, ')');
                 return;
             }
             
             const latestVersion = (await response.text()).trim();
             
+            console.log('📊 Version comparison:');
+            console.log('   HTML meta tag:', this.currentVersion);
+            console.log('   Server version.txt:', latestVersion);
+            
             // Compare versions
             if (latestVersion !== this.currentVersion) {
-                console.log('🎉 New version available!');
-                console.log('   Current:', this.currentVersion);
-                console.log('   Latest:', latestVersion);
+                console.log('🚨 VERSION MISMATCH DETECTED!');
+                console.log('   You are on:', this.currentVersion);
+                console.log('   Latest is:', latestVersion);
                 
                 this.promptUpdate(latestVersion);
             } else {
-                console.log('✅ App is up to date:', this.currentVersion);
+                console.log('✅ Versions match - app is up to date');
             }
             
         } catch (error) {
-            console.warn('⚠️ Version check failed:', error.message);
+            console.error('❌ Version check failed:', error);
         }
     }
 
@@ -73,6 +88,8 @@ class VersionChecker {
         // Check if banner already exists
         if (document.getElementById('updateBanner')) return;
         
+        console.log('🚨 SHOWING UPDATE BANNER');
+        
         // Create banner HTML
         const banner = document.createElement('div');
         banner.id = 'updateBanner';
@@ -81,22 +98,28 @@ class VersionChecker {
             top: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(135deg, #00CED1 0%, #008B8B 100%);
+            background: linear-gradient(135deg, #ff7043 0%, #f4511e 100%);
             color: white;
-            padding: 16px;
+            padding: 20px;
             text-align: center;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
             z-index: 99999;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             cursor: pointer;
             animation: slideDown 0.3s ease;
         `;
         
+        let countdown = 10;
         banner.innerHTML = `
-            <div style="max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 12px;">
-                <span style="font-size: 24px;">🔄</span>
-                <span>New version available (${newVersion}) - Tap to update!</span>
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div style="font-size: 32px; margin-bottom: 8px;">🔄</div>
+                <div style="font-size: 18px; margin-bottom: 8px;">
+                    New version available (${newVersion})
+                </div>
+                <div style="font-size: 14px; opacity: 0.9;">
+                    Tap to update now • Auto-updating in <span id="countdown">${countdown}</span>s
+                </div>
             </div>
         `;
         
@@ -104,19 +127,32 @@ class VersionChecker {
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideDown {
-                from { transform: translateY(-100%); }
-                to { transform: translateY(0); }
+                from { transform: translateY(-100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
             }
         `;
         document.head.appendChild(style);
         
-        // Click to reload
+        // Click to reload immediately
         banner.addEventListener('click', () => this.forceUpdate());
+        
+        // Auto-reload after 10 seconds
+        const countdownEl = banner.querySelector('#countdown');
+        const interval = setInterval(() => {
+            countdown--;
+            if (countdownEl) countdownEl.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(interval);
+                console.log('⏰ Auto-updating now...');
+                this.forceUpdate();
+            }
+        }, 1000);
         
         // Insert at top of body
         document.body.insertBefore(banner, document.body.firstChild);
         
-        console.log('📢 Update banner displayed');
+        console.log('📢 Update banner displayed - Auto-reload in 10s');
     }
 
     forceUpdate() {
