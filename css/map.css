@@ -389,14 +389,16 @@
     }
     
     .catch-popup img,
-    .catch-photo-clickable {
-        max-height: 100px !important;  /* Compact photo on mobile */
-        height: 100px !important;      /* Fixed height */
+    .catch-photo-clickable,
+    .popup-photo-bottom {
+        max-height: 180px !important;  /* Bigger since it's at bottom now */
+        height: auto !important;       /* Auto height for flexibility */
         width: 100% !important;
-        object-fit: cover !important;   /* Crop to fit */
-        margin-bottom: 6px !important;
+        object-fit: cover !important;  /* Crop to fit */
+        margin-top: 10px !important;   /* Space from info above */
+        margin-bottom: 0 !important;
         display: block !important;
-        border-radius: 6px !important;
+        border-radius: 8px !important;
     }
     
     .catch-popup h3 {
@@ -416,18 +418,9 @@
     
     /* Make popup fit better on mobile */
     .leaflet-popup-content-wrapper {
-        max-height: 60vh !important;
+        max-height: 70vh !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
-    }
-    
-    /* Ensure popup doesn't get cut off by header */
-    .leaflet-popup {
-        margin-top: 20px !important;
-    }
-    
-    .leaflet-popup-tip-container {
-        margin-top: -10px !important;
     }
     
     /* Smaller buttons on mobile */

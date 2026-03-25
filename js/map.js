@@ -140,12 +140,10 @@ function formatDate(timestamp) {
 function createPopupContent(catchData) {
     let html = '<div class="catch-popup">';
     
-    // Photo (clickable)
-    if (catchData.photo) {
-        html += `<img src="${catchData.photo}" alt="${catchData.species}" class="catch-photo-clickable" data-catch-id="${catchData.id}" style="cursor: pointer;">`;
-    }
+    // MOBILE: Info first, photo at bottom
+    const isMobile = window.innerWidth <= 768;
     
-    // Species
+    // Species (always first)
     html += `<h3>${catchData.species}</h3>`;
     
     // Secret Spot Badge
@@ -164,6 +162,11 @@ function createPopupContent(catchData) {
     html += `<div><strong>Location:</strong> ${catchData.locationName}</div>`;
     html += `<div><strong>When:</strong> ${formatDate(catchData.timestamp)}</div>`;
     html += '</div>';
+    
+    // Photo AFTER details (so it's visible even if popup is high)
+    if (catchData.photo) {
+        html += `<img src="${catchData.photo}" alt="${catchData.species}" class="catch-photo-clickable popup-photo-bottom" data-catch-id="${catchData.id}" style="cursor: pointer; margin-top: 10px;">`;
+    }
     
     // More Info toggle button
     const hasExtraInfo = catchData.length || catchData.bait || catchData.waterTemp || catchData.tide || catchData.wind || catchData.waterType || catchData.country || catchData.locationType;
