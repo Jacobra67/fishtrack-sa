@@ -36,23 +36,7 @@ function initMap() {
         closePopupOnEscapeKey: isMobile ? false : true  // Don't close on Escape on mobile
     }).setView([-33.5, 20.0], 7);
     
-    console.log('📱 Mobile mode:', isMobile, '| closePopupOnClick:', !isMobile);
-    
-    // CRITICAL: Prevent popup close on map drag/pan on mobile
-    if (isMobile) {
-        map.on('drag', function(e) {
-            console.log('🗺️ Map dragging - keeping popup open');
-            // Don't close popups on drag
-        });
-        
-        map.on('dragstart', function(e) {
-            console.log('🗺️ Drag started');
-        });
-        
-        map.on('movestart', function(e) {
-            console.log('🗺️ Move started');
-        });
-    }
+    // Silent mode - no excessive console logs
     
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -388,62 +372,54 @@ async function loadCatches() {
     }
 }
 
+// Track current popup globally
+let currentMobilePopup = null;
+let popupOriginalClose = null;
+
 // Initialize everything
 async function init() {
     try {
         // Initialize map
         initMap();
         
-        // Track current popup on mobile
-        let currentMobilePopup = null;
-        
         // Prevent popup auto-close on mobile
         map.on('popupopen', function(e) {
             const popup = e.popup;
             const isMobile = window.innerWidth <= 768;
             
-            console.log('🔵 Popup opened!', {
-                isMobile,
-                popupExists: !!popup,
-                elementExists: !!popup.getElement()
-            });
-            
             if (isMobile) {
-                // Close previous popup if exists
+                // Close previous popup if exists (FORCE CLOSE)
                 if (currentMobilePopup && currentMobilePopup !== popup) {
-                    console.log('🗑️ Closing previous popup');
-                    const prevClose = currentMobilePopup._close;
-                    currentMobilePopup._close = prevClose; // Restore original close
+                    // Restore original close method temporarily
+                    if (popupOriginalClose) {
+                        currentMobilePopup._close = popupOriginalClose;
+                    }
                     map.closePopup(currentMobilePopup);
                 }
                 
                 // Set as current popup
                 currentMobilePopup = popup;
                 
-                console.log('📱 Mobile: Locking popup open');
-                
                 // NUCLEAR OPTION: Completely prevent popup from closing
                 popup._closeButton.style.display = 'block'; // Ensure close button is visible
                 
-                // Override Leaflet's close method temporarily
-                const originalClose = popup._close;
+                // Store original close method GLOBALLY
+                popupOriginalClose = popup._close.bind(popup);
                 let canClose = false;
                 
                 // Only allow close via close button
                 popup._closeButton.addEventListener('click', () => {
-                    console.log('❌ Close button clicked - allowing close');
                     canClose = true;
+                    currentMobilePopup = null; // Clear reference
                     map.closePopup();
                 });
                 
                 // Block all other close attempts
                 popup._close = function() {
                     if (canClose) {
-                        console.log('✅ Closing popup (allowed)');
-                        originalClose.call(this);
-                    } else {
-                        console.log('🚫 Blocked popup close attempt');
+                        popupOriginalClose.call(this);
                     }
+                    // Silently block other close attempts
                 };
                 
                 // Prevent clicks inside popup from propagating
