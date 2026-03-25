@@ -66,6 +66,19 @@
     transform: rotate(90deg);
 }
 
+/* Mobile: Bigger, more prominent close button */
+@media (max-width: 768px) {
+    .catch-modal-close {
+        top: 10px;
+        right: 10px;
+        width: 50px;
+        height: 50px;
+        font-size: 32px;
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+}
+
 .catch-modal-photo {
     width: 100%;
     max-height: 50vh;
@@ -234,12 +247,19 @@
     .catch-modal-overlay {
         padding: 0;
         align-items: flex-start;
+        background: #000; /* Solid black on mobile for cleaner look */
+        pointer-events: none; /* Disable all pointer events on overlay */
+    }
+    
+    .catch-modal {
+        pointer-events: auto; /* Re-enable pointer events on modal content */
     }
     
     .catch-modal {
         max-width: 100%;
         max-height: 100vh;
-        height: 100%;
+        height: auto; /* Auto height instead of 100% - prevents layout issues */
+        min-height: 100vh; /* But ensure it fills screen */
         margin: 0;
         border-radius: 0;
         overflow-y: auto;

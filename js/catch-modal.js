@@ -54,11 +54,14 @@ class CatchModal {
             this.close();
         });
 
-        // Close on overlay click (outside modal)
-        // Delay to prevent immediate close on mobile
-        modal.addEventListener('click', (e) => {
-            // Only close if clicking the overlay AND modal has been open for >100ms
-            if (e.target === modal && this.modalOpenTime && (Date.now() - this.modalOpenTime) > 100) {
+        // Close on overlay click (outside modal) - DESKTOP ONLY
+        // Use mousedown instead of click to avoid conflicts with touch events
+        modal.addEventListener('mousedown', (e) => {
+            // Disable click-outside-to-close on mobile (too error-prone)
+            const isMobile = window.innerWidth <= 768;
+            
+            if (!isMobile && e.target === modal) {
+                console.log('🖱️ Desktop: Clicking outside modal, closing...');
                 this.close();
             }
         });
@@ -104,6 +107,11 @@ class CatchModal {
     open(catchData) {
         const modal = document.getElementById('catchModal');
         
+        console.log('🔵 Modal opening...', {
+            isMobile: window.innerWidth <= 768,
+            screenWidth: window.innerWidth
+        });
+        
         // Store catch data for navigation
         this.currentCatchData = catchData;
         
@@ -116,10 +124,17 @@ class CatchModal {
         // Show modal
         modal.classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        
+        console.log('✅ Modal opened successfully');
     }
 
     close() {
         const modal = document.getElementById('catchModal');
+        
+        console.log('🔴 Modal closing...', {
+            caller: new Error().stack.split('\n')[2] // Log where close was called from
+        });
+        
         modal.classList.remove('active');
         document.body.style.overflow = ''; // Restore scrolling
     }
