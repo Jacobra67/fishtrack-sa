@@ -1,6 +1,6 @@
 // FishTrack Africa - Service Worker
 // Auto-generated version - DO NOT EDIT MANUALLY
-const CACHE_VERSION = 'v3.5.3-hotfix-loop'; // Updated on each deploy
+const CACHE_VERSION = 'v3.5.4-hotfix-features'; // Updated on each deploy
 const CACHE_NAME = `fishtrack-${CACHE_VERSION}`;
 
 const urlsToCache = [

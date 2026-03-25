@@ -178,6 +178,82 @@ function initFormLogic() {
         document.querySelectorAll('.freshwater-group, .freshwater-location, .freshwater-bait').forEach(el => el.style.display = isSalt ? 'none' : '');
         document.getElementById('locationName').placeholder = isSalt ? 'e.g. Struisbaai Beach' : 'e.g. Vaal River';
     });
+    
+    // Weight Calculator - Show button when length is entered
+    const lengthInput = document.getElementById('length');
+    const calculateWeightBtn = document.getElementById('calculateWeightBtn');
+    
+    if (lengthInput && calculateWeightBtn) {
+        lengthInput.addEventListener('input', function() {
+            if (this.value && parseFloat(this.value) > 0) {
+                calculateWeightBtn.style.display = 'block';
+            } else {
+                calculateWeightBtn.style.display = 'none';
+            }
+        });
+    }
+    
+    // Use Current Location Button
+    const useCurrentLocationBtn = document.getElementById('useCurrentLocation');
+    if (useCurrentLocationBtn) {
+        useCurrentLocationBtn.addEventListener('click', function() {
+            this.disabled = true;
+            this.textContent = '📍 Getting location...';
+            
+            if (!navigator.geolocation) {
+                alert('❌ Geolocation not supported by your browser');
+                this.disabled = false;
+                this.textContent = '📍 Use My Current Location';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    console.log('✅ Got current location:', lat, lng);
+                    
+                    // Drop pin on map
+                    dropPin(lat, lng);
+                    pinMap.setView([lat, lng], 14);
+                    
+                    this.disabled = false;
+                    this.textContent = '✅ Location Set!';
+                    setTimeout(() => {
+                        this.textContent = '📍 Use My Current Location';
+                    }, 2000);
+                },
+                (error) => {
+                    console.error('❌ Geolocation error:', error);
+                    let message = 'Could not get your location. ';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            message += 'Please allow location access in your browser settings.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message += 'Location information unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            message += 'Request timed out. Try again.';
+                            break;
+                        default:
+                            message += 'Unknown error occurred.';
+                    }
+                    
+                    alert('❌ ' + message);
+                    this.disabled = false;
+                    this.textContent = '📍 Use My Current Location';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        });
+    }
 }
 
 async function loadCatchDataForEdit() {
