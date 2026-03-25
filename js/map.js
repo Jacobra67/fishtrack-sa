@@ -27,8 +27,15 @@ const speciesColors = {
 
 // Initialize map
 function initMap() {
+    const isMobile = window.innerWidth <= 768;
+    
     // Create map centered on South Africa coastline
-    map = L.map('map').setView([-33.5, 20.0], 7);
+    // CRITICAL: closePopupOnClick MUST be false on mobile
+    map = L.map('map', {
+        closePopupOnClick: isMobile ? false : true  // Disable on mobile, enable on desktop
+    }).setView([-33.5, 20.0], 7);
+    
+    console.log('📱 Mobile mode:', isMobile, '| closePopupOnClick:', !isMobile);
     
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -366,19 +373,45 @@ async function init() {
             const popup = e.popup;
             const isMobile = window.innerWidth <= 768;
             
+            console.log('🔵 Popup opened!', {
+                isMobile,
+                popupExists: !!popup,
+                elementExists: !!popup.getElement()
+            });
+            
             if (isMobile) {
-                console.log('📱 Mobile popup opened - preventing auto-close');
+                console.log('📱 Mobile: Locking popup open');
                 
-                // Prevent popup from closing when clicking inside it
+                // NUCLEAR OPTION: Completely prevent popup from closing
+                popup._closeButton.style.display = 'block'; // Ensure close button is visible
+                
+                // Override Leaflet's close method temporarily
+                const originalClose = popup._close;
+                let canClose = false;
+                
+                // Only allow close via close button
+                popup._closeButton.addEventListener('click', () => {
+                    console.log('❌ Close button clicked - allowing close');
+                    canClose = true;
+                    map.closePopup();
+                });
+                
+                // Block all other close attempts
+                popup._close = function() {
+                    if (canClose) {
+                        console.log('✅ Closing popup (allowed)');
+                        originalClose.call(this);
+                    } else {
+                        console.log('🚫 Blocked popup close attempt');
+                    }
+                };
+                
+                // Prevent clicks inside popup from propagating
                 const popupContainer = popup.getElement();
                 if (popupContainer) {
-                    popupContainer.addEventListener('click', function(event) {
-                        event.stopPropagation();
-                    });
-                    
-                    popupContainer.addEventListener('touchstart', function(event) {
-                        event.stopPropagation();
-                    });
+                    popupContainer.addEventListener('click', (e) => e.stopPropagation(), true);
+                    popupContainer.addEventListener('touchstart', (e) => e.stopPropagation(), true);
+                    popupContainer.addEventListener('touchend', (e) => e.stopPropagation(), true);
                 }
             }
         });
