@@ -1,5 +1,8 @@
 // Catch Logger - Complete Unified Script
 // Handles Logging, Editing, Map Selection, and Photo Optimization
+// VERSION: 2026-03-25-DEBUG-v2
+
+console.log('🔥🔥🔥 CATCH LOGGER v2026-03-25-DEBUG-v2 LOADED 🔥🔥🔥');
 
 let photoFile = null;
 let photoDataURL = null;
