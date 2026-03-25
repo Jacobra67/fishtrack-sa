@@ -196,6 +196,16 @@ function createPopupContent(catchData) {
         html += '<div class="catch-released">✓ Catch & Release</div>';
     }
     
+    // Navigate to Spot button
+    if (catchData.location && catchData.location.lat) {
+        const navButtonText = catchData.privacy === 'secret' ? '📍 Navigate to Area' : '📍 Navigate to Spot';
+        html += `
+            <button class="navigate-btn" data-lat="${catchData.location.lat}" data-lng="${catchData.location.lng}" data-privacy="${catchData.privacy || 'public'}" style="width: 100%; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 12px; box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3); transition: all 0.2s;">
+                ${navButtonText}
+            </button>
+        `;
+    }
+    
     // Edit/Delete buttons (only shown if user is owner)
     // Check if this catch belongs to current user (simple localStorage check for now)
     const currentUser = localStorage.getItem('fishtrack_user_name');
@@ -413,6 +423,17 @@ async function init() {
             deleteCatch(catchId);
         }
     });
+    
+    // Handle navigate button clicks
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('navigate-btn') || e.target.closest('.navigate-btn')) {
+            const btn = e.target.classList.contains('navigate-btn') ? e.target : e.target.closest('.navigate-btn');
+            const lat = btn.dataset.lat;
+            const lng = btn.dataset.lng;
+            const privacy = btn.dataset.privacy;
+            navigateToSpot(parseFloat(lat), parseFloat(lng), privacy);
+        }
+    });
 }
 
 // Edit catch function
@@ -463,6 +484,33 @@ async function deleteCatch(catchId) {
         console.error('Delete error:', error);
         alert('Failed to delete catch. Please try again.');
     }
+}
+
+// Navigate to spot (open Google Maps)
+function navigateToSpot(lat, lng, privacy) {
+    if (!lat || !lng) {
+        alert('⚠️ GPS coordinates not available for this catch.');
+        return;
+    }
+    
+    // For secret spots, show message about approximate location
+    if (privacy === 'secret') {
+        const confirmNav = confirm(
+            '🔒 SECRET SPOT\n\n' +
+            'This is a secret spot - navigation will take you to the approximate area (~2km radius), not the exact GPS pin.\n\n' +
+            'The angler is protecting their honey hole! 🎣\n\n' +
+            'Open Google Maps?'
+        );
+        if (!confirmNav) return;
+    }
+    
+    // Build Google Maps URL
+    const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+    
+    // Open in new tab (desktop) or Google Maps app (mobile)
+    window.open(mapsUrl, '_blank');
+    
+    console.log(`📍 Navigating to: ${lat}, ${lng} (Privacy: ${privacy || 'public'})`);
 }
 
 // Start when page loads

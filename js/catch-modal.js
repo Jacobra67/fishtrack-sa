@@ -22,6 +22,9 @@ class CatchModal {
                         <div class="catch-modal-details" id="modalDetails"></div>
                         
                         <div class="catch-modal-actions">
+                            <button class="catch-modal-btn catch-modal-btn-navigate" id="modalNavigate">
+                                📍 Navigate to Spot
+                            </button>
                             <button class="catch-modal-btn catch-modal-btn-like" id="modalLike">
                                 ❤️ Like <span id="likeCount">(0)</span>
                             </button>
@@ -41,6 +44,7 @@ class CatchModal {
     attachEventListeners() {
         const modal = document.getElementById('catchModal');
         const closeBtn = document.getElementById('modalClose');
+        const navigateBtn = document.getElementById('modalNavigate');
         const likeBtn = document.getElementById('modalLike');
         const commentBtn = document.getElementById('modalComment');
 
@@ -61,6 +65,15 @@ class CatchModal {
             }
         });
 
+        // Navigate button - Open Google Maps
+        navigateBtn.addEventListener('click', () => {
+            if (this.currentCatchData && this.currentCatchData.gps) {
+                this.navigateToSpot(this.currentCatchData.gps, this.currentCatchData.privacy);
+            } else {
+                alert('⚠️ GPS coordinates not available for this catch.');
+            }
+        });
+
         // Like button (placeholder)
         likeBtn.addEventListener('click', () => {
             alert('❤️ Like feature coming soon! This will let you like catches and show your appreciation to fellow anglers.');
@@ -74,6 +87,9 @@ class CatchModal {
 
     open(catchData) {
         const modal = document.getElementById('catchModal');
+        
+        // Store catch data for navigation
+        this.currentCatchData = catchData;
         
         // Populate modal with catch data
         this.populateModal(catchData);
@@ -175,6 +191,35 @@ class CatchModal {
         
         document.getElementById('modalDetails').innerHTML = detailsHTML || 
             '<p style="opacity: 0.6; font-style: italic;">No additional details recorded for this catch.</p>';
+    }
+
+    navigateToSpot(gps, privacy) {
+        if (!gps || !gps.lat || !gps.lng) {
+            alert('⚠️ GPS coordinates not available for this catch.');
+            return;
+        }
+
+        const lat = gps.lat;
+        const lng = gps.lng;
+        
+        // For secret spots, show message about approximate location
+        if (privacy === 'secret') {
+            const confirmNav = confirm(
+                '🔒 SECRET SPOT\n\n' +
+                'This is a secret spot - navigation will take you to the approximate area (~2km radius), not the exact GPS pin.\n\n' +
+                'The angler is protecting their honey hole! 🎣\n\n' +
+                'Open Google Maps?'
+            );
+            if (!confirmNav) return;
+        }
+
+        // Build Google Maps URL
+        const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+        
+        // Open in new tab (desktop) or Google Maps app (mobile)
+        window.open(mapsUrl, '_blank');
+        
+        console.log(`📍 Navigating to: ${lat}, ${lng} (Privacy: ${privacy || 'public'})`);
     }
 
     formatDate(dateString) {

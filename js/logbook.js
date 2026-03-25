@@ -286,6 +286,7 @@ function viewCatch(catchId) {
             date: catchData.timestamp?.toDate() || new Date(),
             catcher: catchData.catcherName || 'You',
             privacy: catchData.privacy,
+            gps: catchData.location, // GPS coordinates for navigation
             waterTemp: catchData.waterTemp,
             tide: catchData.tide,
             windSpeed: catchData.windSpeed,

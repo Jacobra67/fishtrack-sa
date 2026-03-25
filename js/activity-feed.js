@@ -148,6 +148,7 @@ function renderLatestCatches(catches) {
                     date: catchData.timestamp?.toDate() || new Date(),
                     catcher: catchData.catcherName || 'Anonymous',
                     privacy: catchData.privacy,
+                    gps: catchData.location, // GPS coordinates for navigation
                     waterTemp: catchData.waterTemp,
                     tide: catchData.tide,
                     windSpeed: catchData.windSpeed,
@@ -207,6 +208,7 @@ function renderBiggestCatch(catches) {
                 date: biggest.timestamp?.toDate() || new Date(),
                 catcher: biggest.catcherName || 'Anonymous',
                 privacy: biggest.privacy,
+                gps: biggest.location, // GPS coordinates for navigation
                 waterTemp: biggest.waterTemp,
                 tide: biggest.tide,
                 windSpeed: biggest.windSpeed,
