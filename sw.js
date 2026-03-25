@@ -1,7 +1,7 @@
 // FishTrack Africa - Service Worker
-// Version 2.7.0
+// Version 3.5.0 - Network-first for app files, cache-first for assets
 
-const CACHE_NAME = 'fishtrack-v2.7';
+const CACHE_NAME = 'fishtrack-v3.5.0';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -55,8 +55,16 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - Network-first for app files, cache-first for assets
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  
+  // ALWAYS bypass cache for version.txt (critical for update detection)
+  if (url.pathname.includes('version.txt')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
   // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) {
     // For Firebase and external resources, try network first
@@ -66,38 +74,53 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          console.log('[SW] Serving from cache:', event.request.url);
+  // Network-first strategy for HTML, JS, CSS (always check for updates)
+  const isAppFile = url.pathname.match(/\.(html|js|css)$/);
+  
+  if (isAppFile) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Cache the fresh response
+          if (response && response.status === 200 && response.type === 'basic') {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+          }
           return response;
-        }
-
-        console.log('[SW] Fetching from network:', event.request.url);
-        return fetch(event.request).then(response => {
-          // Don't cache if not a success response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+        })
+        .catch(() => {
+          // Fallback to cache if network fails (offline)
+          console.log('[SW] Network failed, serving from cache:', event.request.url);
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // Cache-first for images, fonts, etc. (static assets)
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          if (response) {
             return response;
           }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
+          return fetch(event.request).then(response => {
+            if (response && response.status === 200 && response.type === 'basic') {
+              const responseToCache = response.clone();
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+            }
+            return response;
           });
-
-          return response;
-        });
-      })
-      .catch(() => {
-        // Fallback for offline HTML pages
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      })
-  );
+        })
+        .catch(() => {
+          if (event.request.mode === 'navigate') {
+            return caches.match('/index.html');
+          }
+        })
+    );
+  }
 });
 
 // Background sync for offline catch logging (future feature)
