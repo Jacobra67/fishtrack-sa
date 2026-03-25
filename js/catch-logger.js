@@ -204,7 +204,7 @@ async function loadCatchDataForEdit() {
         }
         
         // Populate Details
-        const fields = ['waterType', 'catcherName', 'country', 'species', 'weight', 'length', 'locationType', 'locationName', 'bait', 'waterTemp', 'tide', 'wind'];
+        const fields = ['waterType', 'catcherName', 'socialLink', 'country', 'species', 'weight', 'length', 'locationType', 'locationName', 'bait', 'waterTemp', 'tide', 'wind'];
         fields.forEach(f => {
             const el = document.getElementById(f);
             if (el) el.value = data[f] || '';
@@ -271,6 +271,7 @@ function initFormSubmission() {
             const formData = {
                 waterType: document.getElementById('waterType').value,
                 catcherName: document.getElementById('catcherName').value,
+                socialLink: document.getElementById('socialLink')?.value || null,
                 catchDate: new Date(document.getElementById('catchDate').value + 'T12:00:00'),
                 country: document.getElementById('country').value,
                 species: document.getElementById('species').value,

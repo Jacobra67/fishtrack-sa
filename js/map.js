@@ -120,6 +120,17 @@ function formatDate(timestamp) {
     return date.toLocaleDateString();
 }
 
+// Detect social media platform from URL
+function getSocialPlatform(url) {
+    if (!url) return 'Social Media';
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes('tiktok.com')) return 'TikTok';
+    if (lowerUrl.includes('instagram.com')) return 'Instagram';
+    if (lowerUrl.includes('facebook.com') || lowerUrl.includes('fb.com')) return 'Facebook';
+    if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) return 'YouTube';
+    return 'Social Media';
+}
+
 // Create popup content for catch
 function createPopupContent(catchData) {
     let html = '<div class="catch-popup">';
@@ -138,6 +149,16 @@ function createPopupContent(catchData) {
     // Catcher name (if available)
     if (catchData.catcherName) {
         html += `<div class="catcher-name">🎣 Caught by <strong>${catchData.catcherName}</strong></div>`;
+    }
+    
+    // Social media link (if available)
+    if (catchData.socialLink) {
+        const platform = getSocialPlatform(catchData.socialLink);
+        html += `<div style="margin: 8px 0; padding: 8px; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border-radius: 8px; text-align: center;">
+            <a href="${catchData.socialLink}" target="_blank" rel="noopener noreferrer" style="color: white; text-decoration: none; font-weight: bold; font-size: 14px;">
+                🎥 Watch on ${platform} →
+            </a>
+        </div>`;
     }
     
     // Essential details (always visible)

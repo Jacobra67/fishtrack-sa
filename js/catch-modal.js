@@ -166,6 +166,14 @@ class CatchModal {
                 <span class="icon">🎣</span>
                 <span><span class="label">Caught by:</span> ${catchData.catcher || 'Anonymous'}</span>
             </div>
+            ${catchData.socialLink ? `
+            <div class="catch-modal-meta-item">
+                <span class="icon">🎥</span>
+                <span><a href="${catchData.socialLink}" target="_blank" rel="noopener noreferrer" style="color: #ff9800; font-weight: bold; text-decoration: none;">
+                    📱 Watch on ${this.getSocialPlatform(catchData.socialLink)} →
+                </a></span>
+            </div>
+            ` : ''}
             ${catchData.privacy === 'secret' ? '<div class="secret-spot-badge">🤫 SECRET SPOT</div>' : ''}
         `;
         document.getElementById('modalMeta').innerHTML = metaHTML;
@@ -274,6 +282,16 @@ class CatchModal {
             month: 'long', 
             day: 'numeric' 
         });
+    }
+
+    getSocialPlatform(url) {
+        if (!url) return 'Social Media';
+        const lowerUrl = url.toLowerCase();
+        if (lowerUrl.includes('tiktok.com')) return 'TikTok';
+        if (lowerUrl.includes('instagram.com')) return 'Instagram';
+        if (lowerUrl.includes('facebook.com') || lowerUrl.includes('fb.com')) return 'Facebook';
+        if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) return 'YouTube';
+        return 'Social Media';
     }
 }
 
