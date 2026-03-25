@@ -391,31 +391,46 @@
     .catch-popup img,
     .catch-photo-clickable,
     .popup-photo-bottom {
-        max-height: 180px !important;  /* Default for landscape */
+        max-height: 300px !important;  /* Bigger default */
         height: auto !important;
         width: 100% !important;
-        object-fit: cover !important;
+        object-fit: contain !important; /* CONTAIN by default - show full image */
         margin-top: 10px !important;
         margin-bottom: 0 !important;
         display: block !important;
         border-radius: 8px !important;
+        background: #f5f5f5 !important; /* Light background for letterboxing */
     }
     
     /* Portrait photos (vertical) - show full image */
     .catch-popup img.portrait,
     .catch-photo-clickable.portrait,
     .popup-photo-bottom.portrait {
-        max-height: 280px !important;  /* Taller for vertical photos */
+        max-height: 350px !important;  /* MUCH taller for vertical photos */
+        height: auto !important;
+        width: auto !important;
+        max-width: 100% !important;
         object-fit: contain !important; /* Show full image, don't crop */
         background: #1a2840 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
     
-    /* Square photos */
+    /* Square photos - can crop */
     .catch-popup img.square,
     .catch-photo-clickable.square,
     .popup-photo-bottom.square {
-        max-height: 200px !important;
+        max-height: 220px !important;
         object-fit: cover !important;
+    }
+    
+    /* Landscape photos - crop to save space */
+    .catch-popup img.landscape,
+    .catch-photo-clickable.landscape,
+    .popup-photo-bottom.landscape {
+        max-height: 180px !important;
+        object-fit: cover !important;
+        background: transparent !important;
     }
     
     .catch-popup h3 {

@@ -436,14 +436,19 @@ async function init() {
                             img.onload = function() {
                                 const aspectRatio = this.naturalWidth / this.naturalHeight;
                                 
+                                // Remove any existing classes
+                                this.classList.remove('portrait', 'square', 'landscape');
+                                
                                 if (aspectRatio < 0.9) {
-                                    // Portrait (vertical)
+                                    // Portrait (vertical) - show full image
                                     this.classList.add('portrait');
                                 } else if (aspectRatio > 0.9 && aspectRatio < 1.1) {
                                     // Square
                                     this.classList.add('square');
+                                } else {
+                                    // Landscape (horizontal) - can crop to save space
+                                    this.classList.add('landscape');
                                 }
-                                // Landscape stays default
                             };
                             
                             // Trigger if already cached
