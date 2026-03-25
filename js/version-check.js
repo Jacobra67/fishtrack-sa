@@ -2,16 +2,23 @@
 // Prevents users from being stuck on old cached versions
 // Fixed: Reads version from HTML meta tag (less cached than JS)
 
-const VERSION_CHECK_INTERVAL = 15000; // Check every 15 seconds (aggressive!)
+const VERSION_CHECK_INTERVAL = 60000; // Check every 60 seconds
 const STORAGE_KEY = 'fishtrack_current_version';
 
 class VersionChecker {
     constructor() {
         // Read version from HTML meta tag (survives JS caching!)
         const metaVersion = document.querySelector('meta[name="app-version"]');
-        this.currentVersion = metaVersion ? metaVersion.content : 'unknown';
+        this.currentVersion = metaVersion ? metaVersion.content : null;
         
-        console.log('🔍 Version Checker v2 - Reading from meta tag');
+        // If no meta tag found, disable version checking
+        if (!this.currentVersion) {
+            console.warn('⚠️ Version meta tag not found - version checking disabled');
+            console.warn('   Add <meta name="app-version" content="vX.X.X"> to HTML <head>');
+            return; // Don't init if we can't detect version
+        }
+        
+        console.log('🔍 Version Checker v2.1 - Reading from meta tag');
         console.log('   Current version:', this.currentVersion);
         
         this.init();
@@ -77,6 +84,14 @@ class VersionChecker {
     }
 
     promptUpdate(newVersion) {
+        // Only show banner once per session
+        if (this.updatePrompted) {
+            console.log('⏭️ Update already prompted this session, skipping...');
+            return;
+        }
+        
+        this.updatePrompted = true;
+        
         // Show prominent update banner
         this.showUpdateBanner(newVersion);
         
@@ -176,11 +191,16 @@ class VersionChecker {
     }
 }
 
-// Initialize version checker on page load
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+// Initialize version checker ONLY after DOM is fully loaded
+function initVersionChecker() {
+    // Small delay to ensure meta tags are parsed
+    setTimeout(() => {
         window.versionChecker = new VersionChecker();
-    });
+    }, 100);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initVersionChecker);
 } else {
-    window.versionChecker = new VersionChecker();
+    initVersionChecker();
 }
