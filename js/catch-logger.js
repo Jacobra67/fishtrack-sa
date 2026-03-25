@@ -1,8 +1,8 @@
 // Catch Logger - Complete Unified Script
 // Handles Logging, Editing, Map Selection, and Photo Optimization
-// VERSION: 2026-03-25-DEBUG-v2
+// VERSION: 2026-03-25-DEBUG-v3-PHOTO-FIX
 
-console.log('🔥🔥🔥 CATCH LOGGER v2026-03-25-DEBUG-v2 LOADED 🔥🔥🔥');
+console.log('🔥🔥🔥 CATCH LOGGER v2026-03-25-DEBUG-v3-PHOTO-FIX LOADED 🔥🔥🔥');
 
 let photoFile = null;
 let photoDataURL = null;
@@ -197,6 +197,10 @@ async function loadCatchDataForEdit() {
             document.getElementById('previewImage').src = photoDataURL;
             document.getElementById('photoLabel').style.display = 'none';
             document.getElementById('photoPreview').style.display = 'block';
+            
+            // CRITICAL FIX: Remove 'required' attribute in edit mode
+            document.getElementById('photoInput').removeAttribute('required');
+            console.log('✅ Photo requirement removed for edit mode');
         }
         
         // Populate Details
@@ -247,6 +251,16 @@ function initFormSubmission() {
         
         try {
             console.log('Step 1: Building form data...');
+            
+            // Validate photo (required for both new and edit)
+            if (!photoDataURL) {
+                alert('❌ Photo is required! Please add a photo before submitting.');
+                submitBtn.disabled = false;
+                document.getElementById('submitText').style.display = 'inline-block';
+                document.getElementById('submitSpinner').style.display = 'none';
+                return;
+            }
+            
             const privacy = document.querySelector('input[name="privacy"]:checked').value;
             const realLoc = pinnedLocation || { lat: -34.0, lng: 18.5 };
             
