@@ -49,11 +49,16 @@ class CatchModal {
         const commentBtn = document.getElementById('modalComment');
 
         // Close on X button
-        closeBtn.addEventListener('click', () => this.close());
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.close();
+        });
 
         // Close on overlay click (outside modal)
+        // Delay to prevent immediate close on mobile
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+            // Only close if clicking the overlay AND modal has been open for >100ms
+            if (e.target === modal && this.modalOpenTime && (Date.now() - this.modalOpenTime) > 100) {
                 this.close();
             }
         });
@@ -65,8 +70,17 @@ class CatchModal {
             }
         });
 
+        // Prevent clicks on modal content from closing the modal
+        const modalContent = modal.querySelector('.catch-modal');
+        if (modalContent) {
+            modalContent.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+
         // Navigate button - Open Google Maps
-        navigateBtn.addEventListener('click', () => {
+        navigateBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             if (this.currentCatchData && this.currentCatchData.gps) {
                 this.navigateToSpot(this.currentCatchData.gps, this.currentCatchData.privacy);
             } else {
@@ -75,12 +89,14 @@ class CatchModal {
         });
 
         // Like button (placeholder)
-        likeBtn.addEventListener('click', () => {
+        likeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             alert('❤️ Like feature coming soon! This will let you like catches and show your appreciation to fellow anglers.');
         });
 
         // Comment button (placeholder)
-        commentBtn.addEventListener('click', () => {
+        commentBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             alert('💬 Comment feature coming soon! This will let you share tips, ask questions, and connect with other anglers.');
         });
     }
@@ -90,6 +106,9 @@ class CatchModal {
         
         // Store catch data for navigation
         this.currentCatchData = catchData;
+        
+        // Record open time to prevent immediate close on mobile
+        this.modalOpenTime = Date.now();
         
         // Populate modal with catch data
         this.populateModal(catchData);
