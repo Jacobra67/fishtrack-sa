@@ -5,16 +5,18 @@
 
 ## 📦 What This Is
 
-This is your **STABLE PRODUCTION VERSION** - locked and tagged on **March 25, 2026**.
+This is your **STABLE PRODUCTION VERSION** - locked and tagged on **March 25, 2026 (17:11 SAST)**.
 
 All systems operational:
 - ✅ Site live and fast (1047ms load)
-- ✅ PWA update system working (aggressive 30s checks)
+- ✅ PWA update system working (manual updates, loop protection)
 - ✅ Influencer social links feature
 - ✅ Latest Activity feed on homepage
 - ✅ Facebook integration ready
 - ✅ Monitoring docs complete
 - ✅ Health check script active
+- ✅ Weight calculator working
+- ✅ GPS current location working
 
 **This is your "known good" version for emergency rollback.**
 
@@ -22,18 +24,23 @@ All systems operational:
 
 ## 🏷️ Version Details
 
-**Version:** v3.5.2-20260325-1415  
-**Git Tag:** v3.5.2-stable  
+**Version:** v3.5.5-calculator-fix  
+**Git Tag:** v3.5.5-stable  
 **Branch:** stable-backup  
-**Date Locked:** March 25, 2026  
-**Commit:** 47674b4  
-**Status:** 🟢 ALL SYSTEMS GREEN
+**Date Locked:** March 25, 2026 - 17:11 SAST  
+**Commit:** 23902c6  
+**Status:** 🟢 ALL SYSTEMS GREEN ✅ TESTED & WORKING
+
+**Hotfixes Applied:**
+- v3.5.3: Fixed iPhone update loop (manual update buttons)
+- v3.5.4: Restored weight calculator + GPS location features
+- v3.5.5: Fixed calculator button click handler
 
 ---
 
 ## 📥 Local Backup Location
 
-**Archive File:** `fishtrack-sa-v3.5.2-stable-backup-20260325.tar.gz`  
+**Archive File:** `fishtrack-sa-v3.5.5-stable-backup-20260325.tar.gz`  
 **Size:** 345 MB  
 **Location:** `/home/openclaw/.openclaw/workspace/`  
 **Contains:** Complete app (code, assets, docs, everything)
@@ -213,25 +220,29 @@ git push origin --delete rollback-test
 
 ## 📊 Known Working State
 
-### Performance (March 25, 2026)
+### Performance (March 25, 2026 - 17:11 SAST)
 - **Page load:** 1047ms (excellent)
 - **Lighthouse score:** 85+ mobile, 95+ desktop
 - **Uptime:** 99.9%+
 - **User feedback:** Positive
+- **iPhone compatibility:** ✅ Tested and working
+- **Update system:** Manual control (no loops)
 
-### Features Working
+### Features Working (All Tested ✅)
 - ✅ Catch logging with photos
 - ✅ Interactive map with pins
-- ✅ GPS location tracking
+- ✅ GPS location tracking ("Use My Current Location" button)
 - ✅ Privacy controls (public/secret/private)
-- ✅ Social media links (influencer feature)
+- ✅ Social media links (influencer feature - Step 4)
 - ✅ Photo editing (crop/rotate)
-- ✅ Weight calculator
-- ✅ Tide & wind data
-- ✅ Activity feed
-- ✅ Personal logbook
+- ✅ Weight calculator (from length - 60+ species formulas)
+- ✅ Tide & wind data (auto-fill conditions)
+- ✅ Activity feed (Latest Catches section)
+- ✅ Personal logbook (with filters)
 - ✅ PWA install (works offline)
-- ✅ Auto-update system (30s checks)
+- ✅ Update system (manual buttons, loop protection)
+- ✅ Facebook cover photo generator
+- ✅ Health check monitoring script
 
 ### Quotas (Free Tier Usage)
 - **Netlify bandwidth:** <5 GB/month
