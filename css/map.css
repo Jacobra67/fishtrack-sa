@@ -391,14 +391,31 @@
     .catch-popup img,
     .catch-photo-clickable,
     .popup-photo-bottom {
-        max-height: 180px !important;  /* Bigger since it's at bottom now */
-        height: auto !important;       /* Auto height for flexibility */
+        max-height: 180px !important;  /* Default for landscape */
+        height: auto !important;
         width: 100% !important;
-        object-fit: cover !important;  /* Crop to fit */
-        margin-top: 10px !important;   /* Space from info above */
+        object-fit: cover !important;
+        margin-top: 10px !important;
         margin-bottom: 0 !important;
         display: block !important;
         border-radius: 8px !important;
+    }
+    
+    /* Portrait photos (vertical) - show full image */
+    .catch-popup img.portrait,
+    .catch-photo-clickable.portrait,
+    .popup-photo-bottom.portrait {
+        max-height: 280px !important;  /* Taller for vertical photos */
+        object-fit: contain !important; /* Show full image, don't crop */
+        background: #1a2840 !important;
+    }
+    
+    /* Square photos */
+    .catch-popup img.square,
+    .catch-photo-clickable.square,
+    .popup-photo-bottom.square {
+        max-height: 200px !important;
+        object-fit: cover !important;
     }
     
     .catch-popup h3 {

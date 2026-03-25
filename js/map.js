@@ -428,6 +428,30 @@ async function init() {
                     popupContainer.addEventListener('click', (e) => e.stopPropagation(), true);
                     popupContainer.addEventListener('touchstart', (e) => e.stopPropagation(), true);
                     popupContainer.addEventListener('touchend', (e) => e.stopPropagation(), true);
+                    
+                    // Apply smart aspect ratio detection to popup photos
+                    setTimeout(() => {
+                        const img = popupContainer.querySelector('.catch-photo-clickable, .popup-photo-bottom, img');
+                        if (img && img.src) {
+                            img.onload = function() {
+                                const aspectRatio = this.naturalWidth / this.naturalHeight;
+                                
+                                if (aspectRatio < 0.9) {
+                                    // Portrait (vertical)
+                                    this.classList.add('portrait');
+                                } else if (aspectRatio > 0.9 && aspectRatio < 1.1) {
+                                    // Square
+                                    this.classList.add('square');
+                                }
+                                // Landscape stays default
+                            };
+                            
+                            // Trigger if already cached
+                            if (img.complete) {
+                                img.onload();
+                            }
+                        }
+                    }, 50);
                 }
             }
         });
