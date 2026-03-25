@@ -1,17 +1,23 @@
 // FishTrack Africa - Service Worker
-// Version 3.5.0 - Network-first for app files, cache-first for assets
+// Auto-generated version - DO NOT EDIT MANUALLY
+const CACHE_VERSION = 'v3.5.2-20260325-1415'; // Updated on each deploy
+const CACHE_NAME = `fishtrack-${CACHE_VERSION}`;
 
-const CACHE_NAME = 'fishtrack-v3.5.0';
 const urlsToCache = [
   '/',
   '/index.html',
   '/log-catch.html',
   '/map.html',
-  '/css/styles.css',
+  '/my-logbook.html',
+  '/css/style.css',
   '/css/tide-wind.css',
+  '/css/logger.css',
   '/css/weight-calculator.css',
   '/css/location-search.css',
   '/css/secret-spot.css',
+  '/css/photo-editor.css',
+  '/css/logbook.css',
+  '/css/catch-modal.css',
   '/js/firebase-config.js',
   '/js/catch-logger.js',
   '/js/map.js',
@@ -19,70 +25,106 @@ const urlsToCache = [
   '/js/pwa-install.js',
   '/js/fish-weight-calculator.js',
   '/js/activity-feed.js',
+  '/js/catch-modal.js',
+  '/js/logbook.js',
+  '/js/version-check.js',
+  '/assets/logo-final-v2.png',
   '/assets/icon-192.png',
-  '/assets/icon-512.png',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+  '/assets/icon-512.png'
 ];
 
-// Install event - cache assets
+// Install event - cache assets IMMEDIATELY
 self.addEventListener('install', event => {
-  console.log('[SW] Installing...');
+  console.log(`[SW] Installing new version: ${CACHE_VERSION}`);
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('[SW] Caching app shell');
         return cache.addAll(urlsToCache);
       })
-      .then(() => self.skipWaiting())
+      .then(() => {
+        console.log('[SW] Skip waiting - activate immediately!');
+        return self.skipWaiting(); // Force immediate activation
+      })
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches and take control IMMEDIATELY
 self.addEventListener('activate', event => {
-  console.log('[SW] Activating...');
+  console.log(`[SW] Activating new version: ${CACHE_VERSION}`);
+  
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
+            console.log('[SW] 🗑️ Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('[SW] ✅ Claiming all clients - force reload!');
+      return self.clients.claim(); // Take control of all pages immediately
+    }).then(() => {
+      // Notify all clients to reload
+      return self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          console.log('[SW] 📢 Notifying client to reload:', client.url);
+          client.postMessage({
+            type: 'SW_UPDATED',
+            version: CACHE_VERSION
+          });
+        });
+      });
+    })
   );
 });
 
-// Fetch event - Network-first for app files, cache-first for assets
+// Listen for messages from pages (manual update check)
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[SW] Received SKIP_WAITING message - activating now!');
+    self.skipWaiting();
+  }
+});
+
+// Fetch event - Smart caching strategy
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // ALWAYS bypass cache for version.txt (critical for update detection)
-  if (url.pathname.includes('version.txt')) {
-    event.respondWith(fetch(event.request));
+  // CRITICAL: NEVER cache version.txt or sw.js
+  if (url.pathname.includes('version.txt') || url.pathname.includes('sw.js')) {
+    console.log('[SW] Bypassing cache for:', url.pathname);
+    event.respondWith(
+      fetch(event.request, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      })
+    );
     return;
   }
   
-  // Skip cross-origin requests
+  // Skip cross-origin requests (Firebase, external CDNs)
   if (!event.request.url.startsWith(self.location.origin)) {
-    // For Firebase and external resources, try network first
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
     return;
   }
 
-  // Network-first strategy for HTML, JS, CSS (always check for updates)
+  // Network-first for HTML, JS, CSS (always get latest)
   const isAppFile = url.pathname.match(/\.(html|js|css)$/);
   
   if (isAppFile) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, {
+        cache: 'reload' // Force cache bypass
+      })
         .then(response => {
           // Cache the fresh response
-          if (response && response.status === 200 && response.type === 'basic') {
+          if (response && response.status === 200) {
             const responseToCache = response.clone();
             caches.open(CACHE_NAME).then(cache => {
               cache.put(event.request, responseToCache);
@@ -91,21 +133,31 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => {
-          // Fallback to cache if network fails (offline)
-          console.log('[SW] Network failed, serving from cache:', event.request.url);
+          // Fallback to cache if offline
+          console.log('[SW] Offline - serving from cache:', event.request.url);
           return caches.match(event.request);
         })
     );
   } else {
-    // Cache-first for images, fonts, etc. (static assets)
+    // Cache-first for images, fonts (static assets)
     event.respondWith(
       caches.match(event.request)
         .then(response => {
           if (response) {
+            // Serve from cache, but update in background
+            fetch(event.request).then(freshResponse => {
+              if (freshResponse && freshResponse.status === 200) {
+                caches.open(CACHE_NAME).then(cache => {
+                  cache.put(event.request, freshResponse);
+                });
+              }
+            }).catch(() => {});
             return response;
           }
+          
+          // Not in cache, fetch from network
           return fetch(event.request).then(response => {
-            if (response && response.status === 200 && response.type === 'basic') {
+            if (response && response.status === 200) {
               const responseToCache = response.clone();
               caches.open(CACHE_NAME).then(cache => {
                 cache.put(event.request, responseToCache);
@@ -114,49 +166,8 @@ self.addEventListener('fetch', event => {
             return response;
           });
         })
-        .catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-        })
     );
   }
 });
 
-// Background sync for offline catch logging (future feature)
-self.addEventListener('sync', event => {
-  console.log('[SW] Background sync:', event.tag);
-  if (event.tag === 'sync-catches') {
-    event.waitUntil(syncCatches());
-  }
-});
-
-async function syncCatches() {
-  // TODO: Implement offline catch sync
-  console.log('[SW] Syncing offline catches...');
-}
-
-// Push notifications (future feature)
-self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'FishTrack Africa';
-  const options = {
-    body: data.body || 'New fishing activity nearby!',
-    icon: '/assets/icon-192.png',
-    badge: '/assets/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: data.url || '/'
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, options)
-  );
-});
-
-// Notification click handler
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  event.waitUntil(
-    clients.openWindow(event.notification.data)
-  );
-});
+console.log(`[SW] Service Worker loaded - Version: ${CACHE_VERSION}`);

@@ -1,53 +1,92 @@
-// Version Checker - Auto-detect updates and prompt user to refresh
-// Prevents users from being stuck on old cached versions
-// Fixed: Reads version from HTML meta tag (less cached than JS)
+// Version Checker v3.0 - Aggressive Update Detection
+// Checks version.txt every 30 seconds and forces reload on mismatch
 
-const VERSION_CHECK_INTERVAL = 60000; // Check every 60 seconds
-const STORAGE_KEY = 'fishtrack_current_version';
+const VERSION_CHECK_INTERVAL = 30000; // Check every 30 seconds (aggressive)
+const CURRENT_VERSION_META = document.querySelector('meta[name="app-version"]');
+const CURRENT_VERSION = CURRENT_VERSION_META ? CURRENT_VERSION_META.content : null;
 
-class VersionChecker {
+console.log('🔍 Version Checker v3.0 initialized');
+console.log('📋 Current version from meta tag:', CURRENT_VERSION);
+
+class AggressiveVersionChecker {
     constructor() {
-        // Read version from HTML meta tag (survives JS caching!)
-        const metaVersion = document.querySelector('meta[name="app-version"]');
-        this.currentVersion = metaVersion ? metaVersion.content : null;
-        
-        // If no meta tag found, disable version checking
-        if (!this.currentVersion) {
-            console.warn('⚠️ Version meta tag not found - version checking disabled');
-            console.warn('   Add <meta name="app-version" content="vX.X.X"> to HTML <head>');
-            return; // Don't init if we can't detect version
+        if (!CURRENT_VERSION) {
+            console.warn('⚠️ No app-version meta tag found - update checking disabled');
+            return;
         }
         
-        console.log('🔍 Version Checker v2.1 - Reading from meta tag');
-        console.log('   Current version:', this.currentVersion);
+        this.currentVersion = CURRENT_VERSION;
+        this.updatePrompted = false;
+        this.checkCount = 0;
         
-        this.init();
-    }
-
-    async init() {
-        console.log('🔍 Version Checker initialized. Current:', this.currentVersion);
+        // Listen for service worker updates
+        this.listenForSWUpdates();
         
-        // Check on page load
-        await this.checkForUpdates();
+        // Check immediately on load
+        setTimeout(() => this.checkForUpdates(), 2000);
         
-        // Check periodically (every 60 seconds)
+        // Check every 30 seconds
         setInterval(() => this.checkForUpdates(), VERSION_CHECK_INTERVAL);
         
-        // Check when tab becomes visible (user returns to app)
+        // Check when tab becomes visible
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
+                console.log('👀 Tab visible - checking for updates...');
                 this.checkForUpdates();
             }
         });
+        
+        // Check on focus
+        window.addEventListener('focus', () => {
+            console.log('🔍 Window focused - checking for updates...');
+            this.checkForUpdates();
+        });
     }
-
-    async checkForUpdates() {
-        try {
-            console.log('🔄 Checking for updates...');
+    
+    listenForSWUpdates() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'SW_UPDATED') {
+                    console.log('📢 Service Worker updated! New version:', event.data.version);
+                    this.forceUpdate();
+                }
+            });
             
-            // Fetch latest version from server (AGGRESSIVE cache bypass)
+            // Check for waiting service worker
+            navigator.serviceWorker.ready.then(registration => {
+                if (registration.waiting) {
+                    console.log('⏳ Service worker waiting - activating now!');
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+                
+                // Listen for new service workers
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    console.log('🆕 New service worker found - installing...');
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('✅ New service worker installed - reloading!');
+                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                            setTimeout(() => this.forceUpdate(), 1000);
+                        }
+                    });
+                });
+            });
+        }
+    }
+    
+    async checkForUpdates() {
+        this.checkCount++;
+        
+        try {
+            console.log(`🔄 Version check #${this.checkCount}`);
+            
+            // Aggressive cache bypass
             const timestamp = Date.now();
-            const response = await fetch(`/version.txt?v=${timestamp}`, {
+            const random = Math.random();
+            const response = await fetch(`/version.txt?v=${timestamp}&r=${random}`, {
+                method: 'GET',
                 cache: 'no-store',
                 headers: {
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -57,55 +96,45 @@ class VersionChecker {
             });
             
             if (!response.ok) {
-                console.warn('⚠️ Could not check version (server returned', response.status, ')');
+                console.warn('⚠️ Version check failed:', response.status);
                 return;
             }
             
             const latestVersion = (await response.text()).trim();
             
             console.log('📊 Version comparison:');
-            console.log('   HTML meta tag:', this.currentVersion);
-            console.log('   Server version.txt:', latestVersion);
+            console.log('   Current:', this.currentVersion);
+            console.log('   Latest:', latestVersion);
             
-            // Compare versions
             if (latestVersion !== this.currentVersion) {
-                console.log('🚨 VERSION MISMATCH DETECTED!');
-                console.log('   You are on:', this.currentVersion);
-                console.log('   Latest is:', latestVersion);
-                
+                console.log('🚨 VERSION MISMATCH - UPDATE NEEDED!');
                 this.promptUpdate(latestVersion);
             } else {
-                console.log('✅ Versions match - app is up to date');
+                console.log('✅ Up to date');
             }
             
         } catch (error) {
-            console.error('❌ Version check failed:', error);
+            console.error('❌ Version check error:', error);
         }
     }
-
+    
     promptUpdate(newVersion) {
-        // Only show banner once per session
         if (this.updatePrompted) {
-            console.log('⏭️ Update already prompted this session, skipping...');
+            console.log('⏭️ Update already prompted');
             return;
         }
         
         this.updatePrompted = true;
-        
-        // Show prominent update banner
+        console.log('📢 SHOWING UPDATE BANNER');
         this.showUpdateBanner(newVersion);
-        
-        // Store that an update is available
-        localStorage.setItem('fishtrack_update_available', newVersion);
     }
-
+    
     showUpdateBanner(newVersion) {
-        // Check if banner already exists
-        if (document.getElementById('updateBanner')) return;
+        // Remove existing banner
+        const existing = document.getElementById('updateBanner');
+        if (existing) existing.remove();
         
-        console.log('🚨 SHOWING UPDATE BANNER');
-        
-        // Create banner HTML
+        // Create banner
         const banner = document.createElement('div');
         banner.id = 'updateBanner';
         banner.style.cssText = `
@@ -113,32 +142,35 @@ class VersionChecker {
             top: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(135deg, #ff7043 0%, #f4511e 100%);
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
             color: white;
             padding: 20px;
             text-align: center;
             font-weight: bold;
-            font-size: 18px;
-            z-index: 99999;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-size: 16px;
+            z-index: 999999;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
             cursor: pointer;
-            animation: slideDown 0.3s ease;
+            animation: slideDown 0.4s ease-out;
         `;
         
-        let countdown = 10;
+        let countdown = 5;
         banner.innerHTML = `
             <div style="max-width: 600px; margin: 0 auto;">
-                <div style="font-size: 32px; margin-bottom: 8px;">🔄</div>
-                <div style="font-size: 18px; margin-bottom: 8px;">
-                    New version available (${newVersion})
+                <div style="font-size: 36px; margin-bottom: 10px;">🔄</div>
+                <div style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">
+                    New version available!
+                </div>
+                <div style="font-size: 15px; opacity: 0.95; margin-bottom: 12px;">
+                    ${newVersion} → Tap to update now
                 </div>
                 <div style="font-size: 14px; opacity: 0.9;">
-                    Tap to update now • Auto-updating in <span id="countdown">${countdown}</span>s
+                    Auto-updating in <span id="countdown" style="font-weight: bold; font-size: 18px;">${countdown}</span>s
                 </div>
             </div>
         `;
         
-        // Add animation
+        // Animation
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideDown {
@@ -148,10 +180,13 @@ class VersionChecker {
         `;
         document.head.appendChild(style);
         
-        // Click to reload immediately
-        banner.addEventListener('click', () => this.forceUpdate());
+        // Click to update
+        banner.addEventListener('click', () => {
+            console.log('👆 User clicked update banner');
+            this.forceUpdate();
+        });
         
-        // Auto-reload after 10 seconds
+        // Countdown
         const countdownEl = banner.querySelector('#countdown');
         const interval = setInterval(() => {
             countdown--;
@@ -159,48 +194,62 @@ class VersionChecker {
             
             if (countdown <= 0) {
                 clearInterval(interval);
-                console.log('⏰ Auto-updating now...');
+                console.log('⏰ Countdown finished - forcing update');
                 this.forceUpdate();
             }
         }, 1000);
         
-        // Insert at top of body
         document.body.insertBefore(banner, document.body.firstChild);
-        
-        console.log('📢 Update banner displayed - Auto-reload in 10s');
+        console.log('✅ Update banner shown - auto-reload in 5s');
     }
-
+    
     forceUpdate() {
-        console.log('🔄 Forcing update - Clearing cache and reloading...');
+        console.log('🔄 FORCING UPDATE - Clearing everything and reloading...');
         
-        // Clear service worker cache
+        // Unregister all service workers
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(registrations => {
-                registrations.forEach(registration => {
-                    registration.unregister();
-                    console.log('🗑️ Service worker unregistered');
+                registrations.forEach(reg => {
+                    console.log('🗑️ Unregistering service worker');
+                    reg.unregister();
                 });
             });
         }
         
-        // Clear localStorage version flag
+        // Clear all caches
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => {
+                    console.log('🗑️ Deleting cache:', name);
+                    caches.delete(name);
+                });
+            });
+        }
+        
+        // Clear localStorage update flag
         localStorage.removeItem('fishtrack_update_available');
         
-        // Hard reload (bypass cache)
-        window.location.reload(true);
+        // Show loading message
+        document.body.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #1a2840; color: white; flex-direction: column; font-family: Arial, sans-serif;">
+                <div style="font-size: 60px; margin-bottom: 20px;">🔄</div>
+                <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">Updating...</div>
+                <div style="font-size: 16px; opacity: 0.8;">Getting the latest version</div>
+            </div>
+        `;
+        
+        // Hard reload
+        setTimeout(() => {
+            window.location.reload(true);
+        }, 500);
     }
 }
 
-// Initialize version checker ONLY after DOM is fully loaded
-function initVersionChecker() {
-    // Small delay to ensure meta tags are parsed
-    setTimeout(() => {
-        window.versionChecker = new VersionChecker();
-    }, 100);
-}
-
+// Initialize
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initVersionChecker);
+    document.addEventListener('DOMContentLoaded', () => {
+        window.versionChecker = new AggressiveVersionChecker();
+    });
 } else {
-    initVersionChecker();
+    window.versionChecker = new AggressiveVersionChecker();
 }
