@@ -201,6 +201,9 @@ function renderCatches() {
                         <button class="catch-action-btn btn-view" onclick="viewCatch('${catchData.id}')">
                             👁️ View
                         </button>
+                        <button class="catch-action-btn btn-share" onclick="shareCatch('${catchData.id}')" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                            📤 Share
+                        </button>
                         <button class="catch-action-btn btn-edit" onclick="editCatch('${catchData.id}')">
                             ✏️ Edit
                         </button>
@@ -298,6 +301,49 @@ function applyFilters() {
     }
     
     renderCatches();
+}
+
+// Share catch function
+function shareCatch(catchId) {
+    const catchUrl = `${window.location.origin}/catch.html?id=${catchId}`;
+    
+    const catchData = allUserCatches.find(c => c.id === catchId);
+    if (!catchData) {
+        alert('Catch not found');
+        return;
+    }
+    
+    // Check if catch is private
+    if (catchData.privacy === 'private') {
+        alert('⚠️ This catch is set to Private.\n\nChange it to Public or Secret Spot to share it.');
+        return;
+    }
+    
+    const shareText = `Check out this ${catchData.species} (${catchData.weight}kg) I caught on FishTrack Africa!`;
+    
+    // Show share options
+    const shareOption = confirm(
+        `📤 Share This Catch\n\n` +
+        `${catchData.species} - ${catchData.weight}kg\n` +
+        `${catchData.locationName}\n\n` +
+        `Click OK to open share page, or Cancel to copy link only`
+    );
+    
+    if (shareOption) {
+        // Open dedicated catch page
+        window.open(catchUrl, '_blank');
+    } else {
+        // Copy link to clipboard
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(catchUrl).then(() => {
+                alert('✅ Link copied to clipboard!\n\nPaste it on Facebook, WhatsApp, or anywhere!\n\n' + catchUrl);
+            }).catch(() => {
+                prompt('Copy this link:', catchUrl);
+            });
+        } else {
+            prompt('Copy this link:', catchUrl);
+        }
+    }
 }
 
 function viewCatch(catchId) {

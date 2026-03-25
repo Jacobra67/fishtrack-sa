@@ -238,6 +238,15 @@ function createPopupContent(catchData) {
         `;
     }
     
+    // Share button (if catch is public or secret - not private)
+    if (catchData.privacy !== 'private') {
+        html += `
+            <button class="share-catch-btn" data-catch-id="${catchData.id}" style="width: 100%; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 8px; box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3); transition: all 0.2s;">
+                📤 Share This Catch
+            </button>
+        `;
+    }
+    
     // Edit/Delete buttons (only shown if user is owner)
     // Check if this catch belongs to current user (simple localStorage check for now)
     const currentUser = localStorage.getItem('fishtrack_user_name');
@@ -575,6 +584,51 @@ async function init() {
             navigateToSpot(parseFloat(lat), parseFloat(lng), privacy);
         }
     });
+    
+    // Handle share catch button clicks
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('share-catch-btn') || e.target.closest('.share-catch-btn')) {
+            const btn = e.target.classList.contains('share-catch-btn') ? e.target : e.target.closest('.share-catch-btn');
+            const catchId = btn.dataset.catchId;
+            shareCatch(catchId);
+        }
+    });
+}
+
+// Share catch function
+function shareCatch(catchId) {
+    const catchUrl = `${window.location.origin}/catch.html?id=${catchId}`;
+    
+    const catchData = allCatches.find(c => c.id === catchId);
+    if (!catchData) {
+        alert('Catch not found');
+        return;
+    }
+    
+    const shareText = `Check out this ${catchData.species} (${catchData.weight}kg) caught by ${catchData.catcherName} on FishTrack Africa!`;
+    
+    // Show share options
+    const shareOption = confirm(
+        `📤 Share This Catch\n\n` +
+        `${catchData.species} - ${catchData.weight}kg\n\n` +
+        `Click OK to open share page, or Cancel to copy link only`
+    );
+    
+    if (shareOption) {
+        // Open dedicated catch page
+        window.open(catchUrl, '_blank');
+    } else {
+        // Copy link to clipboard
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(catchUrl).then(() => {
+                alert('✅ Link copied to clipboard!\n\n' + catchUrl);
+            }).catch(() => {
+                prompt('Copy this link:', catchUrl);
+            });
+        } else {
+            prompt('Copy this link:', catchUrl);
+        }
+    }
 }
 
 // Edit catch function
