@@ -233,14 +233,23 @@ function initFormSubmission() {
     const catchForm = document.getElementById('catchForm');
     catchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log('🎯 FORM SUBMITTED - Starting save process...');
+        console.log('Mode:', isEditMode ? 'EDIT' : 'NEW');
+        console.log('Edit ID:', editCatchId);
+        
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         document.getElementById('submitText').style.display = 'none';
         document.getElementById('submitSpinner').style.display = 'inline-block';
         
         try {
+            console.log('Step 1: Building form data...');
             const privacy = document.querySelector('input[name="privacy"]:checked').value;
             const realLoc = pinnedLocation || { lat: -34.0, lng: 18.5 };
+            
+            console.log('Privacy:', privacy);
+            console.log('Location:', realLoc);
+            console.log('Photo exists:', !!photoDataURL);
             
             const formData = {
                 waterType: document.getElementById('waterType').value,
@@ -266,24 +275,59 @@ function initFormSubmission() {
                 verified: false
             };
             
+            console.log('Step 2: Form data built:', formData);
+            
             if (isEditMode) {
-                console.log('📝 Updating existing catch:', editCatchId);
-                await db.collection('catches').doc(editCatchId).set(formData, { merge: true });
-                console.log('✅ Update successful');
+                console.log('Step 3: UPDATING existing catch:', editCatchId);
+                console.log('Using merge: true to preserve existing data');
+                
+                const docRef = db.collection('catches').doc(editCatchId);
+                await docRef.set(formData, { merge: true });
+                
+                console.log('✅ UPDATE COMPLETE - Verifying...');
+                
+                // Verify the write
+                const updated = await docRef.get();
+                if (updated.exists) {
+                    console.log('✅ VERIFIED - Document exists after update');
+                    console.log('Updated location:', updated.data().location);
+                } else {
+                    console.error('❌ VERIFICATION FAILED - Document missing after update!');
+                }
             } else {
-                console.log('📝 Creating new catch');
-                await db.collection('catches').add(formData);
-                console.log('✅ Creation successful');
+                console.log('Step 3: CREATING new catch');
+                const docRef = await db.collection('catches').add(formData);
+                console.log('✅ CREATION COMPLETE - ID:', docRef.id);
             }
             
+            console.log('Step 4: Saving user name to localStorage');
             localStorage.setItem('fishtrack_user_name', formData.catcherName);
-            document.getElementById('catchForm').style.display = 'none';
-            document.getElementById('successMessage').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            console.log('Step 5: Showing success message');
+            
+            if (isEditMode) {
+                // Redirect back to logbook after edit
+                console.log('Step 6: Redirecting to logbook...');
+                alert('✅ Changes saved successfully!');
+                window.location.href = 'my-logbook.html';
+            } else {
+                // Show success message for new catch
+                document.getElementById('catchForm').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            
+            console.log('🎉 SAVE COMPLETE!');
             
         } catch (error) {
-            console.error('Save Error:', error);
-            alert('Error saving: ' + error.message);
+            console.error('❌ SAVE ERROR:', error);
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Error code:', error.code);
+            console.error('Full error:', JSON.stringify(error, null, 2));
+            
+            alert('ERROR SAVING CATCH:\n\n' + error.message + '\n\nCheck console (F12) for details.');
+            
             submitBtn.disabled = false;
             document.getElementById('submitText').style.display = 'inline-block';
             document.getElementById('submitSpinner').style.display = 'none';
