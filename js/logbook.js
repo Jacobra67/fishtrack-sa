@@ -172,7 +172,7 @@ function renderCatches() {
         return `
             <div class="catch-card-logbook" data-catch-id="${catchData.id}">
                 ${catchData.photo ? 
-                    `<img src="${catchData.photo}" class="catch-card-photo" alt="${catchData.species}">` :
+                    `<img src="${catchData.photo}" class="catch-card-photo" alt="${catchData.species}" data-catch-id="${catchData.id}">` :
                     `<div class="catch-card-photo placeholder">🐟</div>`
                 }
                 <div class="catch-card-content">
@@ -212,6 +212,33 @@ function renderCatches() {
             </div>
         `;
     }).join('');
+    
+    // Apply smart aspect ratio detection to images
+    setTimeout(() => {
+        document.querySelectorAll('.catch-card-photo[src]').forEach(img => {
+            img.onload = function() {
+                const aspectRatio = this.naturalWidth / this.naturalHeight;
+                
+                if (aspectRatio < 0.9) {
+                    // Portrait (vertical) - width < height
+                    this.classList.add('portrait');
+                    console.log('Portrait image detected:', aspectRatio);
+                } else if (aspectRatio > 0.9 && aspectRatio < 1.1) {
+                    // Square
+                    this.classList.add('square');
+                    console.log('Square image detected:', aspectRatio);
+                } else {
+                    // Landscape (horizontal) - default behavior
+                    console.log('Landscape image detected:', aspectRatio);
+                }
+            };
+            
+            // Trigger onload if image is already cached
+            if (img.complete) {
+                img.onload();
+            }
+        });
+    }, 100);
 }
 
 function setupEventListeners() {
