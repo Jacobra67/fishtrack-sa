@@ -223,10 +223,7 @@
     width: 250px !important;
 }
 
-.catch-popup {
-    padding: 12px;
-}
-
+/* Desktop popup photo */
 .catch-popup img {
     width: 100%;
     max-height: 200px;
@@ -234,6 +231,10 @@
     border-radius: 6px;
     margin-bottom: 8px;
     background: #f5f5f5;
+}
+
+.catch-popup {
+    padding: 12px;
 }
 
 .catch-popup h3 {
@@ -373,16 +374,48 @@
     
     /* Mobile popup adjustments */
     .leaflet-popup-content {
-        width: 280px !important;
-        max-width: calc(100vw - 40px) !important;
+        width: 260px !important;
+        max-width: calc(100vw - 60px) !important;
     }
     
     .catch-popup {
-        padding: 16px;
+        padding: 10px;
     }
     
     .catch-popup img {
-        max-height: 250px;
+        max-height: 150px !important;  /* Smaller photo on mobile */
+        object-fit: cover !important;   /* Crop to fit */
+        margin-bottom: 6px !important;
+    }
+    
+    .catch-popup h3 {
+        font-size: 15px !important;
+        margin-bottom: 6px !important;
+    }
+    
+    .catch-info {
+        font-size: 12px !important;
+        gap: 3px !important;
+    }
+    
+    .catcher-name {
+        font-size: 12px !important;
+        margin-bottom: 6px !important;
+    }
+    
+    /* Make popup fit better on mobile */
+    .leaflet-popup-content-wrapper {
+        max-height: 75vh !important;
+        overflow-y: auto !important;
+    }
+    
+    /* Smaller buttons on mobile */
+    .navigate-btn,
+    .more-info-toggle,
+    .catch-action-btn {
+        padding: 10px !important;
+        font-size: 13px !important;
+        margin-top: 8px !important;
     }
     
     /* Bigger close button on mobile */

@@ -391,6 +391,9 @@ async function init() {
         // Initialize map
         initMap();
         
+        // Track current popup on mobile
+        let currentMobilePopup = null;
+        
         // Prevent popup auto-close on mobile
         map.on('popupopen', function(e) {
             const popup = e.popup;
@@ -403,6 +406,17 @@ async function init() {
             });
             
             if (isMobile) {
+                // Close previous popup if exists
+                if (currentMobilePopup && currentMobilePopup !== popup) {
+                    console.log('🗑️ Closing previous popup');
+                    const prevClose = currentMobilePopup._close;
+                    currentMobilePopup._close = prevClose; // Restore original close
+                    map.closePopup(currentMobilePopup);
+                }
+                
+                // Set as current popup
+                currentMobilePopup = popup;
+                
                 console.log('📱 Mobile: Locking popup open');
                 
                 // NUCLEAR OPTION: Completely prevent popup from closing
