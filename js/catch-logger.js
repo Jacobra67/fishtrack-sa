@@ -181,7 +181,10 @@ function initFormLogic() {
     
     // Weight Calculator - Show button when length is entered
     const lengthInput = document.getElementById('length');
+    const weightInput = document.getElementById('weight');
+    const speciesInput = document.getElementById('species');
     const calculateWeightBtn = document.getElementById('calculateWeightBtn');
+    const weightEstimateNotice = document.getElementById('weightEstimateNotice');
     
     if (lengthInput && calculateWeightBtn) {
         lengthInput.addEventListener('input', function() {
@@ -190,6 +193,46 @@ function initFormLogic() {
             } else {
                 calculateWeightBtn.style.display = 'none';
             }
+        });
+        
+        // Calculate weight when button clicked
+        calculateWeightBtn.addEventListener('click', function() {
+            const species = speciesInput.value;
+            const length = parseFloat(lengthInput.value);
+            
+            if (!species) {
+                alert('⚠️ Please select a species first');
+                return;
+            }
+            
+            if (!length || length <= 0) {
+                alert('⚠️ Please enter a valid length');
+                return;
+            }
+            
+            // Use the calculateFishWeight function from fish-weight-calculator.js
+            const estimatedWeight = calculateFishWeight(species, length);
+            
+            if (estimatedWeight === null) {
+                alert(`⚠️ Weight calculation not available for ${species}`);
+                return;
+            }
+            
+            // Fill in the weight
+            weightInput.value = estimatedWeight;
+            
+            // Show estimate notice
+            if (weightEstimateNotice) {
+                weightEstimateNotice.style.display = 'block';
+            }
+            
+            // Visual feedback
+            weightInput.style.background = '#fff3cd';
+            setTimeout(() => {
+                weightInput.style.background = '';
+            }, 2000);
+            
+            console.log(`✅ Calculated weight: ${estimatedWeight}kg for ${species} at ${length}cm`);
         });
     }
     

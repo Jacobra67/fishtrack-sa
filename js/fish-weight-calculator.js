@@ -99,7 +99,13 @@ function hasWeightFormula(species) {
   return FISH_FORMULAS.hasOwnProperty(species);
 }
 
-// Export for use in catch logger
+// Make functions globally available
+window.calculateFishWeight = calculateFishWeight;
+window.hasWeightFormula = hasWeightFormula;
+
+// Export for use in catch logger (CommonJS)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { calculateFishWeight, hasWeightFormula };
 }
+
+console.log('✅ Fish weight calculator loaded - formulas for', Object.keys(FISH_FORMULAS).length, 'species');
