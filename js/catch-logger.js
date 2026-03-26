@@ -297,6 +297,131 @@ function initFormLogic() {
             );
         });
     }
+    
+    // Location Search Button
+    const searchLocationBtn = document.getElementById('searchLocationBtn');
+    const locationSearchInput = document.getElementById('locationSearch');
+    
+    if (searchLocationBtn && locationSearchInput) {
+        searchLocationBtn.addEventListener('click', async function() {
+            const searchQuery = locationSearchInput.value.trim();
+            
+            if (!searchQuery) {
+                alert('⚠️ Please enter a location to search');
+                return;
+            }
+            
+            this.disabled = true;
+            this.textContent = 'Searching...';
+            
+            try {
+                // Use Nominatim (OpenStreetMap) geocoding - FREE
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`;
+                const response = await fetch(url);
+                const results = await response.json();
+                
+                if (results.length > 0) {
+                    const location = results[0];
+                    const lat = parseFloat(location.lat);
+                    const lng = parseFloat(location.lon);
+                    
+                    console.log('✅ Found location:', location.display_name, lat, lng);
+                    
+                    // Drop pin on map
+                    dropPin(lat, lng);
+                    pinMap.setView([lat, lng], 13);
+                    
+                    // Optional: Fill in location name
+                    const locationNameInput = document.getElementById('locationName');
+                    if (locationNameInput && !locationNameInput.value) {
+                        locationNameInput.value = location.display_name.split(',')[0]; // First part of name
+                    }
+                    
+                    this.textContent = '✅ Found!';
+                    setTimeout(() => {
+                        this.textContent = 'Search';
+                    }, 2000);
+                } else {
+                    alert('❌ Location not found. Try a different search term.');
+                    this.textContent = 'Search';
+                }
+                
+            } catch (error) {
+                console.error('❌ Location search error:', error);
+                alert('❌ Search failed. Please try again.');
+                this.textContent = 'Search';
+            }
+            
+            this.disabled = false;
+        });
+        
+        // Also search on Enter key
+        locationSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchLocationBtn.click();
+            }
+        });
+    }
+    
+    // Auto-fill Conditions Button
+    const autofillConditionsBtn = document.getElementById('autofillConditionsBtn');
+    
+    if (autofillConditionsBtn) {
+        autofillConditionsBtn.addEventListener('click', async function() {
+            if (!pinnedLocation) {
+                alert('⚠️ Please set a location first (use GPS or tap map)');
+                return;
+            }
+            
+            this.disabled = true;
+            this.textContent = '🌊 Fetching conditions...';
+            
+            try {
+                const waterType = document.getElementById('waterType').value;
+                
+                // Use fetchConditions from conditions-autofill.js
+                if (typeof fetchConditions === 'function') {
+                    const conditions = await fetchConditions(pinnedLocation.lat, pinnedLocation.lng, waterType);
+                    
+                    console.log('✅ Got conditions:', conditions);
+                    
+                    // Fill in the form fields
+                    if (conditions.tide) {
+                        const tideInput = document.getElementById('tide');
+                        if (tideInput) tideInput.value = conditions.tide;
+                    }
+                    
+                    if (conditions.wind) {
+                        const windInput = document.getElementById('wind');
+                        if (windInput) windInput.value = conditions.wind;
+                    }
+                    
+                    if (conditions.waterTemp) {
+                        const waterTempInput = document.getElementById('waterTemp');
+                        if (waterTempInput) waterTempInput.value = conditions.waterTemp;
+                    }
+                    
+                    this.textContent = '✅ Conditions Filled!';
+                    setTimeout(() => {
+                        this.textContent = '🌊 Auto-fill Conditions';
+                    }, 2000);
+                    
+                } else {
+                    console.error('fetchConditions function not found');
+                    alert('⚠️ Auto-fill feature not available. Please enter conditions manually.');
+                    this.textContent = '🌊 Auto-fill Conditions';
+                }
+                
+            } catch (error) {
+                console.error('❌ Auto-fill error:', error);
+                alert('❌ Could not fetch conditions. Please enter manually.');
+                this.textContent = '🌊 Auto-fill Conditions';
+            }
+            
+            this.disabled = false;
+        });
+    }
 }
 
 async function loadCatchDataForEdit() {
