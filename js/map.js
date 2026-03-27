@@ -165,7 +165,7 @@ function createPopupContent(catchData) {
     html += '<div class="catch-info">';
     html += `<div><strong>Weight:</strong> ${catchData.weight}kg</div>`;
     html += `<div><strong>Location:</strong> ${catchData.locationName}</div>`;
-    html += `<div><strong>When:</strong> ${formatDate(catchData.timestamp)}</div>`;
+    html += `<div><strong>When:</strong> ${formatDate(catchData.catchDate || catchData.timestamp)}</div>`;
     html += '</div>';
     
     // Photo AFTER details (so it's visible even if popup is high)
@@ -370,7 +370,7 @@ function filterCatches() {
         }
         
         filtered = filtered.filter(c => {
-            const catchDate = c.timestamp.toDate ? c.timestamp.toDate() : new Date(c.timestamp);
+            const catchDate = (c.catchDate || c.timestamp).toDate ? (c.catchDate || c.timestamp).toDate() : new Date(c.catchDate || c.timestamp);
             return catchDate >= cutoff;
         });
     }

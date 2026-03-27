@@ -111,7 +111,7 @@ function renderLatestCatches(catches) {
     }
     
     feed.innerHTML = catches.map((catchData, index) => {
-        const timeAgo = getTimeAgo(catchData.timestamp?.toDate() || new Date());
+        const timeAgo = getTimeAgo((catchData.catchDate || catchData.timestamp)?.toDate() || new Date());
         const isSecret = catchData.privacy === 'secret';
         const locationDisplay = isSecret ? `${catchData.locationName || 'Unknown'} 🔒` : `${catchData.locationName || 'Unknown'} 📍`;
         

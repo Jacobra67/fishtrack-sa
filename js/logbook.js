@@ -167,7 +167,7 @@ function renderCatches() {
             'private': '🔐 Private'
         }[catchData.privacy] || '🌍 Public';
         
-        const timeAgo = getTimeAgo(catchData.timestamp?.toDate() || new Date());
+        const timeAgo = getTimeAgo((catchData.catchDate || catchData.timestamp)?.toDate() || new Date());
         
         return `
             <div class="catch-card-logbook" data-catch-id="${catchData.id}">
@@ -291,9 +291,9 @@ function applyFilters() {
     
     // Sort
     if (sortBy === 'newest') {
-        filteredCatches.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
+        filteredCatches.sort((a, b) => ((b.catchDate || b.timestamp)?.toDate() || 0) - ((a.catchDate || a.timestamp)?.toDate() || 0));
     } else if (sortBy === 'oldest') {
-        filteredCatches.sort((a, b) => (a.timestamp?.toDate() || 0) - (b.timestamp?.toDate() || 0));
+        filteredCatches.sort((a, b) => ((a.catchDate || a.timestamp)?.toDate() || 0) - ((b.catchDate || b.timestamp)?.toDate() || 0));
     } else if (sortBy === 'biggest') {
         filteredCatches.sort((a, b) => (b.weight || 0) - (a.weight || 0));
     } else if (sortBy === 'species') {
