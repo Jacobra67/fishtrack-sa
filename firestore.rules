@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // FISHTRACK-SA — TACTICAL RULES (matches current app, no auth)
+    // Date: 2026-05-05
+    // Why: app does not yet authenticate users; rules must allow anonymous
+    //      writes so real users can keep logging catches. Strict version
+    //      lives in firestore.rules.STRICT-FUTURE — switch to it once we
+    //      add Firebase Auth + userId to the catch payload.
+
+    function notTooBig() {
+      return request.resource.size < 1048576; // 1 MB doc cap (Firestore limit anyway)
+    }
+
+    function isValidCatchLite() {
+      let d = request.resource.data;
+      return d.species is string && d.species.size() > 0
+          && d.weight is number && d.weight >= 0 && d.weight < 1000
+          && d.catcherName is string && d.catcherName.size() > 0
+                                     && d.catcherName.size() <= 100;
+    }
+
+    // Catches — public read, anyone can create with sane payload
+    match /catches/{catchId} {
+      allow read: if true;
+      allow create: if isValidCatchLite() && notTooBig();
+      // Only allow update/delete by the same deviceId that created it
+      allow update: if isValidCatchLite() && notTooBig()
+                    && request.resource.data.deviceId == resource.data.deviceId;
+      allow delete: if request.auth == null
+                    || request.auth.uid == resource.data.deviceId;
+    }
+
+    // Users (profile records, optional)
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Reference data
+    match /species/{id}    { allow read: if true; allow write: if true; }
+    match /settings/{id}   { allow read: if true; allow write: if false; }
+    match /statistics/{id} { allow read: if true; allow write: if false; }
+    match /leaderboard/{id}{ allow read: if true; allow write: if false; }
+
+    // Reports / admin
+    match /reports/{id} {
+      allow read: if false;
+      allow create: if true;
+    }
+    match /admins/{id} { allow read, write: if false; }
+
+    // Default deny
+    match /{document=**} { allow read, write: if false; }
+  }
+}

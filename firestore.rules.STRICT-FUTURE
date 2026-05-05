@@ -1,0 +1,196 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================
+    // FISHTRACK-SA FIRESTORE SECURITY RULES
+    // ========================================
+    // Version: 1.0 (Production-ready)
+    // Date: April 13, 2026
+    // Author: Bob (OpenClaw AI)
+    //
+    // CRITICAL: Deploy these rules to prevent app shutdown!
+    // Deploy via: Firebase Console → Firestore Database → Rules → Publish
+    // ========================================
+    
+    // Helper Functions
+    // ========================================
+    
+    // Check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Check if user owns the document
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Check if user is admin (implement if needed later)
+    function isAdmin() {
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    // Validate catch data fields
+    function isValidCatch() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['species', 'weight', 'location', 'catcherName', 'timestamp', 'userId'])
+          && data.species is string
+          && data.weight is number
+          && data.weight > 0
+          && data.weight < 1000  // Max 1000kg (sanity check)
+          && data.location is map
+          && data.location.keys().hasAll(['lat', 'lng'])
+          && data.location.lat is number
+          && data.location.lng is number
+          && data.catcherName is string
+          && data.catcherName.size() > 0
+          && data.catcherName.size() <= 100
+          && data.timestamp is timestamp
+          && data.userId is string;
+    }
+    
+    
+    // ========================================
+    // CATCHES COLLECTION (Main Data)
+    // ========================================
+    // Public read (everyone can see catches on map/leaderboard)
+    // Authenticated write (only logged-in users can add catches)
+    // Users can only edit/delete their OWN catches
+    
+    match /catches/{catchId} {
+      // Anyone can READ catches (public map/leaderboard)
+      allow read: if true;
+      
+      // Only authenticated users can CREATE catches
+      allow create: if isSignedIn() 
+                    && isValidCatch()
+                    && request.resource.data.userId == request.auth.uid;
+      
+      // Users can UPDATE only their OWN catches
+      allow update: if isOwner(resource.data.userId)
+                    && isValidCatch()
+                    && request.resource.data.userId == resource.data.userId;  // Can't change owner
+      
+      // Users can DELETE only their OWN catches
+      allow delete: if isOwner(resource.data.userId);
+    }
+    
+    
+    // ========================================
+    // USERS COLLECTION (User Profiles)
+    // ========================================
+    // Users can read their own profile + public profiles
+    // Users can only write their OWN profile
+    
+    match /users/{userId} {
+      // Users can read their own profile, or any public profile
+      allow read: if true;  // Public profiles for leaderboard
+      
+      // Users can create/update only their OWN profile
+      allow create, update: if isOwner(userId);
+      
+      // Users can delete their own profile
+      allow delete: if isOwner(userId);
+    }
+    
+    
+    // ========================================
+    // SPECIES COLLECTION (Reference Data)
+    // ========================================
+    // Public read (everyone needs species list)
+    // Admin-only write (prevent spam/vandalism)
+    
+    match /species/{speciesId} {
+      // Anyone can read species data
+      allow read: if true;
+      
+      // Only admins can write species data (uncomment when ready)
+      // allow write: if isAdmin();
+      
+      // TEMPORARY: Allow authenticated users to write (for initial setup)
+      // TODO: Remove this after initial species data is populated
+      allow write: if isSignedIn();
+    }
+    
+    
+    // ========================================
+    // LEADERBOARD COLLECTION (Aggregated Data)
+    // ========================================
+    // Public read (everyone can see leaderboard)
+    // System-only write (Cloud Functions maintain this)
+    
+    match /leaderboard/{entry} {
+      // Anyone can read leaderboard
+      allow read: if true;
+      
+      // Only Cloud Functions can write (no direct writes from clients)
+      // This prevents cheating/manipulation
+      allow write: if false;  // Cloud Functions use admin SDK (bypasses rules)
+    }
+    
+    
+    // ========================================
+    // REPORTS COLLECTION (Abuse Reports)
+    // ========================================
+    // Authenticated users can report catches
+    // Admins can read/action reports
+    
+    match /reports/{reportId} {
+      // Only admins can read reports
+      allow read: if isAdmin();
+      
+      // Authenticated users can create reports
+      allow create: if isSignedIn();
+      
+      // Only admins can update/delete reports
+      allow update, delete: if isAdmin();
+    }
+    
+    
+    // ========================================
+    // ADMINS COLLECTION (Admin Users)
+    // ========================================
+    // Only admins can read/write admin list
+    
+    match /admins/{userId} {
+      allow read, write: if isAdmin();
+    }
+    
+    
+    // ========================================
+    // SETTINGS COLLECTION (App Config)
+    // ========================================
+    // Public read (app needs config)
+    // Admin-only write
+    
+    match /settings/{setting} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    
+    // ========================================
+    // STATISTICS COLLECTION (Analytics)
+    // ========================================
+    // Public read (show stats on homepage)
+    // System-only write (Cloud Functions maintain this)
+    
+    match /statistics/{stat} {
+      allow read: if true;
+      allow write: if false;  // Cloud Functions only
+    }
+    
+    
+    // ========================================
+    // DEFAULT DENY (Security Best Practice)
+    // ========================================
+    // Deny all other collections by default
+    // Must explicitly define rules above to grant access
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
