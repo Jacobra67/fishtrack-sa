@@ -70,7 +70,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script>window.DERBY_ID = 'gansbaai_galjoen_2026';</script>
+    <script>window.DERBY_ID = new URLSearchParams(location.search).get('derby') || 'gansbaai_galjoen_2026';</script>
     <script src="js/firebase-config.js"></script>
     <script src="js/derby-admin.js"></script>
 </body>
