@@ -4,6 +4,52 @@
 
 const DERBY_ID = window.DERBY_ID || 'gansbaai_galjoen_2026';
 
+// User-facing strings — pages can override any of these via window.DERBY_STRINGS
+const S = Object.assign({
+    startsIn: (d, h, m) => `⏳ Starts in ${d}d ${h}h ${m}m`,
+    complete: '🏁 Competition complete — final results below!',
+    live: (h, m) => `🔴 LIVE — ${h}h ${m}m left to fish!`,
+    anglersCount: n => `(${n} anglers)`,
+    noEntries: 'No entries yet — be the first!',
+    setup: 'The derby is still being set up — try again soon.',
+    entriesClosed: 'Entries are closed.',
+    enterName: 'Please enter your name.',
+    alreadyEntered: name => `"${name}" is already entered.`,
+    enterTeamName: 'Please enter a team name.',
+    teamMin: 'A team needs at least 2 anglers (max 4).',
+    entering: 'Entering...',
+    entryOkTeam: name => `✅ Team "${name}" is in! Tight lines! 🎣`,
+    entryOkInd: name => `✅ ${name} is in! Tight lines! 🎣`,
+    entryFail: '❌ Could not save entry. Check your connection and try again.',
+    enterBtn: 'Enter the Derby 🏆',
+    selectAngler: '— Select angler —',
+    changePhoto: '📸 Change photo',
+    addPhoto: '📸 Add photo of your catch (required)',
+    notStarted: 'The competition has not started yet.',
+    over: 'The competition is over — submissions are closed.',
+    pickAngler: 'Select the angler who caught the fish.',
+    pickSpecies: 'Select the species.',
+    validSpan: 'Enter a valid span in cm.',
+    photoRequired: 'A photo is required — it keeps the leaderboard honest!',
+    submitting: 'Submitting...',
+    catchOk: '✅ Catch submitted! It will appear on the leaderboard once verified at the weigh-in table.',
+    catchFail: '❌ Could not submit. Check your connection and try again.',
+    submitBtn: 'Submit Catch 🎣',
+    emptyGaljoen: 'No verified Galjoen yet — get casting!',
+    emptyGaljoen2: 'No verified Galjoen yet',
+    emptyTeams: 'No team catches verified yet',
+    emptyAny: 'No verified catches yet',
+    noSubmissions: 'No submissions yet',
+    totalSpan: t => `Total span: ${t} cm`,
+    fishCount: n => `${n} fish`,
+    teamDetail: n => `${n} verified Galjoen`,
+    badgeOk: '✔ verified',
+    badgeNo: '✖ not counted',
+    badgeWait: '⏳ awaiting weigh-in',
+    winnerSuffix: ' — WINNER!',
+    configFail: 'Derby is being set up — check back soon!'
+}, window.DERBY_STRINGS || {});
+
 let derbyConfig = null;
 let derbyEntries = [];
 let derbyCatches = [];
@@ -48,16 +94,16 @@ function updateCountdown() {
         const d = Math.floor(ms / 86400000);
         const h = Math.floor((ms % 86400000) / 3600000);
         const m = Math.floor((ms % 3600000) / 60000);
-        el.textContent = `⏳ Starts in ${d}d ${h}h ${m}m`;
+        el.textContent = S.startsIn(d, h, m);
     } else if (now > derbyConfig.end) {
-        el.textContent = '🏁 Competition complete — final results below!';
+        el.textContent = S.complete;
         const banner = $('final-results-banner');
         if (banner) banner.style.display = 'block';
     } else {
         const ms = derbyConfig.end - now;
         const h = Math.floor(ms / 3600000);
         const m = Math.floor((ms % 3600000) / 60000);
-        el.textContent = `🔴 LIVE — ${h}h ${m}m left to fish!`;
+        el.textContent = S.live(h, m);
     }
 }
 
@@ -87,9 +133,9 @@ function renderEntries() {
     const countEl = $('entry-count');
     if (!listEl) return;
     const anglers = allAnglers();
-    if (countEl) countEl.textContent = anglers.length ? `(${anglers.length} anglers)` : '';
+    if (countEl) countEl.textContent = anglers.length ? S.anglersCount(anglers.length) : '';
     if (!derbyEntries.length) {
-        listEl.innerHTML = '<div class="empty-msg">No entries yet — be the first!</div>';
+        listEl.innerHTML = `<div class="empty-msg">${S.noEntries}</div>`;
         return;
     }
     listEl.innerHTML = derbyEntries.map(e => {
@@ -113,17 +159,17 @@ async function submitEntry() {
     const btn = $('entryBtn');
     const type = document.querySelector('input[name="entryType"]:checked').value;
 
-    if (!derbyConfig) return showMsg(msg, false, 'The derby is still being set up — try again soon.');
+    if (!derbyConfig) return showMsg(msg, false, S.setup);
     if (new Date() > derbyConfig.entriesClose) {
-        return showMsg(msg, false, 'Entries are closed.');
+        return showMsg(msg, false, S.entriesClosed);
     }
 
     let payload;
     if (type === 'individual') {
         const name = $('entryName').value.trim();
-        if (name.length < 2) return showMsg(msg, false, 'Please enter your name.');
+        if (name.length < 2) return showMsg(msg, false, S.enterName);
         if (allAnglers().some(a => normName(a.name) === normName(name)))
-            return showMsg(msg, false, `"${name}" is already entered.`);
+            return showMsg(msg, false, S.alreadyEntered(name));
         payload = {
             entryType: 'individual',
             name: name,
@@ -134,18 +180,18 @@ async function submitEntry() {
         const anglers = [1, 2, 3, 4]
             .map(i => $('teamAngler' + i).value.trim())
             .filter(n => n.length >= 2);
-        if (teamName.length < 2) return showMsg(msg, false, 'Please enter a team name.');
-        if (anglers.length < 2) return showMsg(msg, false, 'A team needs at least 2 anglers (max 4).');
+        if (teamName.length < 2) return showMsg(msg, false, S.enterTeamName);
+        if (anglers.length < 2) return showMsg(msg, false, S.teamMin);
         const existing = allAnglers();
         for (const a of anglers) {
             if (existing.some(x => normName(x.name) === normName(a)))
-                return showMsg(msg, false, `"${a}" is already entered.`);
+                return showMsg(msg, false, S.alreadyEntered(a));
         }
         payload = { entryType: 'team', name: teamName, anglers: anglers, town: null };
     }
 
     btn.disabled = true;
-    btn.textContent = 'Entering...';
+    btn.textContent = S.entering;
     try {
         const user = await authReady;
         if (!user) throw new Error('auth');
@@ -153,18 +199,16 @@ async function submitEntry() {
         payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
         await db.collection('derbies').doc(DERBY_ID).collection('entries').add(payload);
         await loadEntries();
-        showMsg(msg, true, type === 'team'
-            ? `✅ Team "${payload.name}" is in! Tight lines! 🎣`
-            : `✅ ${payload.name} is in! Tight lines! 🎣`);
+        showMsg(msg, true, type === 'team' ? S.entryOkTeam(payload.name) : S.entryOkInd(payload.name));
         ['entryName', 'entryTown', 'teamName', 'teamAngler1', 'teamAngler2', 'teamAngler3', 'teamAngler4']
             .forEach(id => { const el = $(id); if (el) el.value = ''; });
         localStorage.setItem('fishtrack_derby_' + DERBY_ID, payload.name);
     } catch (err) {
         console.error('Entry failed:', err);
-        showMsg(msg, false, '❌ Could not save entry. Check your connection and try again.');
+        showMsg(msg, false, S.entryFail);
     }
     btn.disabled = false;
-    btn.textContent = 'Enter the Derby 🏆';
+    btn.textContent = S.enterBtn;
 }
 
 function showMsg(el, ok, text) {
@@ -179,7 +223,7 @@ function populateAnglerSelect() {
     if (!sel) return;
     const current = sel.value;
     const anglers = allAnglers().sort((a, b) => a.name.localeCompare(b.name));
-    sel.innerHTML = '<option value="">— Select angler —</option>' + anglers.map(a =>
+    sel.innerHTML = `<option value="">${S.selectAngler}</option>` + anglers.map(a =>
         `<option value="${escapeHtml(a.name)}" data-entry="${a.entryId}">${escapeHtml(a.name)}${a.team ? ' (' + escapeHtml(a.team) + ')' : ''}</option>`
     ).join('');
     const remembered = current || localStorage.getItem('fishtrack_derby_' + DERBY_ID);
@@ -199,7 +243,7 @@ function initPhotoHandler() {
             photoDataURL = dataURL;
             $('photoPreviewImg').src = dataURL;
             $('photoPreview').style.display = 'block';
-            $('photoLabel').textContent = '📸 Change photo';
+            $('photoLabel').textContent = S.changePhoto;
         });
     });
 }
@@ -235,19 +279,19 @@ async function submitCatch() {
     const species = $('catchSpecies').value;
     const spanCm = parseFloat($('catchSpan').value);
 
-    if (!derbyConfig) return showMsg(msg, false, 'The derby is still being set up — try again soon.');
+    if (!derbyConfig) return showMsg(msg, false, S.setup);
     const now = new Date();
-    if (now < derbyConfig.start) return showMsg(msg, false, 'The competition has not started yet.');
-    if (now > derbyConfig.end) return showMsg(msg, false, 'The competition is over — submissions are closed.');
-    if (!anglerName) return showMsg(msg, false, 'Select the angler who caught the fish.');
-    if (!species) return showMsg(msg, false, 'Select the species.');
-    if (!spanCm || spanCm <= 0 || spanCm >= 250) return showMsg(msg, false, 'Enter a valid span in cm.');
-    if (!photoDataURL) return showMsg(msg, false, 'A photo is required — it keeps the leaderboard honest!');
+    if (now < derbyConfig.start) return showMsg(msg, false, S.notStarted);
+    if (now > derbyConfig.end) return showMsg(msg, false, S.over);
+    if (!anglerName) return showMsg(msg, false, S.pickAngler);
+    if (!species) return showMsg(msg, false, S.pickSpecies);
+    if (!spanCm || spanCm <= 0 || spanCm >= 250) return showMsg(msg, false, S.validSpan);
+    if (!photoDataURL) return showMsg(msg, false, S.photoRequired);
 
     const entryId = sel.selectedOptions[0].getAttribute('data-entry');
 
     btn.disabled = true;
-    btn.textContent = 'Submitting...';
+    btn.textContent = S.submitting;
     try {
         const user = await authReady;
         if (!user) throw new Error('auth');
@@ -261,20 +305,20 @@ async function submitCatch() {
             status: 'pending',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        showMsg(msg, true, '✅ Catch submitted! It will appear on the leaderboard once verified at the weigh-in table.');
+        showMsg(msg, true, S.catchOk);
         localStorage.setItem('fishtrack_derby_' + DERBY_ID, anglerName);
         $('catchSpan').value = '';
         photoDataURL = null;
         $('photoPreview').style.display = 'none';
-        $('photoLabel').textContent = '📸 Add photo of your catch (required)';
+        $('photoLabel').textContent = S.addPhoto;
         $('catchPhoto').value = '';
         await loadCatches();
     } catch (err) {
         console.error('Catch submit failed:', err);
-        showMsg(msg, false, '❌ Could not submit. Check your connection and try again.');
+        showMsg(msg, false, S.catchFail);
     }
     btn.disabled = false;
-    btn.textContent = 'Submit Catch 🎣';
+    btn.textContent = S.submitBtn;
 }
 
 // ---------- Leaderboards ----------
@@ -301,7 +345,7 @@ function renderLeaderboards() {
         detail: teamOf(c.entryId),
         value: `${c.spanCm} cm`,
         photo: c.photo
-    })), ended, 'No verified Galjoen yet — get casting!');
+    })), ended, S.emptyGaljoen);
 
     // Most Galjoen per angler
     const counts = {};
@@ -315,10 +359,10 @@ function renderLeaderboards() {
         .sort((a, b) => b.count - a.count || b.total - a.total).slice(0, 10);
     renderRankList('lb-most-galjoen', most.map(e => ({
         name: e.name,
-        detail: `Total span: ${e.total.toFixed(0)} cm`,
-        value: `${e.count} fish`,
+        detail: S.totalSpan(e.total.toFixed(0)),
+        value: S.fishCount(e.count),
         photo: null
-    })), ended, 'No verified Galjoen yet');
+    })), ended, S.emptyGaljoen2);
 
     // Top teams: total approved galjoen span
     const teamScores = {};
@@ -338,10 +382,10 @@ function renderLeaderboards() {
     if (teamCard) teamCard.style.display = derbyEntries.some(e => e.entryType === 'team') ? 'block' : 'none';
     renderRankList('lb-teams', teams.map(t => ({
         name: t.name,
-        detail: `${t.count} verified Galjoen`,
+        detail: S.teamDetail(t.count),
         value: `${t.total.toFixed(0)} cm`,
         photo: null
-    })), ended, 'No team catches verified yet');
+    })), ended, S.emptyTeams);
 
     // Biggest overall (any species)
     const biggestAny = [...approved].sort((a, b) => b.spanCm - a.spanCm).slice(0, 5);
@@ -350,7 +394,7 @@ function renderLeaderboards() {
         detail: escapeHtml(c.species),
         value: `${c.spanCm} cm`,
         photo: c.photo
-    })), ended, 'No verified catches yet');
+    })), ended, S.emptyAny);
 
     // Lucky draw pool
     const drawPool = new Set(approved.map(c => normName(c.anglerName)));
@@ -378,7 +422,7 @@ function renderRankList(elId, rows, ended, emptyText) {
             <div class="lb-rank">${winner ? '👑' : (medals[i] || (i + 1) + '.')}</div>
             ${photo}
             <div class="lb-info">
-                <div class="lb-name">${escapeHtml(r.name)}${winner ? ' — WINNER!' : ''}</div>
+                <div class="lb-name">${escapeHtml(r.name)}${winner ? S.winnerSuffix : ''}</div>
                 <div class="lb-detail">${r.detail}</div>
             </div>
             <div class="lb-value">${r.value}</div>
@@ -393,13 +437,13 @@ function renderRecent() {
         .sort((a, b) => (toDate(b.createdAt) || 0) - (toDate(a.createdAt) || 0))
         .slice(0, 8);
     if (!recent.length) {
-        el.innerHTML = '<div class="empty-msg">No submissions yet</div>';
+        el.innerHTML = `<div class="empty-msg">${S.noSubmissions}</div>`;
         return;
     }
     el.innerHTML = recent.map(c => {
-        const badge = c.status === 'approved' ? '<span class="badge ok">✔ verified</span>'
-            : c.status === 'rejected' ? '<span class="badge no">✖ not counted</span>'
-            : '<span class="badge wait">⏳ awaiting weigh-in</span>';
+        const badge = c.status === 'approved' ? `<span class="badge ok">${S.badgeOk}</span>`
+            : c.status === 'rejected' ? `<span class="badge no">${S.badgeNo}</span>`
+            : `<span class="badge wait">${S.badgeWait}</span>`;
         return `<div class="recent-row">
             <img class="lb-photo" src="${c.photo}" alt="catch" onclick="showPhoto(this.src)">
             <div class="lb-info">
@@ -433,7 +477,7 @@ async function initDerby() {
     } catch (err) {
         console.error(err);
         const el = $('countdown');
-        if (el) el.textContent = 'Derby is being set up — check back soon!';
+        if (el) el.textContent = S.configFail;
         return;
     }
 
