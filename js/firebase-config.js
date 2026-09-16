@@ -1,11 +1,11 @@
 // Firebase Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyBu8k_4z-R8GDCZfqHa2K-kfkwjxA_qH8",
+    apiKey: "AIzaSyBu8k_4z-Rg6UDCZfqHa2K-kfkwjxA_qH8",
     authDomain: "fishtrack-sa.firebaseapp.com",
     projectId: "fishtrack-sa",
     storageBucket: "fishtrack-sa.firebasestorage.app",
-    messagingSenderId: "610455904803",
-    appId: "1:610455904803:web:3f04f72c5bd9644c64d336"
+    messagingSenderId: "610455904003",
+    appId: "1:610455904003:web:3f04f72c5bd9644c64d336"
 };
 
 // Initialize Firebase
