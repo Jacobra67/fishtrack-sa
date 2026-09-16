@@ -2,16 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // FISHTRACK-SA — TACTICAL RULES (matches current app, no auth)
+    // FISHTRACK-SA — TACTICAL RULES v2 (matches current app, no auth)
     // Date: 2026-05-05
-    // Why: app does not yet authenticate users; rules must allow anonymous
-    //      writes so real users can keep logging catches. Strict version
-    //      lives in firestore.rules.STRICT-FUTURE — switch to it once we
-    //      add Firebase Auth + userId to the catch payload.
-
-    function notTooBig() {
-      return request.resource.size < 1048576; // 1 MB doc cap (Firestore limit anyway)
-    }
+    // Why: app does not yet authenticate users. These rules are deliberately
+    //      permissive so real users can keep logging catches.
 
     function isValidCatchLite() {
       let d = request.resource.data;
@@ -21,37 +15,77 @@ service cloud.firestore {
                                      && d.catcherName.size() <= 100;
     }
 
-    // Catches — public read, anyone can create with sane payload
     match /catches/{catchId} {
       allow read: if true;
-      allow create: if isValidCatchLite() && notTooBig();
-      // Only allow update/delete by the same deviceId that created it
-      allow update: if isValidCatchLite() && notTooBig()
-                    && request.resource.data.deviceId == resource.data.deviceId;
-      allow delete: if request.auth == null
-                    || request.auth.uid == resource.data.deviceId;
+      allow create: if isValidCatchLite();
+      allow update: if isValidCatchLite();
+      allow delete: if true;
     }
 
-    // Users (profile records, optional)
     match /users/{userId} {
-      allow read: if true;
-      allow write: if true;
+      allow read, write: if true;
     }
 
-    // Reference data
-    match /species/{id}    { allow read: if true; allow write: if true; }
+    match /species/{id}    { allow read, write: if true; }
     match /settings/{id}   { allow read: if true; allow write: if false; }
     match /statistics/{id} { allow read: if true; allow write: if false; }
     match /leaderboard/{id}{ allow read: if true; allow write: if false; }
 
-    // Reports / admin
     match /reports/{id} {
       allow read: if false;
       allow create: if true;
     }
     match /admins/{id} { allow read, write: if false; }
 
-    // Default deny
+    // DERBY ENGINE v2 (2026-09-16) — Gansbaai Galjoen Derby and onward.
+    // Requires anonymous auth. Derby config docs are created via Firebase
+    // Console only; adminUids in the config doc gates verification writes.
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isDerbyAdmin(derbyId) {
+      return signedIn()
+          && request.auth.uid in get(/databases/$(database)/documents/derbies/$(derbyId)).data.adminUids;
+    }
+
+    match /derbies/{derbyId} {
+      allow read: if true;
+      allow create, delete: if false;
+      allow update: if isDerbyAdmin(derbyId);
+
+      match /entries/{entryId} {
+        allow read: if true;
+        allow create: if signedIn()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.name is string
+            && request.resource.data.name.size() >= 2
+            && request.resource.data.name.size() <= 100
+            && request.resource.data.entryType in ['individual', 'team'];
+        allow update, delete: if isDerbyAdmin(derbyId);
+      }
+
+      match /catches/{catchId} {
+        allow read: if true;
+        allow create: if signedIn()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.status == 'pending'
+            && request.resource.data.anglerName is string
+            && request.resource.data.anglerName.size() >= 2
+            && request.resource.data.anglerName.size() <= 100
+            && request.resource.data.species is string
+            && request.resource.data.species.size() > 0
+            && request.resource.data.spanCm is number
+            && request.resource.data.spanCm > 0
+            && request.resource.data.spanCm < 250
+            && request.resource.data.photo is string
+            && request.resource.data.photo.size() > 100;
+        allow update: if isDerbyAdmin(derbyId);
+        allow delete: if isDerbyAdmin(derbyId);
+      }
+    }
+
     match /{document=**} { allow read, write: if false; }
   }
 }

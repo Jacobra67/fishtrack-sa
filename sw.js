@@ -1,6 +1,6 @@
 // FishTrack Africa - Service Worker
 // Auto-generated version - DO NOT EDIT MANUALLY
-const CACHE_VERSION = 'v4.1-DERBY-2026-07-24'; // Updated on each deploy
+const CACHE_VERSION = 'v4.2-GANSBAAI-2026-09-16'; // Updated on each deploy
 const CACHE_NAME = `fishtrack-${CACHE_VERSION}`;
 
 const urlsToCache = [
