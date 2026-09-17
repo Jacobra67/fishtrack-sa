@@ -86,22 +86,6 @@ service cloud.firestore {
       }
     }
 
-
-    // WOLK SOLUTIONS — invoice-control demo (2026-09-17). Separate collections,
-    // does not touch FishTrack rules above. Invoices are captured by the WhatsApp
-    // bot via the Admin SDK (bypasses rules); the office board reads them and may
-    // only flip status/decidedAt while signed in (anonymous auth).
-    match /wolkSuppliers/{tenant} {
-      allow read: if true;
-      allow write: if false;
-    }
-    match /wolkInvoices/{invId} {
-      allow read: if true;
-      allow create, delete: if false;
-      allow update: if request.auth != null
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt']);
-    }
-
     match /{document=**} { allow read, write: if false; }
   }
 }

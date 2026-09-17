@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="af">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#1f3d2a">
+<title>Wolk Faktuurbeheer — Kantoorbord</title>
+<style>
+  /* ---------- Palette: Boland farmland, ink on paper ---------- */
+  :root {
+    --paper:      #f3eee2;   /* page */
+    --card:       #fffdf8;   /* card surface */
+    --ink:        #1c261f;   /* primary text */
+    --ink-2:      #4a5148;   /* secondary text */
+    --ink-3:      #6f7469;   /* muted text (4.5:1 on card) */
+    --line:       #e2dac8;
+    --line-2:     #cfc5ad;
+
+    --green-900:  #16301f;
+    --green-800:  #1f3d2a;   /* header */
+    --green-700:  #2b5a3a;   /* primary action */
+    --green-600:  #37704a;
+    --green-100:  #e4efe4;
+    --green-text: #1e4a2c;
+
+    --wheat:      #d9a441;   /* brand accent on dark */
+    --wheat-2:    #e8c27a;
+
+    --warn-text:  #6e4506;
+    --warn-bg:    #fbf0d6;
+    --warn-line:  #ecd08e;
+    --warn-ink:   #b8811a;
+
+    --stop-text:  #7a1d16;
+    --stop-bg:    #f9e5e1;
+    --stop-line:  #edb8b0;
+    --stop-ink:   #a8302a;
+
+    --info-text:  #38474f;
+    --info-bg:    #e9ecec;
+    --info-line:  #cfd6d8;
+    --info-ink:   #5a6b74;
+
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(28,38,31,.06), 0 6px 18px -8px rgba(28,38,31,.18);
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+
+  /* ---------- Header ---------- */
+  .hdr {
+    background: var(--green-800);
+    background-image:
+      radial-gradient(120% 140% at 100% 0%, rgba(217,164,65,.14), transparent 55%),
+      linear-gradient(180deg, #23452f, var(--green-800));
+    color: #fff;
+    padding: max(14px, env(safe-area-inset-top)) 18px 18px;
+    border-bottom: 3px solid var(--wheat);
+  }
+  .hdr-in { max-width: 860px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
+  .mark { flex: 0 0 auto; width: 44px; height: 44px; }
+  .brand { flex: 1 1 auto; min-width: 0; }
+  .brand .name { font-family: var(--serif); font-size: 22px; letter-spacing: .2px; line-height: 1.1; margin: 0; }
+  .brand .name b { color: var(--wheat-2); font-weight: 700; }
+  .brand .tag { margin: 3px 0 0; font-family: var(--serif); font-style: italic; font-size: 13.5px; color: rgba(255,255,255,.78); }
+  .live {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12px; color: rgba(255,255,255,.85);
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
+    border-radius: 999px; padding: 5px 10px 5px 8px; white-space: nowrap;
+  }
+  .live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--wheat); box-shadow: 0 0 0 0 rgba(217,164,65,.6); animation: pulse 2.4s infinite; }
+  .live.off .dot { background: #c4c4c4; animation: none; }
+  .live .t { font-variant-numeric: tabular-nums; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(217,164,65,.55)} 70%{box-shadow:0 0 0 7px rgba(217,164,65,0)} 100%{box-shadow:0 0 0 0 rgba(217,164,65,0)} }
+  @media (max-width: 420px) {
+    .live .lbl { display: none; }
+    .hdr { padding-left: 14px; padding-right: 14px; }
+    .hdr-in { gap: 10px; }
+    .mark { width: 38px; height: 38px; }
+    .brand .name { font-size: 19px; }
+    .brand .tag { font-size: 12.5px; }
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 16px 14px 48px; }
+
+  /* ---------- Summary strip ---------- */
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 12px 14px; box-shadow: var(--shadow); min-width: 0;
+  }
+  .stat .lbl { font-size: 12px; color: var(--ink-3); letter-spacing: .3px; text-transform: uppercase; }
+  .stat .val { font-size: 26px; font-weight: 650; line-height: 1.15; margin-top: 2px; display: flex; align-items: center; gap: 8px; }
+  .stat .sub { font-size: 12.5px; color: var(--ink-2); margin-top: 2px; }
+  .stat.hero { grid-column: 1 / -1; background: linear-gradient(180deg, #fffdf8, #fbf6ea); border-color: var(--line-2); }
+  .stat.hero .val { font-size: 40px; font-weight: 700; letter-spacing: -.5px; color: var(--green-900); }
+  .stat.hero .val small { font-size: 18px; font-weight: 600; color: var(--ink-3); margin-right: 2px; }
+  .stat .pip { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .stat .pip.stop { background: var(--stop-ink); }
+  .stat .pip.warn { background: var(--warn-ink); }
+  .stat .pip.ok   { background: var(--green-600); }
+  @media (min-width: 640px) {
+    .stats { grid-template-columns: 1.6fr 1fr 1fr; }
+    .stat.hero { grid-column: auto; }
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs { display: flex; gap: 6px; margin: 4px 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto; border: 1px solid var(--line-2); background: transparent; color: var(--ink-2);
+    border-radius: 999px; padding: 8px 14px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; min-height: 40px;
+  }
+  .tab[aria-selected="true"] { background: var(--green-800); border-color: var(--green-800); color: #fff; }
+  .tab .n { opacity: .75; font-weight: 500; margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+  /* ---------- Invoice cards ---------- */
+  .card {
+    position: relative; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden;
+  }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--line-2); }
+  .card.sev-stop::before { background: var(--stop-ink); }
+  .card.sev-warn::before { background: var(--warn-ink); }
+  .card.sev-ok::before   { background: var(--green-600); }
+  .card.done { opacity: .82; }
+  .card.done::before { background: var(--line-2); }
+
+  .c-head { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px 6px 20px; }
+  .c-who { flex: 1 1 auto; min-width: 0; }
+  .c-sup { font-size: 18px; font-weight: 700; line-height: 1.2; letter-spacing: -.1px; }
+  .c-ent { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12.5px; color: var(--ink-2);
+           border: 1px solid var(--line-2); border-radius: 6px; padding: 2px 8px; background: #faf7ef; max-width: 100%; }
+  .c-ent svg { width: 12px; height: 12px; flex: 0 0 auto; }
+  .c-ent span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .c-amt { flex: 0 0 auto; text-align: right; }
+  .c-amt .big { font-size: 22px; font-weight: 750; letter-spacing: -.4px; line-height: 1.1; white-space: nowrap; }
+  .c-amt .vat { font-size: 12px; color: var(--ink-3); margin-top: 3px; white-space: nowrap; }
+  .c-meta { padding: 0 16px 0 20px; font-size: 13px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 2px 0; }
+  .c-meta > span + span::before { content: "·"; margin: 0 6px; opacity: .6; }
+  .c-meta b { color: var(--ink-2); font-weight: 600; }
+
+  .items { margin: 12px 16px 0 20px; border-top: 1px dashed var(--line-2); padding-top: 8px; }
+  .item { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 5px 0; font-size: 13.5px; }
+  .item .d { color: var(--ink); grid-column: 1; grid-row: 1; }
+  .item .q { color: var(--ink-3); font-size: 12.5px; grid-column: 1; grid-row: 2; }
+  .item .t { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-variant-numeric: tabular-nums; color: var(--ink-2); white-space: nowrap; }
+  .item + .item { border-top: 1px solid #f0ead9; }
+
+  /* ---------- Flags: the hero ---------- */
+  .checks { margin: 12px 16px 0 20px; }
+  .checks .h { font-size: 11.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--ink-3); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .flag { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; padding: 9px 11px; border-radius: 10px; border: 1px solid; margin-bottom: 6px; font-size: 14px; line-height: 1.35; }
+  .flag .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; }
+  .flag .ic svg { width: 18px; height: 18px; }
+  .flag .lv { display: block; font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; margin-bottom: 1px; }
+  .flag .m { display: block; }
+  .flag .m b { font-weight: 700; }
+  .flag.stop { background: var(--stop-bg); border-color: var(--stop-line); color: var(--stop-text); }
+  .flag.stop .ic { background: var(--stop-ink); color: #fff; }
+  .flag.warn { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn-text); }
+  .flag.warn .ic { background: var(--warn-ink); color: #fff; }
+  .flag.info { background: var(--info-bg); border-color: var(--info-line); color: var(--info-text); }
+  .flag.info .ic { background: var(--info-ink); color: #fff; }
+  .flag.ok   { background: var(--green-100); border-color: #c5dcc7; color: var(--green-text); }
+  .flag.ok .ic { background: var(--green-600); color: #fff; }
+  .flag.ok .m { font-size: 13.5px; }
+
+  /* ---------- Actions ---------- */
+  .acts { display: flex; gap: 10px; padding: 12px 16px 16px 20px; }
+  .btn {
+    flex: 1 1 0; min-height: 48px; border-radius: 12px; font: inherit; font-size: 16px; font-weight: 700;
+    cursor: pointer; border: 1.5px solid transparent; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform .06s ease, filter .12s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn[disabled] { opacity: .55; cursor: progress; }
+  .btn svg { width: 18px; height: 18px; }
+  .btn.ok { background: var(--green-700); color: #fff; box-shadow: 0 2px 0 var(--green-900); }
+  .btn.ok:hover { filter: brightness(1.06); }
+  .btn.no { background: transparent; color: var(--ink); border-color: var(--line-2); }
+  .btn.no:hover { background: #f6f1e5; }
+
+  .status { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px 14px 20px; font-size: 13px; color: var(--ink-3); }
+  .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; border-radius: 999px; padding: 5px 11px 5px 8px; }
+  .badge svg { width: 15px; height: 15px; }
+  .badge.approved { background: var(--green-100); color: var(--green-text); }
+  .badge.rejected { background: var(--info-bg); color: var(--info-text); }
+
+  /* ---------- States ---------- */
+  .empty { text-align: center; padding: 48px 20px; color: var(--ink-2); }
+  .empty .ico { width: 56px; height: 56px; margin: 0 auto 10px; color: var(--green-600); }
+  .empty h3 { margin: 0 0 6px; font-family: var(--serif); font-weight: 600; font-size: 20px; color: var(--ink); }
+  .empty p { margin: 0 auto; max-width: 34ch; font-size: 14px; }
+  .banner { display: none; background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-text); border-radius: 10px; padding: 9px 12px; font-size: 13.5px; margin-bottom: 12px; }
+  .banner.show { display: block; }
+
+  footer { text-align: center; font-size: 12px; color: var(--ink-2); padding: 12px 0 0; }
+  footer .w { font-family: var(--serif); font-style: italic; }
+
+  /* enter animation for new cards */
+  @keyframes rise { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none; } }
+  .card.new { animation: rise .35s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .card.new, .live .dot { animation: none; } }
+
+  /* Desktop: a touch more air */
+  @media (min-width: 640px) {
+    body { font-size: 15.5px; }
+    .c-head { padding: 16px 20px 6px 24px; }
+    .c-meta, .items, .checks { padding-left: 24px; margin-left: 0; }
+    .items, .checks { margin-left: 24px; margin-right: 20px; padding-left: 0; }
+    .c-meta { padding-left: 24px; }
+    .acts, .status { padding: 14px 20px 18px 24px; }
+    .btn { flex: 0 0 auto; min-width: 170px; }
+    .c-sup { font-size: 19px; }
+    .c-amt .big { font-size: 24px; }
+  }
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+  firebase.initializeApp({apiKey:"AIzaSyBu8k_4z-Rg6UDCZfqHa2K-kfkwjxA_qH8",authDomain:"fishtrack-sa.firebaseapp.com",projectId:"fishtrack-sa",storageBucket:"fishtrack-sa.firebasestorage.app",messagingSenderId:"610455904003",appId:"1:610455904003:web:3f04f72c5bd9644c64d336"});
+  window._wolkDB = firebase.firestore();
+  window._wolkReady = new Promise(function(res){ firebase.auth().onAuthStateChanged(function(u){ if(u){res(u);} else { firebase.auth().signInAnonymously().catch(function(){res(null);}); } }); });
+</script>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+      <!-- Wolk mark: a cloud over three furrows -->
+      <g fill="#e8c27a">
+        <circle cx="23" cy="30" r="11"/><circle cx="37" cy="24" r="14"/><circle cx="48" cy="33" r="9"/>
+        <rect x="23" y="30" width="25" height="12" rx="2"/>
+      </g>
+      <g stroke="#d9a441" stroke-width="3" stroke-linecap="round" opacity=".9">
+        <line x1="14" y1="50" x2="50" y2="50"/><line x1="20" y1="57" x2="44" y2="57"/>
+      </g>
+    </svg>
+    <div class="brand">
+      <h1 class="name"><b>Wolk</b> Faktuurbeheer</h1>
+      <p class="tag">Elke faktuur, gekyk voor jy betaal.</p>
+    </div>
+    <div class="live" id="live" title="Die bord verfris vanself">
+      <span class="dot"></span><span class="lbl">Lewendig</span><span class="t" id="live-t">—</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="banner" id="banner" role="status"></div>
+
+  <section class="stats" aria-label="Opsomming">
+    <div class="stat hero">
+      <div class="lbl">Rand wat wag vir goedkeuring</div>
+      <div class="val" id="s-total"><small>R</small>0,00</div>
+      <div class="sub" id="s-total-sub">Oor alle entiteite</div>
+    </div>
+    <div class="stat">
+      <div class="lbl">Wag vir goedkeuring</div>
+      <div class="val" id="s-pending">0</div>
+      <div class="sub" id="s-pending-sub">fakture</div>
+    </div>
+    <div class="stat">
+      <div class="lbl">Gemerk vir aandag</div>
+      <div class="val" id="s-flagged"><span class="pip ok" id="s-flag-pip"></span>0</div>
+      <div class="sub" id="s-flagged-sub">alles skoon</div>
+    </div>
+  </section>
+
+  <div class="tabs" role="tablist" aria-label="Filter">
+    <button class="tab" role="tab" data-f="pending" aria-selected="true">Wag<span class="n" id="n-pending">0</span></button>
+    <button class="tab" role="tab" data-f="flagged" aria-selected="false">Gemerk<span class="n" id="n-flagged">0</span></button>
+    <button class="tab" role="tab" data-f="done" aria-selected="false">Afgehandel<span class="n" id="n-done">0</span></button>
+    <button class="tab" role="tab" data-f="all" aria-selected="false">Alles</button>
+  </div>
+
+  <section id="list" aria-live="polite"></section>
+
+  <footer>Wolk Solutions · Faktuurbeheer &nbsp;·&nbsp; <span class="w">Kalm kantoor, seker betalings.</span></footer>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Afrikaans formatting ----------
+  const MONTHS = ['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Des'];
+  const NBSP = ' ';
+
+  function rands(n, opts) {
+    n = Number(n) || 0;
+    const neg = n < 0; n = Math.abs(n);
+    const [i, d] = n.toFixed(2).split('.');
+    const g = i.replace(/\B(?=(\d{3})+(?!\d))/g, NBSP);
+    const prefix = (opts && opts.noSymbol) ? '' : 'R';
+    return (neg ? '−' : '') + prefix + g + ',' + d;
+  }
+  function fmtDate(s) {
+    if (!s) return '—';
+    const d = new Date(s);
+    if (isNaN(d)) return esc(s);
+    return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+  }
+  function fmtTime(s) {
+    if (!s) return '';
+    const d = new Date(s);
+    if (isNaN(d)) return '';
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  // English engine messages contain amounts like R62445.00 — reformat to R62 445,00.
+  function randsInText(msg) {
+    return String(msg).replace(/R(\d+(?:\.\d+)?)/g, (_, v) => rands(parseFloat(v)));
+  }
+
+  // ---------- Flag copy: translate the engine's English rule output ----------
+  // Falls back to the raw message (with reformatted amounts) if the pattern is unknown.
+  function flagText(f) {
+    const m = String(f.msg || '');
+    let r;
+    switch (f.code) {
+      case 'PRICE_JUMP':
+        r = m.match(/^(.*?):\s*R(\d+(?:\.\d+)?)\s+is\s+(\d+)%\s+up\s+from\s+last\s+R(\d+(?:\.\d+)?)/i);
+        if (r) return `<b>${esc(r[1])}</b> is ${r[3]}% op van laas — nou ${rands(r[2])}, was ${rands(r[4])}`;
+        break;
+      case 'OVER_LIMIT':
+        r = m.match(/R(\d+(?:\.\d+)?)\s+is\s+over\s+the\s+R(\d+(?:\.\d+)?)\s+limit/i);
+        if (r) return `<b>Oor die ${rands(r[2])} limiet</b> — die baas moet goedkeur`;
+        break;
+      case 'DUPLICATE':
+        r = m.match(/invoice\s+(\S+)\s+from\s+(.+?)\s+already\s+captured\s*\(?([^)]*)\)?/i);
+        if (r) return `<b>Moontlike dubbele faktuur</b> — ${esc(r[1])} van ${esc(r[2])} is reeds ingevang${r[3] ? ' (' + esc(r[3]) + ')' : ''}. Moenie twee keer betaal nie.`;
+        return `<b>Moontlike dubbele faktuur</b> — reeds ingevang. Moenie twee keer betaal nie.`;
+      case 'VAT_CHECK':
+        r = m.match(/VAT\s+R(\d+(?:\.\d+)?)\s+doesn't\s+match\s+15%\s+of\s+R(\d+(?:\.\d+)?)\s*\(expected\s+R(\d+(?:\.\d+)?)\)/i);
+        if (r) return `BTW van ${rands(r[1])} is nie 15% van ${rands(r[2])} nie — verwag ${rands(r[3])}`;
+        break;
+    }
+    return esc(randsInText(m));
+  }
+  const LEVEL = {
+    stop: { lbl: 'Stop', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="7.5" y1="7.5" x2="16.5" y2="16.5"/></svg>' },
+    warn: { lbl: 'Let op', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21 19H3z"/><line x1="12" y1="9.5" x2="12" y2="13.5"/><circle cx="12" cy="16.3" r=".6" fill="currentColor"/></svg>' },
+    info: { lbl: 'Inligting', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="7.8" r=".6" fill="currentColor"/></svg>' },
+    ok:   { lbl: 'Skoon',  icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg>' }
+  };
+  const ICON_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg>';
+  const ICON_Q    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.5a3 3 0 1 1 4.5 2.6c-.9.5-1.5 1.2-1.5 2.2"/><circle cx="12" cy="17.5" r=".7" fill="currentColor"/><circle cx="12" cy="12" r="9.2"/></svg>';
+  const ICON_ENT  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M5 20V9l7-5 7 5v11M10 20v-5h4v5"/></svg>';
+
+  // ---------- State ----------
+  let filter = 'pending';
+  let lastJson = '';
+  let data = [];
+  const seen = new Set();
+  let firstLoad = true;
+
+  const $ = id => document.getElementById(id);
+
+  function severity(inv) {
+    const fl = inv.flags || [];
+    if (fl.some(f => f.level === 'stop')) return 'stop';
+    if (fl.some(f => f.level === 'warn')) return 'warn';
+    return 'ok';
+  }
+  const SEV_RANK = { stop: 0, warn: 1, ok: 2 };
+
+  function renderCard(inv) {
+    const sev = severity(inv);
+    const pending = inv.status === 'pending';
+    const flags = inv.flags || [];
+    const isNew = !firstLoad && !seen.has(inv.id);
+
+    const items = (inv.items || []).map(it => {
+      const qty = Number(it.qty) || 0, up = Number(it.unitPrice) || 0;
+      return `<div class="item">
+        <span class="d">${esc(it.desc || it.code || 'Item')}</span>
+        <span class="t">${rands(qty * up)}</span>
+        <span class="q">${qty ? qty + ' × ' : ''}${rands(up)}${it.code && it.desc ? ' · ' + esc(it.code) : ''}</span>
+      </div>`;
+    }).join('');
+
+    let checks;
+    if (flags.length) {
+      checks = flags.map(f => {
+        const L = LEVEL[f.level] || LEVEL.info;
+        return `<div class="flag ${esc(f.level)}"><span class="ic">${L.icon}</span><span><span class="lv">${L.lbl}</span><span class="m">${flagText(f)}</span></span></div>`;
+      }).join('');
+    } else {
+      checks = `<div class="flag ok"><span class="ic">${LEVEL.ok.icon}</span><span><span class="lv">Skoon</span><span class="m">Al vier kontroles geslaag — geen duplikaat, pryse soos laas, binne limiet, BTW klop.</span></span></div>`;
+    }
+
+    let foot;
+    if (pending) {
+      foot = `<div class="acts">
+        <button class="btn ok" data-act="approve" data-id="${esc(inv.id)}">${ICON_TICK}Keur goed</button>
+        <button class="btn no" data-act="reject" data-id="${esc(inv.id)}">${ICON_Q}Bevraag</button>
+      </div>`;
+    } else {
+      const ok = inv.status === 'approved';
+      foot = `<div class="status">
+        <span class="badge ${ok ? 'approved' : 'rejected'}">${ok ? ICON_TICK : ICON_Q}${ok ? 'Goedgekeur' : 'Bevraag'}</span>
+        <span>${inv.decidedAt ? (ok ? 'Goedgekeur' : 'Bevraag') + ' om ' + fmtTime(inv.decidedAt) : ''}</span>
+      </div>`;
+    }
+
+    return `<article class="card ${pending ? 'sev-' + sev : 'done'}${isNew ? ' new' : ''}" data-id="${esc(inv.id)}">
+      <div class="c-head">
+        <div class="c-who">
+          <div class="c-sup">${esc(inv.supplier || 'Onbekende verskaffer')}</div>
+          <div class="c-ent">${ICON_ENT}<span>${esc(inv.entity || '—')}</span></div>
+        </div>
+        <div class="c-amt">
+          <div class="big">${rands(inv.total)}</div>
+          <div class="vat">${inv.vat != null ? 'BTW ' + rands(inv.vat) + ' ingesluit' : ''}</div>
+        </div>
+      </div>
+      <div class="c-meta">
+        <span>Faktuur <b>${esc(inv.invoiceNo || '—')}</b></span>
+        <span>${fmtDate(inv.date)}</span>
+        <span>Ingevang ${fmtTime(inv.capturedAt) || '—'}${inv.source === 'whatsapp' ? ' via WhatsApp' : ''}</span>
+      </div>
+      ${items ? `<div class="items">${items}</div>` : ''}
+      <div class="checks"><div class="h">Kontroles</div>${checks}</div>
+      ${foot}
+    </article>`;
+  }
+
+  function applyFilter(list) {
+    switch (filter) {
+      case 'pending': return list.filter(i => i.status === 'pending');
+      case 'flagged': return list.filter(i => i.status === 'pending' && (i.flags || []).length);
+      case 'done':    return list.filter(i => i.status !== 'pending');
+      default:        return list;
+    }
+  }
+
+  function emptyState() {
+    const copy = {
+      pending: ['Niks wag nie.', 'Stuur ’n foto van ’n faktuur na die Wolk WhatsApp-nommer — dit verskyn hier binne sekondes, klaar gekyk.'],
+      flagged: ['Niks gemerk nie.', 'Al die fakture wat wag, het al vier kontroles geslaag.'],
+      done:    ['Nog niks afgehandel nie.', 'Goedgekeurde en bevraagde fakture verskyn hier.'],
+      all:     ['Nog geen fakture nie.', 'Stuur ’n foto van ’n faktuur na die Wolk WhatsApp-nommer.']
+    }[filter];
+    return `<div class="empty">
+      <svg class="ico" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 50h32V22l-9-9H16z"/><path d="M39 13v9h9"/><path d="M24 40l5 5 11-11"/></svg>
+      <h3>${copy[0]}</h3><p>${copy[1]}</p>
+    </div>`;
+  }
+
+  function render() {
+    const pending = data.filter(i => i.status === 'pending');
+    const flagged = pending.filter(i => (i.flags || []).length);
+    const stops   = pending.filter(i => severity(i) === 'stop');
+    const total   = pending.reduce((a, i) => a + (Number(i.total) || 0), 0);
+    const ents    = new Set(pending.map(i => i.entity).filter(Boolean));
+
+    $('s-total').innerHTML = '<small>R</small>' + rands(total, { noSymbol: true });
+    $('s-total-sub').textContent = ents.size ? `Oor ${ents.size} ${ents.size === 1 ? 'entiteit' : 'entiteite'}` : 'Niks uitstaande nie';
+    $('s-pending').textContent = pending.length;
+    $('s-pending-sub').textContent = pending.length === 1 ? 'faktuur' : 'fakture';
+    $('s-flagged').innerHTML = `<span class="pip ${stops.length ? 'stop' : flagged.length ? 'warn' : 'ok'}"></span>${flagged.length}`;
+    $('s-flagged-sub').textContent = stops.length
+      ? `${stops.length} moontlike ${stops.length === 1 ? 'duplikaat' : 'duplikate'} — moenie betaal nie`
+      : flagged.length ? 'prys of limiet — kyk eers' : 'alles skoon';
+
+    $('n-pending').textContent = pending.length;
+    $('n-flagged').textContent = flagged.length;
+    $('n-done').textContent = data.length - pending.length;
+
+    const rank = i => i.status === 'pending' ? SEV_RANK[severity(i)] : 3;
+    const list = applyFilter(data.slice()).sort((a, b) =>
+      (rank(a) - rank(b)) || String(b.capturedAt || '').localeCompare(String(a.capturedAt || '')));
+
+    $('list').innerHTML = list.length ? list.map(renderCard).join('') : emptyState();
+    data.forEach(i => seen.add(i.id));
+    firstLoad = false;
+  }
+
+  // ---------- Data ----------
+  const DEMO = [
+    { id:'INV-demo1', supplier:'Kaap Agri', entity:'De Hoop Boerdery', invoiceNo:'KA-88123', date:'2026-09-17', total:62445, vat:8145,
+      items:[{code:'20-10-10 50kg',desc:'Kunsmis 20-10-10',qty:40,unitPrice:520},{code:'Glifosaat 5L',desc:'Onkruiddoder',qty:30,unitPrice:389}],
+      status:'pending', source:'whatsapp', capturedAt:new Date().toISOString(),
+      flags:[{level:'warn',code:'PRICE_JUMP',msg:'20-10-10 50kg: R520.00 is 12% up from last R465.00.'},
+             {level:'warn',code:'OVER_LIMIT',msg:'R62445.00 is over the R50000.00 limit — needs owner approval.'}] },
+    { id:'INV-demo2', supplier:'Agrimark', entity:'Wolk Plaas Trust', invoiceNo:'AM-4471', date:'2026-09-17', total:6842.5, vat:892.5,
+      items:[{code:'Diesel 500L',desc:'Diesel',qty:500,unitPrice:11.95}], status:'pending', source:'whatsapp', capturedAt:new Date(Date.now()-600000).toISOString(), flags:[] },
+    { id:'INV-demo3', supplier:'Kaap Agri', entity:'De Hoop Boerdery', invoiceNo:'KA-88123', date:'2026-09-17', total:62445, vat:8145,
+      items:[{code:'20-10-10 50kg',desc:'Kunsmis 20-10-10',qty:40,unitPrice:520}], status:'pending', source:'whatsapp', capturedAt:new Date(Date.now()-120000).toISOString(),
+      flags:[{level:'stop',code:'DUPLICATE',msg:'Possible duplicate — invoice KA-88123 from Kaap Agri already captured (INV-demo1).'},
+             {level:'warn',code:'OVER_LIMIT',msg:'R62445.00 is over the R50000.00 limit — needs owner approval.'}] },
+    { id:'INV-demo4', supplier:'Hex Vallei Verpakking', entity:'De Hoop Boerdery', invoiceNo:'HV-2210', date:'2026-09-16', total:18400, vat:2400,
+      items:[{code:'Karton 5kg',desc:'Tafeldruif-kartonne 5kg',qty:2000,unitPrice:8}], status:'approved', source:'whatsapp', capturedAt:new Date(Date.now()-86400000).toISOString(), decidedAt:new Date(Date.now()-80000000).toISOString(), flags:[] }
+  ];
+  const params = new URLSearchParams(location.search);
+  const demo = params.has('demo');
+  const FARM = params.get('farm') || 'de-hoop';
+
+  function mapDoc(d){ const x = d.data(); return {
+      id:d.id, supplier:x.supplier, entity:x.entity, invoiceNo:x.invoiceNo, date:x.date,
+      total:x.total, vat:x.vat, items:x.items||[], status:x.status, source:x.source, flags:x.flags||[],
+      capturedAt:(x.createdAt && x.createdAt.toDate ? x.createdAt.toDate().toISOString() : (x.createdAt||null)), decidedAt:(x.decidedAt && x.decidedAt.toDate ? x.decidedAt.toDate().toISOString() : (x.decidedAt||null)) }; }
+  async function load() {
+    try {
+      let arr;
+      if (demo) { arr = DEMO; }
+      else {
+        await window._wolkReady;
+        const snap = await window._wolkDB.collection('wolkInvoices').where('tenant','==',FARM).get();
+        arr = snap.docs.map(mapDoc);
+      }
+      const json = JSON.stringify(arr);
+      if (json !== lastJson) { lastJson = json; data = arr; render(); }
+      $('banner').classList.remove('show');
+      $('live').classList.remove('off');
+      $('live-t').textContent = fmtTime(new Date().toISOString());
+    } catch (e) {
+      $('live').classList.add('off');
+      $('banner').textContent = 'Kan nie die data bereik nie — die bord wys die laaste data en probeer weer.';
+      $('banner').classList.add('show');
+      if (firstLoad) { data = []; render(); }
+    }
+  }
+
+  async function decide(id, action, btn) {
+    const card = btn.closest('.card');
+    card.querySelectorAll('.btn').forEach(b => b.disabled = true);
+    try {
+      if (demo) {
+        const inv = DEMO.find(i => i.id === id);
+        if (inv) { inv.status = action === 'approve' ? 'approved' : 'rejected'; inv.decidedAt = new Date().toISOString(); }
+      } else {
+        await window._wolkReady;
+        await window._wolkDB.collection('wolkInvoices').doc(id).update({
+          status: action === 'approve' ? 'approved' : 'rejected',
+          decidedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      lastJson = '';
+      await load();
+    } catch (e) {
+      card.querySelectorAll('.btn').forEach(b => b.disabled = false);
+      $('banner').textContent = 'Kon nie die besluit stoor nie — probeer weer.';
+      $('banner').classList.add('show');
+    }
+  }
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.btn[data-act]');
+    if (b) { decide(b.dataset.id, b.dataset.act, b); return; }
+    const t = e.target.closest('.tab');
+    if (t) {
+      filter = t.dataset.f;
+      document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === t ? 'true' : 'false'));
+      render();
+    }
+  });
+
+  load();
+  setInterval(load, 4000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+})();
+</script>
+</body>
+</html>
