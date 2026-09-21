@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="af">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex,nofollow">
+<title>Wolk Order Desk — demo</title>
+<style>
+  :root{
+    --paper:#f3eee2; --card:#fffdf8; --ink:#1c261f; --ink-2:#4a5148; --ink-3:#6f7469;
+    --line:#e2dac8; --line-2:#cfc5ad;
+    --green-900:#16301f; --green-800:#1f3d2a; --green-700:#2b5a3a; --green-600:#37704a; --green-100:#e4efe4; --green-text:#1e4a2c;
+    --wheat:#d9a441; --wheat-2:#e8c27a;
+    --warn-text:#6e4506; --warn-bg:#fbf0d6; --warn-line:#ecd08e; --warn-ink:#b8811a;
+    --wa:#128c7e; --wa-bubble:#e7fdd8;
+    --radius:14px; --shadow:0 1px 2px rgba(28,38,31,.06),0 6px 18px -8px rgba(28,38,31,.18);
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .hdr{background:var(--green-800);background-image:radial-gradient(120% 140% at 100% 0%,rgba(217,164,65,.14),transparent 55%),linear-gradient(180deg,#23452f,var(--green-800));color:#fff;padding:max(14px,env(safe-area-inset-top)) 18px 16px;border-bottom:3px solid var(--wheat)}
+  .hdr-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .mark{width:40px;height:40px;flex:0 0 auto}
+  .brand .name{font-family:var(--serif);font-size:20px;margin:0}
+  .brand .name b{color:var(--wheat-2)}
+  .brand .tag{margin:2px 0 0;font-family:var(--serif);font-style:italic;font-size:13px;color:rgba(255,255,255,.8)}
+  .wrap{max-width:640px;margin:0 auto;padding:16px 14px 40px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:14px}
+  .step h2{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-3);margin:0 0 10px}
+  /* WhatsApp bubble */
+  .wa{background:var(--wa-bubble);border-radius:12px;padding:10px 12px;max-width:92%;box-shadow:0 1px 1px rgba(0,0,0,.06)}
+  .wa .from{font-size:12.5px;font-weight:700;color:var(--wa);margin-bottom:4px}
+  .voice{display:flex;align-items:center;gap:9px;margin:2px 0 8px;color:var(--ink-2)}
+  .voice .play{width:30px;height:30px;border-radius:50%;background:var(--wa);color:#fff;display:grid;place-items:center;flex:0 0 auto}
+  .voice .play svg{width:14px;height:14px;margin-left:2px}
+  .voice .bar{flex:1;height:4px;border-radius:2px;background:linear-gradient(90deg,var(--wa) 40%,#bcd8c9 40%)}
+  .voice .t{font-variant-numeric:tabular-nums;font-size:12.5px}
+  .wa .tx{font-size:14px;color:var(--ink)}
+  .btn{display:block;width:100%;margin:14px 0 2px;min-height:50px;border:none;border-radius:12px;background:var(--green-700);color:#fff;font:inherit;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 2px 0 var(--green-900)}
+  .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.5}
+  /* structured order */
+  .out{opacity:0;max-height:0;overflow:hidden;transition:opacity .5s ease,max-height .6s ease}
+  .out.show{opacity:1;max-height:1600px}
+  .ord-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px dashed var(--line-2);padding-bottom:10px;margin-bottom:6px}
+  .ord-head .k{font-size:12px;color:var(--ink-3)}
+  .ord-head .v{font-weight:700}
+  .li{display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;padding:9px 0;border-top:1px solid #f0ead9}
+  .li:first-of-type{border-top:none}
+  .li .q{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+  .li .d{min-width:0}
+  .li .d .sub{font-size:12px;color:var(--ink-3)}
+  .li .ok{width:22px;height:22px;border-radius:50%;background:var(--green-100);color:var(--green-600);display:grid;place-items:center}
+  .li .ok svg{width:13px;height:13px}
+  .li.flag{background:var(--warn-bg);margin:0 -8px;padding:9px 8px;border-radius:8px;border-top:none}
+  .li.flag .q,.li.flag .d{color:var(--warn-text)}
+  .li.flag .badge{grid-column:1 / -1;margin-top:4px;font-size:12.5px;color:var(--warn-text);display:flex;align-items:center;gap:6px}
+  .li.flag .badge svg{width:14px;height:14px;color:var(--warn-ink);flex:0 0 auto}
+  .note{margin-top:10px;font-size:12.5px;color:var(--ink-3)}
+  .pick{margin-top:12px;padding:10px 12px;background:var(--green-100);border-radius:10px;color:var(--green-text);font-size:13.5px;display:flex;align-items:center;gap:8px}
+  .pick svg{width:16px;height:16px;flex:0 0 auto}
+  footer{text-align:center;font-size:12px;color:var(--ink-2);padding-top:6px}
+  footer .w{font-family:var(--serif);font-style:italic}
+</style>
+</head>
+<body>
+<header class="hdr"><div class="hdr-in">
+  <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+    <g fill="#e8c27a"><circle cx="23" cy="30" r="11"/><circle cx="37" cy="24" r="14"/><circle cx="48" cy="33" r="9"/><rect x="23" y="30" width="25" height="12" rx="2"/></g>
+    <g stroke="#d9a441" stroke-width="3" stroke-linecap="round" opacity=".9"><line x1="14" y1="50" x2="50" y2="50"/><line x1="20" y1="57" x2="44" y2="57"/></g>
+  </svg>
+  <div class="brand"><h1 class="name"><b>Wolk</b> Order Desk</h1><p class="tag">Van 'n voicenote tot 'n reg-getikte bestelling.</p></div>
+</div></header>
+
+<main class="wrap">
+  <!-- Step 1: incoming -->
+  <section class="step">
+    <h2>Inkomende bestelling · WhatsApp · 04:52</h2>
+    <div class="wa">
+      <div class="from">Marie — Restaurant Klein Jan</div>
+      <div class="voice">
+        <span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+        <span class="bar"></span><span class="t">0:14</span>
+      </div>
+      <div class="tx">"Haai, dis Marie by Klein Jan. Vir môre stuur asseblief 'n slag: tien kilo aartappels, mediums; twee sakke uie; 'n boks tamaties, die mooi rooies; vyf trossies spinasie; drie kilo wortels; en 'n boks avokado's, die ryp enes. En 'n paar bossies koriander, sê so ses. Dankie!"</div>
+    </div>
+    <button class="btn" id="go">Verwerk bestelling →</button>
+  </section>
+
+  <!-- Step 2: structured -->
+  <section class="step out" id="out" aria-live="polite">
+    <h2>Gestruktureerde bestelling · gereed vir die stelsel</h2>
+    <div class="ord-head">
+      <div><div class="k">Kliënt</div><div class="v">Restaurant Klein Jan</div></div>
+      <div><div class="k">Aflewering</div><div class="v">Di 22 Sep · voor 07:00</div></div>
+      <div><div class="k">Bestelling</div><div class="v">#KJ-0912</div></div>
+    </div>
+
+    <div class="li"><span class="q">10 kg</span><span class="d">Aartappels<span class="sub">graad: medium</span></span><span class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></div>
+    <div class="li"><span class="q">2 sak</span><span class="d">Uie<span class="sub">10 kg-sak (standaard)</span></span><span class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></div>
+
+    <div class="li flag">
+      <span class="q">1 boks</span>
+      <span class="d">Tamaties<span class="sub">"die mooi rooies" → Ronde tros-tamatie</span></span>
+      <span></span>
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 21 19H3z"/><line x1="12" y1="9.5" x2="12" y2="13.5"/><circle cx="12" cy="16.3" r=".6" fill="currentColor"/></svg> Bevestig: 5 kg- of 10 kg-boks? — een tik na die klerk</span>
+    </div>
+
+    <div class="li"><span class="q">5 tros</span><span class="d">Spinasie</span><span class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></div>
+    <div class="li"><span class="q">3 kg</span><span class="d">Wortels</span><span class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></div>
+    <div class="li"><span class="q">1 boks</span><span class="d">Avokado<span class="sub">graad: ryp</span></span><span class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></div>
+    <div class="li"><span class="q">6 bos</span><span class="d">Koriander</span><span class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg></span></div>
+
+    <div class="note">7 reëls onttrek · 6 outomaties reg · <b>1 wag vir 'n tik</b> — die klerk kyk net na die een, nie al sewe nie.</div>
+
+    <div style="margin-top:14px">
+      <div class="wa" style="margin-left:auto;background:#dff3ff">
+        <div class="from" style="color:#2b6ea8">Wolk → Marie</div>
+        <div class="tx">Dankie Marie! Bestelling vir Klein Jan, aflewering Di 22 Sep voor 07:00, ontvang. Net een ding: die tamaties — 5 kg of 10 kg boks? Res is als reg. 🙌</div>
+      </div>
+    </div>
+
+    <div class="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Piklys gereed vir die afleweringspan om <b>05:30</b> — nie 'n oggend se oortik nie.</div>
+  </section>
+
+  <footer>Wolk Solutions · Order Desk &nbsp;·&nbsp; <span class="w">Ons vat die papierwerk weg.</span></footer>
+</main>
+
+<script>
+  document.getElementById('go').addEventListener('click', function(){
+    this.disabled = true; this.textContent = 'Verwerk…';
+    var out = document.getElementById('out');
+    setTimeout(function(){ out.classList.add('show'); out.scrollIntoView({behavior:'smooth',block:'start'}); }, 650);
+    var b = this; setTimeout(function(){ b.textContent = 'Verwerk ✓'; }, 700);
+  });
+</script>
+</body>
+</html>
