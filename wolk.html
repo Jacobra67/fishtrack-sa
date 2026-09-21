@@ -197,6 +197,16 @@
   .badge svg { width: 15px; height: 15px; }
   .badge.approved { background: var(--green-100); color: var(--green-text); }
   .badge.rejected { background: var(--info-bg); color: var(--info-text); }
+  .badge.paid { background: var(--green-700); color: #fff; }
+  .badge.waiting { background: var(--warn-bg); color: var(--warn-text); }
+
+  /* role pill in header */
+  .role {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase;
+    color: var(--green-900); background: var(--wheat-2);
+    border-radius: 999px; padding: 4px 10px; white-space: nowrap;
+  }
 
   /* ---------- States ---------- */
   .empty { text-align: center; padding: 48px 20px; color: var(--ink-2); }
@@ -252,7 +262,8 @@
     </svg>
     <div class="brand">
       <h1 class="name"><b>Wolk</b> Faktuurbeheer</h1>
-      <p class="tag">Elke faktuur, gekyk voor jy betaal.</p>
+      <p class="tag" id="tagline">Elke faktuur, gekyk voor jy betaal.</p>
+      <span class="role" id="role-pill" hidden></span>
     </div>
     <div class="live" id="live" title="Die bord verfris vanself">
       <span class="dot"></span><span class="lbl">Lewendig</span><span class="t" id="live-t">—</span>
@@ -265,28 +276,23 @@
 
   <section class="stats" aria-label="Opsomming">
     <div class="stat hero">
-      <div class="lbl">Rand wat wag vir goedkeuring</div>
+      <div class="lbl" id="l-total">Rand wat wag vir goedkeuring</div>
       <div class="val" id="s-total"><small>R</small>0,00</div>
       <div class="sub" id="s-total-sub">Oor alle entiteite</div>
     </div>
     <div class="stat">
-      <div class="lbl">Wag vir goedkeuring</div>
+      <div class="lbl" id="l-pending">Wag vir goedkeuring</div>
       <div class="val" id="s-pending">0</div>
       <div class="sub" id="s-pending-sub">fakture</div>
     </div>
     <div class="stat">
-      <div class="lbl">Gemerk vir aandag</div>
+      <div class="lbl" id="l-flagged">Gemerk vir aandag</div>
       <div class="val" id="s-flagged"><span class="pip ok" id="s-flag-pip"></span>0</div>
       <div class="sub" id="s-flagged-sub">alles skoon</div>
     </div>
   </section>
 
-  <div class="tabs" role="tablist" aria-label="Filter">
-    <button class="tab" role="tab" data-f="pending" aria-selected="true">Wag<span class="n" id="n-pending">0</span></button>
-    <button class="tab" role="tab" data-f="flagged" aria-selected="false">Gemerk<span class="n" id="n-flagged">0</span></button>
-    <button class="tab" role="tab" data-f="done" aria-selected="false">Afgehandel<span class="n" id="n-done">0</span></button>
-    <button class="tab" role="tab" data-f="all" aria-selected="false">Alles</button>
-  </div>
+  <div class="tabs" id="tabs" role="tablist" aria-label="Filter"></div>
 
   <section id="list" aria-live="polite"></section>
 
@@ -363,9 +369,17 @@
   const ICON_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg>';
   const ICON_Q    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9.5a3 3 0 1 1 4.5 2.6c-.9.5-1.5 1.2-1.5 2.2"/><circle cx="12" cy="17.5" r=".7" fill="currentColor"/><circle cx="12" cy="12" r="9.2"/></svg>';
   const ICON_ENT  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M5 20V9l7-5 7 5v11M10 20v-5h4v5"/></svg>';
+  const ICON_PAY  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg>';
+
+  // ---------- Role ----------
+  // Two links to the same board. Default = the baas (approver). ?role=betaal = the
+  // accounts person (payer): they only see invoices the baas already approved and
+  // can mark them paid.
+  const _p0 = new URLSearchParams(location.search);
+  const PAYER = ['betaal','pay','accounts','tannie','rekeninge'].includes((_p0.get('role') || '').toLowerCase());
 
   // ---------- State ----------
-  let filter = 'pending';
+  let filter = PAYER ? 'topay' : 'pending';
   let lastJson = '';
   let data = [];
   const seen = new Set();
@@ -384,6 +398,8 @@
   function renderCard(inv) {
     const sev = severity(inv);
     const pending = inv.status === 'pending';
+    // What this viewer can act on: the baas acts on pending; the payer acts on approved.
+    const actionable = PAYER ? (inv.status === 'approved') : (inv.status === 'pending');
     const flags = inv.flags || [];
     const isNew = !firstLoad && !seen.has(inv.id);
 
@@ -407,20 +423,38 @@
     }
 
     let foot;
-    if (pending) {
+    if (actionable && PAYER) {
+      // Approved by the baas — the accounts person pays it.
+      foot = `<div class="acts">
+        <button class="btn ok" data-act="pay" data-id="${esc(inv.id)}">${ICON_PAY}Merk as betaal</button>
+      </div>`;
+    } else if (actionable) {
       foot = `<div class="acts">
         <button class="btn ok" data-act="approve" data-id="${esc(inv.id)}">${ICON_TICK}Keur goed</button>
         <button class="btn no" data-act="reject" data-id="${esc(inv.id)}">${ICON_Q}Bevraag</button>
       </div>`;
-    } else {
-      const ok = inv.status === 'approved';
+    } else if (inv.status === 'paid') {
       foot = `<div class="status">
-        <span class="badge ${ok ? 'approved' : 'rejected'}">${ok ? ICON_TICK : ICON_Q}${ok ? 'Goedgekeur' : 'Bevraag'}</span>
-        <span>${inv.decidedAt ? (ok ? 'Goedgekeur' : 'Bevraag') + ' om ' + fmtTime(inv.decidedAt) : ''}</span>
+        <span class="badge paid">${ICON_PAY}Betaal</span>
+        <span>${inv.paidAt ? 'Betaal om ' + fmtTime(inv.paidAt) : ''}</span>
+      </div>`;
+    } else if (inv.status === 'approved') {
+      // Goedgekeur, still waiting for the accounts person to pay.
+      foot = `<div class="status">
+        <span class="badge ${PAYER ? 'approved' : 'waiting'}">${ICON_TICK}Goedgekeur${PAYER ? '' : ' · wag vir betaling'}</span>
+        <span>${inv.decidedAt ? 'Goedgekeur om ' + fmtTime(inv.decidedAt) : ''}</span>
+      </div>`;
+    } else {
+      // rejected / queried, or (for the payer looking at 'all') still pending.
+      const q = inv.status === 'rejected';
+      const label = q ? 'Bevraag' : 'Wag vir goedkeuring';
+      foot = `<div class="status">
+        <span class="badge ${q ? 'rejected' : 'waiting'}">${q ? ICON_Q : ICON_TICK}${label}</span>
+        <span>${q && inv.decidedAt ? 'Bevraag om ' + fmtTime(inv.decidedAt) : ''}</span>
       </div>`;
     }
 
-    return `<article class="card ${pending ? 'sev-' + sev : 'done'}${isNew ? ' new' : ''}" data-id="${esc(inv.id)}">
+    return `<article class="card ${actionable ? 'sev-' + sev : 'done'}${isNew ? ' new' : ''}" data-id="${esc(inv.id)}">
       <div class="c-head">
         <div class="c-who">
           <div class="c-sup">${esc(inv.supplier || 'Onbekende verskaffer')}</div>
@@ -447,6 +481,8 @@
       case 'pending': return list.filter(i => i.status === 'pending');
       case 'flagged': return list.filter(i => i.status === 'pending' && (i.flags || []).length);
       case 'done':    return list.filter(i => i.status !== 'pending');
+      case 'topay':   return list.filter(i => i.status === 'approved');
+      case 'paid':    return list.filter(i => i.status === 'paid');
       default:        return list;
     }
   }
@@ -456,6 +492,8 @@
       pending: ['Niks wag nie.', 'Stuur ’n foto van ’n faktuur na die Wolk WhatsApp-nommer — dit verskyn hier binne sekondes, klaar gekyk.'],
       flagged: ['Niks gemerk nie.', 'Al die fakture wat wag, het al vier kontroles geslaag.'],
       done:    ['Nog niks afgehandel nie.', 'Goedgekeurde en bevraagde fakture verskyn hier.'],
+      topay:   ['Niks om te betaal nie.', 'Sodra die baas ’n faktuur goedkeur, verskyn dit hier reg om te betaal.'],
+      paid:    ['Nog niks betaal nie.', 'Fakture wat jy as betaal merk, verskyn hier.'],
       all:     ['Nog geen fakture nie.', 'Stuur ’n foto van ’n faktuur na die Wolk WhatsApp-nommer.']
     }[filter];
     return `<div class="empty">
@@ -465,24 +503,41 @@
   }
 
   function render() {
-    const pending = data.filter(i => i.status === 'pending');
-    const flagged = pending.filter(i => (i.flags || []).length);
-    const stops   = pending.filter(i => severity(i) === 'stop');
-    const total   = pending.reduce((a, i) => a + (Number(i.total) || 0), 0);
-    const ents    = new Set(pending.map(i => i.entity).filter(Boolean));
+    const pending  = data.filter(i => i.status === 'pending');
+    const approved = data.filter(i => i.status === 'approved');
+    const paid     = data.filter(i => i.status === 'paid');
+    const flagged  = pending.filter(i => (i.flags || []).length);
+    const stops    = pending.filter(i => severity(i) === 'stop');
 
-    $('s-total').innerHTML = '<small>R</small>' + rands(total, { noSymbol: true });
-    $('s-total-sub').textContent = ents.size ? `Oor ${ents.size} ${ents.size === 1 ? 'entiteit' : 'entiteite'}` : 'Niks uitstaande nie';
-    $('s-pending').textContent = pending.length;
-    $('s-pending-sub').textContent = pending.length === 1 ? 'faktuur' : 'fakture';
-    $('s-flagged').innerHTML = `<span class="pip ${stops.length ? 'stop' : flagged.length ? 'warn' : 'ok'}"></span>${flagged.length}`;
-    $('s-flagged-sub').textContent = stops.length
-      ? `${stops.length} moontlike ${stops.length === 1 ? 'duplikaat' : 'duplikate'} — moenie betaal nie`
-      : flagged.length ? 'prys of limiet — kyk eers' : 'alles skoon';
+    if (PAYER) {
+      const total     = approved.reduce((a, i) => a + (Number(i.total) || 0), 0);
+      const paidTotal = paid.reduce((a, i) => a + (Number(i.total) || 0), 0);
+      const ents      = new Set(approved.map(i => i.entity).filter(Boolean));
+      $('s-total').innerHTML = '<small>R</small>' + rands(total, { noSymbol: true });
+      $('s-total-sub').textContent = ents.size ? `Oor ${ents.size} ${ents.size === 1 ? 'entiteit' : 'entiteite'}` : 'Niks uitstaande nie';
+      $('s-pending').textContent = approved.length;
+      $('s-pending-sub').textContent = approved.length === 1 ? 'faktuur reg om te betaal' : 'fakture reg om te betaal';
+      $('s-flagged').innerHTML = `<span class="pip ok"></span>${paid.length}`;
+      $('s-flagged-sub').textContent = paid.length ? rands(paidTotal) + ' betaal' : 'nog niks betaal';
+    } else {
+      const total = pending.reduce((a, i) => a + (Number(i.total) || 0), 0);
+      const ents  = new Set(pending.map(i => i.entity).filter(Boolean));
+      $('s-total').innerHTML = '<small>R</small>' + rands(total, { noSymbol: true });
+      $('s-total-sub').textContent = ents.size ? `Oor ${ents.size} ${ents.size === 1 ? 'entiteit' : 'entiteite'}` : 'Niks uitstaande nie';
+      $('s-pending').textContent = pending.length;
+      $('s-pending-sub').textContent = pending.length === 1 ? 'faktuur' : 'fakture';
+      $('s-flagged').innerHTML = `<span class="pip ${stops.length ? 'stop' : flagged.length ? 'warn' : 'ok'}"></span>${flagged.length}`;
+      $('s-flagged-sub').textContent = stops.length
+        ? `${stops.length} moontlike ${stops.length === 1 ? 'duplikaat' : 'duplikate'} — moenie betaal nie`
+        : flagged.length ? 'prys of limiet — kyk eers' : 'alles skoon';
+    }
 
-    $('n-pending').textContent = pending.length;
-    $('n-flagged').textContent = flagged.length;
-    $('n-done').textContent = data.length - pending.length;
+    const setCount = (f, n) => { const el = $('n-' + f); if (el) el.textContent = n; };
+    setCount('pending', pending.length);
+    setCount('flagged', flagged.length);
+    setCount('done', data.length - pending.length);
+    setCount('topay', approved.length);
+    setCount('paid', paid.length);
 
     const rank = i => i.status === 'pending' ? SEV_RANK[severity(i)] : 3;
     const list = applyFilter(data.slice()).sort((a, b) =>
@@ -507,7 +562,9 @@
       flags:[{level:'stop',code:'DUPLICATE',msg:'Possible duplicate — invoice KA-88123 from Kaap Agri already captured (INV-demo1).'},
              {level:'warn',code:'OVER_LIMIT',msg:'R62445.00 is over the R50000.00 limit — needs owner approval.'}] },
     { id:'INV-demo4', supplier:'Hex Vallei Verpakking', entity:'De Hoop Boerdery', invoiceNo:'HV-2210', date:'2026-09-16', total:18400, vat:2400,
-      items:[{code:'Karton 5kg',desc:'Tafeldruif-kartonne 5kg',qty:2000,unitPrice:8}], status:'approved', source:'whatsapp', capturedAt:new Date(Date.now()-86400000).toISOString(), decidedAt:new Date(Date.now()-80000000).toISOString(), flags:[] }
+      items:[{code:'Karton 5kg',desc:'Tafeldruif-kartonne 5kg',qty:2000,unitPrice:8}], status:'approved', source:'whatsapp', capturedAt:new Date(Date.now()-86400000).toISOString(), decidedAt:new Date(Date.now()-80000000).toISOString(), flags:[] },
+    { id:'INV-demo5', supplier:'BKB', entity:'De Hoop Boerdery', invoiceNo:'BKB-3390', date:'2026-09-14', total:9230, vat:1203.91,
+      items:[{code:'Wingerdstok',desc:'Steunpale',qty:150,unitPrice:61.53}], status:'paid', source:'whatsapp', capturedAt:new Date(Date.now()-2*86400000).toISOString(), decidedAt:new Date(Date.now()-1.6*86400000).toISOString(), paidAt:new Date(Date.now()-1.2*86400000).toISOString(), flags:[] }
   ];
   const params = new URLSearchParams(location.search);
   const demo = params.has('demo');
@@ -516,7 +573,9 @@
   function mapDoc(d){ const x = d.data(); return {
       id:d.id, supplier:x.supplier, entity:x.entity, invoiceNo:x.invoiceNo, date:x.date,
       total:x.total, vat:x.vat, items:x.items||[], status:x.status, source:x.source, flags:x.flags||[],
-      capturedAt:(x.createdAt && x.createdAt.toDate ? x.createdAt.toDate().toISOString() : (x.createdAt||null)), decidedAt:(x.decidedAt && x.decidedAt.toDate ? x.decidedAt.toDate().toISOString() : (x.decidedAt||null)) }; }
+      capturedAt:(x.createdAt && x.createdAt.toDate ? x.createdAt.toDate().toISOString() : (x.createdAt||null)),
+      decidedAt:(x.decidedAt && x.decidedAt.toDate ? x.decidedAt.toDate().toISOString() : (x.decidedAt||null)),
+      paidAt:(x.paidAt && x.paidAt.toDate ? x.paidAt.toDate().toISOString() : (x.paidAt||null)) }; }
   async function load() {
     try {
       let arr;
@@ -542,22 +601,26 @@
   async function decide(id, action, btn) {
     const card = btn.closest('.card');
     card.querySelectorAll('.btn').forEach(b => b.disabled = true);
+    const now = new Date().toISOString();
     try {
       if (demo) {
         const inv = DEMO.find(i => i.id === id);
-        if (inv) { inv.status = action === 'approve' ? 'approved' : 'rejected'; inv.decidedAt = new Date().toISOString(); }
+        if (inv) {
+          if (action === 'pay') { inv.status = 'paid'; inv.paidAt = now; }
+          else { inv.status = action === 'approve' ? 'approved' : 'rejected'; inv.decidedAt = now; }
+        }
       } else {
         await window._wolkReady;
-        await window._wolkDB.collection('wolkInvoices').doc(id).update({
-          status: action === 'approve' ? 'approved' : 'rejected',
-          decidedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        const patch = (action === 'pay')
+          ? { status: 'paid', paidAt: firebase.firestore.FieldValue.serverTimestamp() }
+          : { status: action === 'approve' ? 'approved' : 'rejected', decidedAt: firebase.firestore.FieldValue.serverTimestamp() };
+        await window._wolkDB.collection('wolkInvoices').doc(id).update(patch);
       }
       lastJson = '';
       await load();
     } catch (e) {
       card.querySelectorAll('.btn').forEach(b => b.disabled = false);
-      $('banner').textContent = 'Kon nie die besluit stoor nie — probeer weer.';
+      $('banner').textContent = 'Kon nie die aksie stoor nie — probeer weer.';
       $('banner').classList.add('show');
     }
   }
@@ -572,6 +635,30 @@
       render();
     }
   });
+
+  // ---------- Role-aware chrome ----------
+  const TABS = PAYER
+    ? [ { f:'topay', label:'Te betaal', count:true }, { f:'paid', label:'Betaal', count:true }, { f:'all', label:'Alles' } ]
+    : [ { f:'pending', label:'Wag', count:true }, { f:'flagged', label:'Gemerk', count:true }, { f:'done', label:'Afgehandel', count:true }, { f:'all', label:'Alles' } ];
+
+  function initChrome() {
+    $('tabs').innerHTML = TABS.map(t =>
+      `<button class="tab" role="tab" data-f="${t.f}" aria-selected="${t.f === filter}">${t.label}${t.count ? `<span class="n" id="n-${t.f}">0</span>` : ''}</button>`
+    ).join('');
+    const pill = $('role-pill');
+    if (PAYER) {
+      document.title = 'Wolk Faktuurbeheer — Betalings';
+      $('tagline').textContent = 'Goedgekeur deur die baas — reg om te betaal.';
+      $('l-total').textContent = 'Rand goedgekeur, wag vir betaling';
+      $('l-pending').textContent = 'Reg om te betaal';
+      $('l-flagged').textContent = 'Reeds betaal';
+      pill.textContent = 'Betalings';
+    } else {
+      pill.textContent = 'Goedkeuring';
+    }
+    pill.hidden = false;
+  }
+  initChrome();
 
   load();
   setInterval(load, 4000);
