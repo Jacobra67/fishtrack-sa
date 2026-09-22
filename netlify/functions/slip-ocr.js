@@ -14,11 +14,13 @@
 
 // Tried in order; each is retried once on a transient overload before moving on.
 // Lite variants are less likely to be rate-limited under load.
+// Lite variants first: faster and far less prone to overload, plenty accurate
+// for reading a till slip. Heavier models are kept as fallbacks.
 const MODELS = [
-  'gemini-3.5-flash',
   'gemini-3.5-flash-lite',
-  'gemini-flash-latest',
   'gemini-flash-lite-latest',
+  'gemini-3.5-flash',
+  'gemini-flash-latest',
   'gemini-3.6-flash',
 ];
 
