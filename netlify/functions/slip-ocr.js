@@ -21,7 +21,6 @@ const MODELS = [
   'gemini-flash-lite-latest',
   'gemini-3.6-flash',
 ];
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 exports.handler = async function (event) {
   const cors = {
@@ -75,39 +74,45 @@ exports.handler = async function (event) {
     generationConfig: { temperature: 0, responseMimeType: 'application/json' },
   };
 
+  // Netlify sync functions are killed at ~10s. Stay under that: try models in
+  // sequence, each with its own abort timeout, and stop once the budget is spent.
+  const DEADLINE_MS = 8500;
+  const started = Date.now();
+  const remaining = () => DEADLINE_MS - (Date.now() - started);
+
   let lastErr = 'unknown error';
   let overloaded = false;
   for (const model of MODELS) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const resp = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEY}`,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
-        );
-        const json = await resp.json();
-        if (!resp.ok) {
-          lastErr = (json.error && json.error.message) || `HTTP ${resp.status}`;
-          const transient = resp.status === 503 || resp.status === 429;
-          if (transient) {
-            overloaded = true;
-            if (attempt === 0) { await sleep(900); continue; } // retry same model once
-          }
-          break; // 404, or retry exhausted → next model
-        }
-        const parts = (((json.candidates || [])[0] || {}).content || {}).parts || [];
-        const text = parts.map((p) => p.text || '').join('').trim();
-        const data = safeParse(text);
-        if (!data) { lastErr = 'Could not parse model output.'; break; }
-        // Normalise + validate the category against the allowed list.
-        const match = categories.find((c) => c.name.toLowerCase() === String(data.category || '').toLowerCase())
-          || categories.find((c) => c.code.toLowerCase() === String(data.code || '').toLowerCase());
-        if (match) { data.category = match.name; data.code = match.code; }
-        data.currency = data.currency || 'ZAR';
-        return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true, data, model }) };
-      } catch (e) {
-        lastErr = String((e && e.message) || e);
-        break;
+    if (remaining() < 2500) break; // not enough time for another attempt
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), Math.min(remaining(), 7500));
+    try {
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEY}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: ctrl.signal }
+      );
+      clearTimeout(timer);
+      const json = await resp.json();
+      if (!resp.ok) {
+        lastErr = (json.error && json.error.message) || `HTTP ${resp.status}`;
+        if (resp.status === 503 || resp.status === 429) overloaded = true;
+        continue; // try the next model while the budget allows
       }
+      const parts = (((json.candidates || [])[0] || {}).content || {}).parts || [];
+      const text = parts.map((p) => p.text || '').join('').trim();
+      const data = safeParse(text);
+      if (!data) { lastErr = 'Could not parse model output.'; continue; }
+      // Normalise + validate the category against the allowed list.
+      const match = categories.find((c) => c.name.toLowerCase() === String(data.category || '').toLowerCase())
+        || categories.find((c) => c.code.toLowerCase() === String(data.code || '').toLowerCase());
+      if (match) { data.category = match.name; data.code = match.code; }
+      data.currency = data.currency || 'ZAR';
+      return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true, data, model }) };
+    } catch (e) {
+      clearTimeout(timer);
+      lastErr = (e && e.name === 'AbortError') ? 'model timed out' : String((e && e.message) || e);
+      if (e && e.name === 'AbortError') overloaded = true;
+      continue;
     }
   }
   return { statusCode: 502, headers: cors, body: JSON.stringify({ ok: false, error: lastErr, overloaded }) };

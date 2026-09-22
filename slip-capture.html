@@ -252,7 +252,7 @@
 
   function handleImage(file) {
     hide('errBanner'); hide('okBanner'); hide('review');
-    downscale(file, 1400, 0.8, function (fullB64, mime, thumbB64) {
+    downscale(file, 1100, 0.72, function (fullB64, mime, thumbB64) {
       currentThumb = thumbB64;
       $('previewImg').src = 'data:' + mime + ';base64,' + fullB64;
       $('preview').style.display = 'block';
@@ -280,26 +280,30 @@
   }
 
   // ---- OCR via serverless function ----
-  function ocr(b64, mime) {
+  function ocr(b64, mime, attempt) {
+    attempt = attempt || 0;
     $('state').style.display = 'flex';
-    $('stateMsg').textContent = 'Lees die strokie…';
+    $('stateMsg').textContent = attempt ? 'Nog besig… probeer weer' : 'Lees die strokie…';
+    function retryOrFail(overloaded, reachable) {
+      if (attempt < 1) { setTimeout(function () { ocr(b64, mime, attempt + 1); }, 1300); return; }
+      hide('state');
+      if (!reachable) showErr('Kon nie die leser bereik nie — vul asseblief self in.');
+      else showErr(overloaded
+        ? "Die outo-leser is net 'n oomblik besig. Vul solank self in, of neem die foto weer."
+        : 'Kon nie die strokie outomaties lees nie — vul asseblief self in.');
+      showReviewBlank();
+    }
     fetch('/api/slip-ocr', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imageBase64: b64, mimeType: mime, categories: CATEGORIES })
     })
-      .then(function (r) { return r.json(); })
+      .then(function (r) { return r.json().catch(function () { return { ok: false, overloaded: true }; }); })
       .then(function (res) {
+        if (!res.ok) { retryOrFail(res.overloaded, true); return; }
         hide('state');
-        if (!res.ok) {
-          showErr(res.overloaded
-            ? "Die outo-leser is net 'n oomblik besig. Vul solank self in, of neem die foto weer."
-            : 'Kon nie die strokie outomaties lees nie — vul asseblief self in.');
-          showReviewBlank();
-          return;
-        }
         fillReview(res.data);
       })
-      .catch(function () { hide('state'); showErr('Kon nie die leser bereik nie — vul asseblief self in.'); showReviewBlank(); });
+      .catch(function () { retryOrFail(false, false); });
   }
 
   function fillReview(d) {
