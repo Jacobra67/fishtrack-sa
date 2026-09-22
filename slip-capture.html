@@ -100,6 +100,9 @@
   .slip .v { font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .slip .m { font-size:12.5px; color:var(--ink-3); }
   .slip .amt { font-weight:700; font-size:14.5px; }
+  .slip .del { flex:0 0 auto; border:none; background:none; color:var(--ink-3); cursor:pointer;
+    font-size:18px; line-height:1; padding:6px 4px; border-radius:8px; }
+  .slip .del:active { background:var(--stop-bg); color:var(--stop-text); }
   .pill { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px;
     background:var(--navy); color:#fff; letter-spacing:.3px; }
   .empty { text-align:center; color:var(--ink-3); font-size:14px; padding:26px 10px; }
@@ -325,33 +328,38 @@
       category: cat.name, code: cat.code,
       summary: $('summary').value.trim(),
       capturedBy: who, thumb: currentThumb || null,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      lid: 'l' + Date.now() + Math.random().toString(36).slice(2, 7) // local list id
     };
     save(rec);
   });
 
   function save(rec) {
     var btn = $('saveBtn'); btn.disabled = true; btn.textContent = 'Stoor…';
-    function done(ok) {
-      btn.disabled = false; btn.textContent = 'Stoor strokie';
-      if (ok) {
-        localAdd(rec);
-        reset();
-        showOk('Gestoor! ' + rec.category + ' · R' + fmt(rec.total));
-        render();
-      } else { showErr('Kon nie stoor nie. Dit is plaaslik gebêre — probeer later weer stuur.'); localAdd(rec); reset(); render(); }
-    }
+    function finish() { btn.disabled = false; btn.textContent = 'Stoor strokie'; reset(); render(); }
     if (DB) {
-      var doc = {}; for (var k in rec) if (k !== 'thumb') doc[k] = rec[k]; // thumb can be large; keep it local
+      var doc = {}; for (var k in rec) if (k !== 'thumb' && k !== 'lid') doc[k] = rec[k]; // thumb/lid stay local
       doc.serverTime = firebase.firestore.FieldValue.serverTimestamp();
-      DB.collection('wolkInvoices').add(doc).then(function () { done(true); }).catch(function () { done(false); });
-    } else { done(false); }
+      DB.collection('wolkInvoices').add(doc).then(function (ref) {
+        rec.fid = ref.id; localAdd(rec); showOk('Gestoor! ' + rec.category + ' · R' + fmt(rec.total)); finish();
+      }).catch(function () {
+        localAdd(rec); showErr('Kon nie aanlyn stoor nie — plaaslik gebêre, probeer later weer.'); finish();
+      });
+    } else { localAdd(rec); showErr('Aanlyn berging is af — plaaslik gebêre.'); finish(); }
   }
 
   // ---- Local session list ----
   function key() { return 'ka_slips_' + TENANT; }
   function localAll() { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch (e) { return []; } }
   function localAdd(rec) { var a = localAll(); a.unshift(rec); localStorage.setItem(key(), JSON.stringify(a.slice(0, 60))); }
+  function localRemove(lid) { localStorage.setItem(key(), JSON.stringify(localAll().filter(function (r) { return r.lid !== lid; }))); }
+
+  function removeSlip(r) {
+    if (!confirm('Verwyder hierdie strokie?\n' + (r.vendor || '') + ' — R' + fmt(r.total))) return;
+    function after() { localRemove(r.lid); render(); showOk('Strokie verwyder.'); }
+    if (DB && r.fid) { DB.collection('wolkInvoices').doc(r.fid).delete().then(after).catch(after); }
+    else { after(); }
+  }
 
   function render() {
     var all = localAll();
@@ -367,7 +375,9 @@
       row.innerHTML = th +
         '<div class="info"><div class="v">' + esc(r.vendor) + '</div>' +
         '<div class="m"><span class="pill">' + esc(r.code) + '</span> ' + esc(r.category) + ' · ' + esc(r.capturedBy || '') + '</div></div>' +
-        '<div class="amt">R' + fmt(r.total) + '</div>';
+        '<div class="amt">R' + fmt(r.total) + '</div>' +
+        '<button class="del" title="Verwyder" aria-label="Verwyder">&times;</button>';
+      row.querySelector('.del').addEventListener('click', function () { removeSlip(r); });
       list.appendChild(row);
     });
     $('grandTotal').textContent = 'R' + fmt(total);
@@ -375,12 +385,26 @@
     $('sendWrap').hidden = false;
   }
 
+  // Test recipient for the month-end summary. Swap for the accounts address later.
+  var REPORT_EMAIL = 'jacobusblake@gmail.com';
   $('sendBtn').addEventListener('click', function () {
-    var n = localAll().length;
-    if (!n) return;
-    showOk('Die maand se ' + n + ' strokies is by rekeninge. Hulle sien dit op die kantoorbord.');
-    // Records already live in Firestore (status pending) for the accounts view.
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    var all = localAll();
+    if (!all.length) return;
+    var month = new Date().toLocaleDateString('af-ZA', { month: 'long', year: 'numeric' });
+    var total = all.reduce(function (s, r) { return s + (Number(r.total) || 0); }, 0);
+    var lines = all.map(function (r) {
+      return '- ' + (r.vendor || 'Onbekend') + '  R' + fmt(r.total) +
+        '  [' + r.code + ' ' + r.category + ']  ' + (r.capturedBy || '') + '  ' + r.date;
+    });
+    var body = 'Kinder Ark - Faktuur opsomming vir ' + month + '\n\n' +
+      lines.join('\n') + '\n\n' +
+      'Totaal: R' + fmt(total) + '\n' +
+      'Aantal strokies: ' + all.length + '\n\n' +
+      'Gestuur vanaf Kinder Ark Faktuurbeheer.';
+    var subject = 'Kinder Ark faktuur-opsomming - ' + month + ' (R' + fmt(total) + ')';
+    window.location.href = 'mailto:' + REPORT_EMAIL +
+      '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    showOk('E-pos oopgemaak met ' + all.length + ' strokies — druk stuur in jou e-pos.');
   });
 
   $('cancelBtn').addEventListener('click', reset);

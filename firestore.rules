@@ -113,7 +113,11 @@ service cloud.firestore {
     match /wolkInvoices/{invId} {
       allow read: if true;
       allow create: if request.auth != null && isValidSlip();
-      allow delete: if false;
+      // A captured slip can be removed while it is still pending (e.g. a bad
+      // snap). Once approved/paid it is locked for the audit trail.
+      allow delete: if request.auth != null
+          && resource.data.type == 'slip'
+          && resource.data.status == 'pending';
       allow update: if request.auth != null
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt', 'paidAt', 'paidBy']);
     }
