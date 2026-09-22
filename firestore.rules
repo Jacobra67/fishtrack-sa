@@ -95,9 +95,25 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+    // Slips captured directly from the browser (slip-capture.html) are created
+    // client-side under anonymous auth, so they need a validated create rule.
+    // Bot-created invoices still arrive via the Admin SDK (bypasses rules).
+    function isValidSlip() {
+      let d = request.resource.data;
+      return d.type == 'slip'
+          && d.status == 'pending'
+          && d.tenant is string && d.tenant.size() > 0 && d.tenant.size() <= 60
+          && d.total is number && d.total >= 0 && d.total < 100000000
+          && d.capturedBy is string && d.capturedBy.size() > 0 && d.capturedBy.size() <= 100
+          && d.vendor is string && d.vendor.size() <= 200
+          && d.category is string && d.category.size() <= 100
+          && d.code is string && d.code.size() <= 20;
+    }
+
     match /wolkInvoices/{invId} {
       allow read: if true;
-      allow create, delete: if false;
+      allow create: if request.auth != null && isValidSlip();
+      allow delete: if false;
       allow update: if request.auth != null
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'decidedAt', 'paidAt', 'paidBy']);
     }
