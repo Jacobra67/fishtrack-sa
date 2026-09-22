@@ -400,8 +400,8 @@
     $('sendWrap').hidden = false;
   }
 
-  // Test recipient for the month-end summary. Swap for the accounts address later.
-  var REPORT_EMAIL = 'jacobusblake@gmail.com';
+  // Month-end summary recipients (comma-separated). Sister + Baas for testing.
+  var REPORT_EMAIL = 'blakeaster@gmail.com,jacobusblake@gmail.com';
   $('sendBtn').addEventListener('click', function () {
     var all = localAll();
     if (!all.length) return;
