@@ -352,7 +352,12 @@
   function key() { return 'ka_slips_' + TENANT; }
   function localAll() { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch (e) { return []; } }
   function localAdd(rec) { var a = localAll(); a.unshift(rec); localStorage.setItem(key(), JSON.stringify(a.slice(0, 60))); }
-  function localRemove(lid) { localStorage.setItem(key(), JSON.stringify(localAll().filter(function (r) { return r.lid !== lid; }))); }
+  function localRemove(lid) {
+    var a = localAll();
+    var i = a.findIndex(function (r) { return r.lid === lid; });
+    if (i >= 0) a.splice(i, 1); // remove exactly one row
+    localStorage.setItem(key(), JSON.stringify(a));
+  }
 
   function removeSlip(r) {
     if (!confirm('Verwyder hierdie strokie?\n' + (r.vendor || '') + ' — R' + fmt(r.total))) return;
@@ -422,6 +427,20 @@
   function hide(id) { $(id).style.display = 'none'; }
   function showErr(m) { var b = $('errBanner'); b.textContent = m; b.style.display = 'block'; }
   function showOk(m) { var b = $('okBanner'); b.textContent = m; b.style.display = 'block'; setTimeout(function () { b.style.display = 'none'; }, 4000); }
+
+  // One-time migration: older slips were stored without a unique id (lid), so a
+  // single delete could match more than one row. Give every slip its own id.
+  (function migrateLids() {
+    var a = localAll(); var changed = false; var seen = {};
+    a.forEach(function (r) {
+      if (!r.lid || seen[r.lid]) {
+        r.lid = 'l' + Date.now() + Math.random().toString(36).slice(2, 8);
+        changed = true;
+      }
+      seen[r.lid] = true;
+    });
+    if (changed) localStorage.setItem(key(), JSON.stringify(a));
+  })();
 
   render();
 })();
