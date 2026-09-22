@@ -51,6 +51,17 @@
   .snap .sub { display:block; font-weight:500; font-size:12.5px; opacity:.9; margin-top:2px; }
   input[type=file] { display:none; }
 
+  /* school (branch) segmented picker */
+  .seglabel { display:block; font-size:12.5px; font-weight:600; color:var(--ink-3);
+    margin:14px 0 6px; text-transform:uppercase; letter-spacing:.4px; }
+  .segbar { display:flex; gap:8px; margin-bottom:14px; }
+  .seg { flex:1; padding:13px 8px; border:1.5px solid var(--line-2); background:#fbfcfe;
+    color:var(--ink-2); border-radius:12px; font-family:var(--sans); font-weight:600;
+    font-size:14px; cursor:pointer; line-height:1.2; }
+  .seg .cc { display:block; font-size:11px; font-weight:700; opacity:.7; margin-top:2px; }
+  .seg.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .seg.on .cc { opacity:.85; }
+
   .preview { margin-top:14px; border-radius:14px; overflow:hidden; border:1px solid var(--line);
     display:none; }
   .preview img { width:100%; display:block; max-height:230px; object-fit:cover; }
@@ -132,6 +143,12 @@
 <div class="wrap">
   <h2>Nuwe strokie</h2>
   <div class="card">
+    <span class="seglabel">Watter skool?</span>
+    <div class="segbar" id="school">
+      <button type="button" class="seg" data-code="VDV" data-name="Val de Vie">Val de Vie<span class="cc">VDV</span></button>
+      <button type="button" class="seg" data-code="KAP" data-name="Kleuterpark Pêrel (Courtrai)">Courtrai<span class="cc">KAP</span></button>
+    </div>
+
     <label for="who" style="margin-bottom:8px">Wie koop? (naam)</label>
     <input type="text" id="who" placeholder="bv. Marie" autocomplete="name" style="margin-bottom:14px">
 
@@ -240,6 +257,21 @@
   $('who').value = localStorage.getItem('ka_who') || '';
   $('who').addEventListener('change', function () { localStorage.setItem('ka_who', $('who').value.trim()); });
 
+  // School (branch) picker — remembers the last choice on this device
+  var currentSchool = null;
+  function selectSchool(btn) {
+    currentSchool = { code: btn.dataset.code, name: btn.dataset.name };
+    Array.prototype.forEach.call(document.querySelectorAll('#school .seg'), function (b) { b.classList.toggle('on', b === btn); });
+    localStorage.setItem('ka_school', currentSchool.code);
+  }
+  (function initSchool() {
+    var saved = localStorage.getItem('ka_school');
+    Array.prototype.forEach.call(document.querySelectorAll('#school .seg'), function (b) {
+      if (saved && b.dataset.code === saved) selectSchool(b);
+      b.addEventListener('click', function () { selectSchool(b); });
+    });
+  })();
+
   var currentThumb = null;
 
   // ---- Snap / upload ----
@@ -327,12 +359,14 @@
   $('saveBtn').addEventListener('click', function () {
     var who = $('who').value.trim();
     var total = parseFloat($('total').value);
+    if (!currentSchool) { showErr('Kies asseblief die skool (Val de Vie of Courtrai).'); return; }
     if (!who) { showErr('Vul asseblief in wie gekoop het.'); return; }
     if (!($('total').value) || isNaN(total)) { showErr('Vul asseblief die bedrag in.'); return; }
     var catCode = sel.value;
     var cat = CATEGORIES.find(function (c) { return c.code === catCode; }) || { name: '', code: catCode };
     var rec = {
       tenant: TENANT, type: 'slip', status: 'pending',
+      school: currentSchool.name, schoolCode: currentSchool.code,
       vendor: $('vendor').value.trim() || 'Onbekend',
       total: total, date: $('date').value || today(),
       category: cat.name, code: cat.code,
@@ -389,7 +423,8 @@
       var th = r.thumb ? '<img class="th" src="data:image/jpeg;base64,' + r.thumb + '" alt="">' : '<div class="th"></div>';
       row.innerHTML = th +
         '<div class="info"><div class="v">' + esc(r.vendor) + '</div>' +
-        '<div class="m"><span class="pill">' + esc(r.code) + '</span> ' + esc(r.category) + ' · ' + esc(r.capturedBy || '') + '</div></div>' +
+        '<div class="m">' + (r.schoolCode ? '<span class="pill" style="background:var(--teal-700)">' + esc(r.schoolCode) + '</span> ' : '') +
+          '<span class="pill">' + esc(r.code) + '</span> ' + esc(r.category) + ' · ' + esc(r.capturedBy || '') + '</div></div>' +
         '<div class="amt">R' + fmt(r.total) + '</div>' +
         '<button class="del" title="Verwyder" aria-label="Verwyder">&times;</button>';
       row.querySelector('.del').addEventListener('click', function () { removeSlip(r); });
@@ -407,13 +442,21 @@
     if (!all.length) return;
     var month = new Date().toLocaleDateString('af-ZA', { month: 'long', year: 'numeric' });
     var total = all.reduce(function (s, r) { return s + (Number(r.total) || 0); }, 0);
-    var lines = all.map(function (r) {
-      return '- ' + (r.vendor || 'Onbekend') + '  R' + fmt(r.total) +
-        '  [' + r.code + ' ' + r.category + ']  ' + (r.capturedBy || '') + '  ' + r.date;
+    // Group by school so accounts sees a per-branch breakdown.
+    var groups = {};
+    all.forEach(function (r) { var k = r.schoolCode || '—'; (groups[k] = groups[k] || []).push(r); });
+    var sections = Object.keys(groups).map(function (code) {
+      var rows = groups[code];
+      var sub = rows.reduce(function (s, r) { return s + (Number(r.total) || 0); }, 0);
+      var lines = rows.map(function (r) {
+        return '   - ' + (r.vendor || 'Onbekend') + '  R' + fmt(r.total) +
+          '  [' + r.code + ' ' + r.category + ']  ' + (r.capturedBy || '') + '  ' + r.date;
+      });
+      return (rows[0].school || code) + ' (' + code + ') — subtotaal R' + fmt(sub) + '\n' + lines.join('\n');
     });
     var body = 'Kinder Ark - Faktuur opsomming vir ' + month + '\n\n' +
-      lines.join('\n') + '\n\n' +
-      'Totaal: R' + fmt(total) + '\n' +
+      sections.join('\n\n') + '\n\n' +
+      'TOTAAL (alle skole): R' + fmt(total) + '\n' +
       'Aantal strokies: ' + all.length + '\n\n' +
       'Gestuur vanaf Kinder Ark Faktuurbeheer.';
     var subject = 'Kinder Ark faktuur-opsomming - ' + month + ' (R' + fmt(total) + ')';
