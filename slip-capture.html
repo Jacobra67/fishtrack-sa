@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="af">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#161c4a">
+<title>Kinder Ark — Snap 'n Strokie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amatica+SC:wght@400;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#eef5f6; --card:#ffffff; --ink:#1a2140; --ink-2:#4b5372; --ink-3:#6a7290;
+    --line:#e4e8f0; --line-2:#cfd6e2;
+    --navy-900:#0f1540; --navy:#161c4a; --teal-700:#157e84; --teal:#2aa7ad;
+    --teal-100:#d9f0f0; --teal-text:#0f5f63;
+    --pink:#ef5077; --pink-2:#ffb0c2;
+    --warn-bg:#fbf0d6; --warn-text:#6e4506; --warn-line:#ecd08e;
+    --stop-bg:#f9e5e1; --stop-text:#7a1d16; --stop-line:#edb8b0;
+    --radius:18px;
+    --shadow:0 1px 2px rgba(22,28,74,.06), 0 6px 18px -8px rgba(22,28,74,.20);
+    --sans:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; }
+  body { background:var(--paper); color:var(--ink); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; line-height:1.45; }
+  .wrap { max-width:520px; margin:0 auto; padding:0 16px 96px; }
+
+  header { background:var(--navy); color:#fff; border-bottom:3px solid var(--pink); }
+  .hd { max-width:520px; margin:0 auto; padding:16px; display:flex; align-items:center; gap:12px; }
+  .mark { width:38px; height:38px; flex:0 0 auto; }
+  .brand h1 { font-family:"Amatica SC",var(--sans); font-weight:700; font-size:28px;
+    line-height:1; margin:0; letter-spacing:.5px; }
+  .brand p { margin:2px 0 0; font-size:12.5px; color:#c9cde6; }
+
+  h2 { font-size:15px; margin:22px 2px 10px; color:var(--ink-2); font-weight:600;
+    text-transform:uppercase; letter-spacing:.6px; }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:18px; }
+
+  /* capture button */
+  .snap { width:100%; border:none; border-radius:var(--radius); cursor:pointer;
+    background:var(--teal-700); color:#fff; font-family:var(--sans); font-weight:700;
+    font-size:17px; padding:20px; display:flex; align-items:center; justify-content:center;
+    gap:12px; box-shadow:0 6px 16px -6px rgba(21,126,132,.6); }
+  .snap:active { transform:translateY(1px); }
+  .snap svg { width:26px; height:26px; }
+  .snap .sub { display:block; font-weight:500; font-size:12.5px; opacity:.9; margin-top:2px; }
+  input[type=file] { display:none; }
+
+  .preview { margin-top:14px; border-radius:14px; overflow:hidden; border:1px solid var(--line);
+    display:none; }
+  .preview img { width:100%; display:block; max-height:230px; object-fit:cover; }
+
+  .state { display:none; margin-top:14px; align-items:center; gap:10px; font-size:14px;
+    color:var(--ink-2); }
+  .spin { width:18px; height:18px; border:2.5px solid var(--teal-100);
+    border-top-color:var(--teal-700); border-radius:50%; animation:sp .8s linear infinite; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+
+  /* review form */
+  .review { display:none; margin-top:14px; }
+  .row { margin-bottom:13px; }
+  label { display:block; font-size:12.5px; font-weight:600; color:var(--ink-3);
+    margin-bottom:5px; text-transform:uppercase; letter-spacing:.4px; }
+  input[type=text], input[type=number], input[type=date], select {
+    width:100%; font-family:var(--sans); font-size:16px; color:var(--ink);
+    background:#fbfcfe; border:1.5px solid var(--line-2); border-radius:12px;
+    padding:12px 13px; appearance:none; }
+  input:focus, select:focus { outline:none; border-color:var(--teal); background:#fff; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .conf { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600;
+    padding:3px 9px; border-radius:999px; margin-left:8px; vertical-align:middle; }
+  .conf.high { background:var(--teal-100); color:var(--teal-text); }
+  .conf.medium { background:var(--warn-bg); color:var(--warn-text); }
+  .conf.low { background:var(--stop-bg); color:var(--stop-text); }
+
+  .save { width:100%; border:none; border-radius:14px; cursor:pointer; margin-top:6px;
+    background:var(--navy); color:#fff; font-family:var(--sans); font-weight:700;
+    font-size:16px; padding:16px; }
+  .save:active { transform:translateY(1px); }
+  .ghost { background:none; border:1.5px solid var(--line-2); color:var(--ink-2);
+    border-radius:12px; padding:11px 14px; font-family:var(--sans); font-weight:600;
+    font-size:14px; cursor:pointer; }
+
+  .banner { display:none; border-radius:12px; padding:11px 13px; font-size:13.5px;
+    margin-top:12px; }
+  .banner.ok { background:var(--teal-100); color:var(--teal-text); }
+  .banner.err { background:var(--stop-bg); color:var(--stop-text); }
+
+  /* captured list */
+  .slip { display:flex; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--line); }
+  .slip:first-child { border-top:none; }
+  .slip .th { width:46px; height:46px; border-radius:10px; object-fit:cover; flex:0 0 auto;
+    border:1px solid var(--line); background:var(--teal-100); }
+  .slip .info { flex:1 1 auto; min-width:0; }
+  .slip .v { font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .slip .m { font-size:12.5px; color:var(--ink-3); }
+  .slip .amt { font-weight:700; font-size:14.5px; }
+  .pill { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px;
+    background:var(--navy); color:#fff; letter-spacing:.3px; }
+  .empty { text-align:center; color:var(--ink-3); font-size:14px; padding:26px 10px; }
+  .empty svg { width:40px; height:40px; opacity:.5; margin-bottom:8px; }
+
+  .total-bar { display:flex; justify-content:space-between; align-items:center; margin-top:14px;
+    padding-top:14px; border-top:2px solid var(--line); font-weight:700; }
+  .total-bar .big { font-size:20px; }
+  .foot { text-align:center; color:var(--ink-3); font-size:11.5px; margin-top:26px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M8 40 Q32 18 56 40 L52 48 Q32 34 12 48 Z" fill="#2aa7ad"/>
+      <path d="M6 46 Q32 30 58 46 L54 56 L10 56 Z" fill="#ffffff" opacity=".18"/>
+      <path d="M32 20c-3-6-13-4-11 4 1 5 11 11 11 11s10-6 11-11c2-8-8-10-11-4z" fill="#ef5077"/>
+    </svg>
+    <div class="brand">
+      <h1>Kinder Ark</h1>
+      <p>Snap 'n strokie — dit sorteer self</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <h2>Nuwe strokie</h2>
+  <div class="card">
+    <label for="who" style="margin-bottom:8px">Wie koop? (naam)</label>
+    <input type="text" id="who" placeholder="bv. Marie" autocomplete="name" style="margin-bottom:14px">
+
+    <button class="snap" id="snapBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>Neem 'n foto van die strokie<span class="sub">of kies uit jou galery</span></span>
+    </button>
+    <input type="file" id="file" accept="image/*" capture="environment">
+
+    <div class="preview" id="preview"><img id="previewImg" alt="strokie"></div>
+
+    <div class="state" id="state"><span class="spin"></span><span id="stateMsg">Lees die strokie…</span></div>
+    <div class="banner err" id="errBanner"></div>
+
+    <div class="review" id="review">
+      <div class="row">
+        <label>Winkel / verskaffer</label>
+        <input type="text" id="vendor" placeholder="Winkel se naam">
+      </div>
+      <div class="two">
+        <div class="row">
+          <label>Bedrag (R)</label>
+          <input type="number" id="total" inputmode="decimal" step="0.01" placeholder="0.00">
+        </div>
+        <div class="row">
+          <label>Datum</label>
+          <input type="date" id="date">
+        </div>
+      </div>
+      <div class="row">
+        <label>Kategorie <span class="conf" id="conf" hidden></span></label>
+        <select id="category"></select>
+      </div>
+      <div class="row">
+        <label>Wat is gekoop? (kort)</label>
+        <input type="text" id="summary" placeholder="bv. kos vir die week">
+      </div>
+      <button class="save" id="saveBtn" type="button">Stoor strokie</button>
+      <div class="banner ok" id="okBanner"></div>
+      <div style="text-align:center;margin-top:10px">
+        <button class="ghost" id="cancelBtn" type="button">Kanselleer</button>
+      </div>
+    </div>
+  </div>
+
+  <h2>Hierdie maand se strokies</h2>
+  <div class="card" id="listCard">
+    <div class="empty" id="emptyState">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      <div>Nog geen strokies gesnap nie.<br>Neem jou eerste een hierbo.</div>
+    </div>
+    <div id="list"></div>
+    <div class="total-bar" id="totalBar" style="display:none">
+      <span>Totaal hierdie maand</span><span class="big" id="grandTotal">R0</span>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" id="sendWrap" hidden>
+    <button class="save" id="sendBtn" type="button" style="background:var(--teal-700)">Stuur maand na rekeninge</button>
+  </div>
+
+  <p class="foot">Kinder Ark Faktuurbeheer · aangedryf deur Wolk Solutions</p>
+</div>
+
+<!-- Firebase (same project as the office board) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var params = new URLSearchParams(location.search);
+  var TENANT = params.get('tenant') || 'kinderark';
+
+  // Placeholder category list — must mirror the function's DEFAULT_CATEGORIES.
+  // Swap for Kinder Ark's real chart of codes once confirmed.
+  var CATEGORIES = [
+    { name: 'Kos & Verversings', code: 'KOS' },
+    { name: 'Mediese / Dokter', code: 'MED' },
+    { name: 'Brandstof', code: 'BRA' },
+    { name: 'Skoonmaak', code: 'SKM' },
+    { name: 'Opvoedkundig / Speelgoed', code: 'OPV' },
+    { name: 'Munisipaliteit / Dienste', code: 'MUN' },
+    { name: 'Onderhoud & Herstel', code: 'OND' },
+    { name: 'Kantoor / Admin', code: 'KAN' },
+    { name: 'Ander', code: 'AND' }
+  ];
+
+  // ---- Firebase (optional; falls back to localStorage) ----
+  var DB = null;
+  try {
+    firebase.initializeApp({ apiKey: 'AIzaSyBu8k_4z-Rg6UDCZfqHa2K-kfkwjxA_qH8', authDomain: 'fishtrack-sa.firebaseapp.com', projectId: 'fishtrack-sa', storageBucket: 'fishtrack-sa.firebasestorage.app', messagingSenderId: '610455904003', appId: '1:610455904003:web:3f04f72c5bd9644c64d336' });
+    DB = firebase.firestore();
+    firebase.auth().onAuthStateChanged(function (u) { if (!u) firebase.auth().signInAnonymously().catch(function () {}); });
+  } catch (e) { DB = null; }
+
+  // ---- Populate category dropdown ----
+  var sel = $('category');
+  CATEGORIES.forEach(function (c) {
+    var o = document.createElement('option');
+    o.value = c.code; o.textContent = c.name; sel.appendChild(o);
+  });
+
+  // Remember who is capturing (this device)
+  $('who').value = localStorage.getItem('ka_who') || '';
+  $('who').addEventListener('change', function () { localStorage.setItem('ka_who', $('who').value.trim()); });
+
+  var currentThumb = null;
+
+  // ---- Snap / upload ----
+  $('snapBtn').addEventListener('click', function () { $('file').click(); });
+  $('file').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0];
+    if (f) handleImage(f);
+    $('file').value = '';
+  });
+
+  function handleImage(file) {
+    hide('errBanner'); hide('okBanner'); hide('review');
+    downscale(file, 1400, 0.8, function (fullB64, mime, thumbB64) {
+      currentThumb = thumbB64;
+      $('previewImg').src = 'data:' + mime + ';base64,' + fullB64;
+      $('preview').style.display = 'block';
+      ocr(fullB64, mime);
+    });
+  }
+
+  // Downscale to keep the upload small; also make a tiny thumbnail for the list.
+  function downscale(file, maxDim, quality, cb) {
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function () {
+      cb(draw(maxDim, quality), 'image/jpeg', draw(120, 0.7));
+      URL.revokeObjectURL(url);
+      function draw(dim, q) {
+        var scale = Math.min(1, dim / Math.max(img.width, img.height));
+        var c = document.createElement('canvas');
+        c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        return c.toDataURL('image/jpeg', q).split(',')[1];
+      }
+    };
+    img.onerror = function () { showErr('Kon nie die foto lees nie. Probeer weer.'); };
+    img.src = url;
+  }
+
+  // ---- OCR via serverless function ----
+  function ocr(b64, mime) {
+    $('state').style.display = 'flex';
+    $('stateMsg').textContent = 'Lees die strokie…';
+    fetch('/api/slip-ocr', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64: b64, mimeType: mime, categories: CATEGORIES })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        hide('state');
+        if (!res.ok) { showErr(res.error || 'Kon nie die strokie lees nie.'); showReviewBlank(); return; }
+        fillReview(res.data);
+      })
+      .catch(function () { hide('state'); showErr('Netwerkfout. Vul asseblief self in.'); showReviewBlank(); });
+  }
+
+  function fillReview(d) {
+    $('vendor').value = d.vendor || '';
+    $('total').value = (d.total != null) ? d.total : '';
+    $('date').value = d.date || today();
+    $('summary').value = d.summary || '';
+    if (d.code) sel.value = d.code;
+    var conf = $('conf');
+    if (d.confidence) {
+      conf.hidden = false; conf.className = 'conf ' + d.confidence;
+      conf.textContent = ({ high: 'seker', medium: 'kyk gou', low: 'kontroleer' })[d.confidence] || d.confidence;
+    } else { conf.hidden = true; }
+    $('review').style.display = 'block';
+  }
+  function showReviewBlank() {
+    $('date').value = today(); $('conf').hidden = true; $('review').style.display = 'block';
+  }
+
+  // ---- Save ----
+  $('saveBtn').addEventListener('click', function () {
+    var who = $('who').value.trim();
+    var total = parseFloat($('total').value);
+    if (!who) { showErr('Vul asseblief in wie gekoop het.'); return; }
+    if (!($('total').value) || isNaN(total)) { showErr('Vul asseblief die bedrag in.'); return; }
+    var catCode = sel.value;
+    var cat = CATEGORIES.find(function (c) { return c.code === catCode; }) || { name: '', code: catCode };
+    var rec = {
+      tenant: TENANT, type: 'slip', status: 'pending',
+      vendor: $('vendor').value.trim() || 'Onbekend',
+      total: total, date: $('date').value || today(),
+      category: cat.name, code: cat.code,
+      summary: $('summary').value.trim(),
+      capturedBy: who, thumb: currentThumb || null,
+      createdAt: new Date().toISOString()
+    };
+    save(rec);
+  });
+
+  function save(rec) {
+    var btn = $('saveBtn'); btn.disabled = true; btn.textContent = 'Stoor…';
+    function done(ok) {
+      btn.disabled = false; btn.textContent = 'Stoor strokie';
+      if (ok) {
+        localAdd(rec);
+        reset();
+        showOk('Gestoor! ' + rec.category + ' · R' + fmt(rec.total));
+        render();
+      } else { showErr('Kon nie stoor nie. Dit is plaaslik gebêre — probeer later weer stuur.'); localAdd(rec); reset(); render(); }
+    }
+    if (DB) {
+      var doc = {}; for (var k in rec) if (k !== 'thumb') doc[k] = rec[k]; // thumb can be large; keep it local
+      doc.serverTime = firebase.firestore.FieldValue.serverTimestamp();
+      DB.collection('wolkInvoices').add(doc).then(function () { done(true); }).catch(function () { done(false); });
+    } else { done(false); }
+  }
+
+  // ---- Local session list ----
+  function key() { return 'ka_slips_' + TENANT; }
+  function localAll() { try { return JSON.parse(localStorage.getItem(key()) || '[]'); } catch (e) { return []; } }
+  function localAdd(rec) { var a = localAll(); a.unshift(rec); localStorage.setItem(key(), JSON.stringify(a.slice(0, 60))); }
+
+  function render() {
+    var all = localAll();
+    var list = $('list');
+    list.innerHTML = '';
+    if (!all.length) { $('emptyState').style.display = 'block'; $('totalBar').style.display = 'none'; $('sendWrap').hidden = true; return; }
+    $('emptyState').style.display = 'none';
+    var total = 0;
+    all.forEach(function (r) {
+      total += Number(r.total) || 0;
+      var row = document.createElement('div'); row.className = 'slip';
+      var th = r.thumb ? '<img class="th" src="data:image/jpeg;base64,' + r.thumb + '" alt="">' : '<div class="th"></div>';
+      row.innerHTML = th +
+        '<div class="info"><div class="v">' + esc(r.vendor) + '</div>' +
+        '<div class="m"><span class="pill">' + esc(r.code) + '</span> ' + esc(r.category) + ' · ' + esc(r.capturedBy || '') + '</div></div>' +
+        '<div class="amt">R' + fmt(r.total) + '</div>';
+      list.appendChild(row);
+    });
+    $('grandTotal').textContent = 'R' + fmt(total);
+    $('totalBar').style.display = 'flex';
+    $('sendWrap').hidden = false;
+  }
+
+  $('sendBtn').addEventListener('click', function () {
+    var n = localAll().length;
+    if (!n) return;
+    showOk('Die maand se ' + n + ' strokies is by rekeninge. Hulle sien dit op die kantoorbord.');
+    // Records already live in Firestore (status pending) for the accounts view.
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  $('cancelBtn').addEventListener('click', reset);
+
+  function reset() {
+    hide('review'); $('preview').style.display = 'none'; currentThumb = null;
+    $('vendor').value = ''; $('total').value = ''; $('summary').value = ''; sel.selectedIndex = 0;
+    $('conf').hidden = true;
+  }
+
+  // ---- helpers ----
+  function today() { return new Date().toISOString().slice(0, 10); }
+  function fmt(n) { n = Number(n) || 0; return n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+  function hide(id) { $(id).style.display = 'none'; }
+  function showErr(m) { var b = $('errBanner'); b.textContent = m; b.style.display = 'block'; }
+  function showOk(m) { var b = $('okBanner'); b.textContent = m; b.style.display = 'block'; setTimeout(function () { b.style.display = 'none'; }, 4000); }
+
+  render();
+})();
+</script>
+</body>
+</html>
