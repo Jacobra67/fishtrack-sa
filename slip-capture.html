@@ -290,10 +290,16 @@
       .then(function (r) { return r.json(); })
       .then(function (res) {
         hide('state');
-        if (!res.ok) { showErr(res.error || 'Kon nie die strokie lees nie.'); showReviewBlank(); return; }
+        if (!res.ok) {
+          showErr(res.overloaded
+            ? "Die outo-leser is net 'n oomblik besig. Vul solank self in, of neem die foto weer."
+            : 'Kon nie die strokie outomaties lees nie — vul asseblief self in.');
+          showReviewBlank();
+          return;
+        }
         fillReview(res.data);
       })
-      .catch(function () { hide('state'); showErr('Netwerkfout. Vul asseblief self in.'); showReviewBlank(); });
+      .catch(function () { hide('state'); showErr('Kon nie die leser bereik nie — vul asseblief self in.'); showReviewBlank(); });
   }
 
   function fillReview(d) {
