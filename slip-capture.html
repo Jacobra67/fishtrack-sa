@@ -224,19 +224,62 @@
   var params = new URLSearchParams(location.search);
   var TENANT = params.get('tenant') || 'kinderark';
 
-  // Placeholder category list — must mirror the function's DEFAULT_CATEGORIES.
-  // Swap for Kinder Ark's real chart of codes once confirmed.
+  // Kinder Ark's real chart of codes (confirmed from the school's code sheet,
+  // 2026-09-23). Must mirror the function's DEFAULT_CATEGORIES.
+  // `g` is only a grouping label for the dropdown; `code`/`name` are the school's.
   var CATEGORIES = [
-    { name: 'Kos & Verversings', code: 'KOS' },
-    { name: 'Mediese / Dokter', code: 'MED' },
-    { name: 'Brandstof', code: 'BRA' },
-    { name: 'Skoonmaak', code: 'SKM' },
-    { name: 'Opvoedkundig / Speelgoed', code: 'OPV' },
-    { name: 'Munisipaliteit / Dienste', code: 'MUN' },
-    { name: 'Onderhoud & Herstel', code: 'OND' },
-    { name: 'Kantoor / Admin', code: 'KAN' },
-    { name: 'Ander', code: 'AND' }
+    { g: 'Aankope / Skooluitgawes', code: '3000/100', name: 'Kos' },
+    { g: 'Aankope / Skooluitgawes', code: '3000/110', name: 'Kunsmateriaal' },
+    { g: 'Aankope / Skooluitgawes', code: '3000/115', name: 'Speelgoed & Boeke' },
+    { g: 'Aankope / Skooluitgawes', code: '3000/120', name: 'T-Hemde' },
+    { g: 'Aankope / Skooluitgawes', code: '3000/130', name: 'Skoonmaak' },
+    { g: 'Aankope / Skooluitgawes', code: '3000/135', name: 'Skryfbehoeftes Kantoor' },
+    { g: 'Bemarking & Bank', code: '3050/000', name: 'Advertensie / Bemarking' },
+    { g: 'Bemarking & Bank', code: '3100/000', name: 'Bankkoste' },
+    { g: 'Diverse Uitgawes', code: '3300/100', name: 'Uniforms Personeel' },
+    { g: 'Diverse Uitgawes', code: '3300/120', name: 'Beserings / Medies Personeel' },
+    { g: 'Diverse Uitgawes', code: '3400/000', name: 'Donasie' },
+    { g: 'Funksies & Uitstappies', code: '3500/100', name: 'Moedersdag' },
+    { g: 'Funksies & Uitstappies', code: '3500/110', name: 'Vadersdag' },
+    { g: 'Funksies & Uitstappies', code: '3500/120', name: 'Konsert' },
+    { g: 'Funksies & Uitstappies', code: '3500/125', name: 'Uitstappies' },
+    { g: 'Funksies & Uitstappies', code: '3500/130', name: 'Opedag' },
+    { g: 'Funksies & Uitstappies', code: '3500/135', name: 'Kleur Dag' },
+    { g: 'Funksies & Uitstappies', code: '3500/140', name: 'Dans' },
+    { g: 'Funksies & Uitstappies', code: '3500/145', name: 'Madiba Dag' },
+    { g: 'Dienste & Geskenke', code: '3650/000', name: 'Elektrisiteit / Water / Gas / Mun. Koste' },
+    { g: 'Dienste & Geskenke', code: '3700/000', name: 'Geskenke' },
+    { g: 'Kopieerkoste', code: '3800/110', name: 'Drukkoste' },
+    { g: 'Kopieerkoste', code: '3800/115', name: 'Ink' },
+    { g: 'Kopieerkoste', code: '3800/130', name: 'Huur (Kopieerder)' },
+    { g: 'Onthaal & Opleiding', code: '4000/000', name: 'Onthaal' },
+    { g: 'Onthaal & Opleiding', code: '4100/000', name: 'Opleiding Personeel' },
+    { g: 'Motorvoertuie', code: '4150/100', name: 'Onderhoud Voertuie' },
+    { g: 'Motorvoertuie', code: '4150/200', name: 'Lisensie' },
+    { g: 'Motorvoertuie', code: '4150/250', name: 'Brandstof' },
+    { g: 'Persele & Huur', code: '4200/100', name: 'Huur (Perseel)' },
+    { g: 'Persele & Huur', code: '4200/110', name: 'Onderhoud Geboue & Inhoud' },
+    { g: 'Persele & Huur', code: '4200/125', name: 'Stoor Huur' },
+    { g: 'Professionele Dienste & Vervoer', code: '4250/000', name: 'Professionele Dienste' },
+    { g: 'Professionele Dienste & Vervoer', code: '4260/000', name: 'Personeel Vervoer' },
+    { g: 'Rekenaar Uitgawes', code: '4300/115', name: 'Internet Maandeliks' },
+    { g: 'Rekenaar Uitgawes', code: '4300/120', name: 'Webwerf' },
+    { g: 'Rekenaar Uitgawes', code: '4300/210', name: 'Uitgawes / Onderhoud Rekenaars' },
+    { g: 'Rekenmeesters & Ouditgelde', code: '4350/100', name: 'Rekenmeesters & Ouditgelde Maandeliks' },
+    { g: 'Rekenmeesters & Ouditgelde', code: '4350/200', name: 'Rekenmeesters & Ouditgelde Jaarliks' },
+    { g: 'Salarisse', code: '4400/100', name: 'Salarisse Maandeliks' },
+    { g: 'Salarisse', code: '4400/110', name: 'Bonus' },
+    { g: 'Salarisse', code: '4400/115', name: 'Maatskappy Koste' },
+    { g: 'Salarisse', code: '4400/120', name: 'ETI' },
+    { g: 'Salarisse', code: '4400/130', name: 'Tydelik / Oortyd' },
+    { g: 'Sekuriteit & Telefoon', code: '4451/000', name: 'Sekuriteit' },
+    { g: 'Sekuriteit & Telefoon', code: '4500/000', name: 'Telefoon' },
+    { g: 'Toerusting & Ander Aankope', code: '4550/100', name: 'Aankope (Toerusting & Ander)' },
+    { g: 'Toerusting & Ander Aankope', code: '4600/000', name: 'Versekering' },
+    { g: 'Toerusting & Ander Aankope', code: '4650/000', name: 'Reis & Verblyf' }
   ];
+  // Used when the reader cannot place a slip, and as the starting selection.
+  var FALLBACK_CODE = '4550/100';
 
   // ---- Firebase (optional; falls back to localStorage) ----
   var DB = null;
@@ -248,10 +291,21 @@
 
   // ---- Populate category dropdown ----
   var sel = $('category');
-  CATEGORIES.forEach(function (c) {
-    var o = document.createElement('option');
-    o.value = c.code; o.textContent = c.name; sel.appendChild(o);
-  });
+  (function buildCategories() {
+    var grp = null, gname = null;
+    CATEGORIES.forEach(function (c) {
+      if (c.g !== gname) {
+        gname = c.g;
+        grp = document.createElement('optgroup');
+        grp.label = gname;
+        sel.appendChild(grp);
+      }
+      var o = document.createElement('option');
+      o.value = c.code; o.textContent = c.code + ' \u00b7 ' + c.name;
+      grp.appendChild(o);
+    });
+    sel.value = FALLBACK_CODE;
+  })();
 
   // Remember who is capturing (this device)
   $('who').value = localStorage.getItem('ka_who') || '';
@@ -348,7 +402,9 @@
     }
     $('date').value = d.date || today();
     $('summary').value = d.summary || '';
-    if (d.code) sel.value = d.code;
+    // Only trust a code that is actually on the school's list.
+    var known = CATEGORIES.some(function (c) { return c.code === d.code; });
+    sel.value = known ? d.code : FALLBACK_CODE;
     var conf = $('conf');
     if (d.confidence) {
       conf.hidden = false; conf.className = 'conf ' + d.confidence;
@@ -474,7 +530,7 @@
 
   function reset() {
     hide('review'); $('preview').style.display = 'none'; currentThumb = null;
-    $('vendor').value = ''; $('total').value = ''; $('summary').value = ''; sel.selectedIndex = 0;
+    $('vendor').value = ''; $('total').value = ''; $('summary').value = ''; sel.value = FALLBACK_CODE;
     $('conf').hidden = true;
   }
 

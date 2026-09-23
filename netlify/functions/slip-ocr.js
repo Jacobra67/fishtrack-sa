@@ -53,7 +53,7 @@ exports.handler = async function (event) {
     return { statusCode: 400, headers: cors, body: JSON.stringify({ ok: false, error: 'imageBase64 required.' }) };
   }
 
-  const catList = categories.map((c) => `- ${c.name} (code: ${c.code})`).join('\n');
+  const catList = categories.map((c) => `- ${c.code} = ${c.name}${c.g ? ` [${c.g}]` : ''}`).join('\n');
   const prompt = [
     'You are reading a South African till slip / invoice / receipt photo.',
     'Extract the fields and pick the single best-fit spending category from the list.',
@@ -68,8 +68,10 @@ exports.handler = async function (event) {
     '  a dot for the decimal point. "R1,187.84" and "R1 187,84" both become 1187.84.',
     '- Only use null for total if no amount is legible anywhere on the slip.',
     '- vat = VAT/BTW amount if shown, else null. currency defaults to "ZAR".',
-    '- category MUST be one of the names below; code MUST be its matching code.',
+    '- code MUST be copied exactly from the list below (format "0000/000");',
+    '  category MUST be that code\'s name, copied exactly.',
     '- If unsure of the category, choose the closest and set confidence "low".',
+    '- If nothing on the list fits, use code "4550/100" with confidence "low".',
     '- summary = max 8 words describing what was bought.',
     '',
     'Categories:',
@@ -110,8 +112,8 @@ exports.handler = async function (event) {
       const data = safeParse(text);
       if (!data) { lastErr = 'Could not parse model output.'; continue; }
       // Normalise + validate the category against the allowed list.
-      const match = categories.find((c) => c.name.toLowerCase() === String(data.category || '').toLowerCase())
-        || categories.find((c) => c.code.toLowerCase() === String(data.code || '').toLowerCase());
+      const match = categories.find((c) => c.code === String(data.code || '').trim())
+        || categories.find((c) => c.name.toLowerCase() === String(data.category || '').toLowerCase());
       if (match) { data.category = match.name; data.code = match.code; }
       data.currency = data.currency || 'ZAR';
       // Models sometimes hand back "R1 187,84" or "1,187.84" instead of a number.
@@ -151,16 +153,57 @@ function safeParse(text) {
   return null;
 }
 
-// Placeholder categories + codes. Replace with Kinder Ark's real chart of codes
-// once the sister confirms them. Kept here so the function works standalone.
+// Kinder Ark's chart of codes (confirmed from the school's code sheet,
+// 2026-09-23). Mirrors CATEGORIES in slip-capture.html; kept here so the
+// function still works if the browser sends no list.
 const DEFAULT_CATEGORIES = [
-  { name: 'Kos & Verversings', code: 'KOS' },
-  { name: 'Mediese / Dokter', code: 'MED' },
-  { name: 'Brandstof', code: 'BRA' },
-  { name: 'Skoonmaak', code: 'SKM' },
-  { name: 'Opvoedkundig / Speelgoed', code: 'OPV' },
-  { name: 'Munisipaliteit / Dienste', code: 'MUN' },
-  { name: 'Onderhoud & Herstel', code: 'OND' },
-  { name: 'Kantoor / Admin', code: 'KAN' },
-  { name: 'Ander', code: 'AND' },
+  { g: 'Aankope / Skooluitgawes', code: '3000/100', name: 'Kos' },
+  { g: 'Aankope / Skooluitgawes', code: '3000/110', name: 'Kunsmateriaal' },
+  { g: 'Aankope / Skooluitgawes', code: '3000/115', name: 'Speelgoed & Boeke' },
+  { g: 'Aankope / Skooluitgawes', code: '3000/120', name: 'T-Hemde' },
+  { g: 'Aankope / Skooluitgawes', code: '3000/130', name: 'Skoonmaak' },
+  { g: 'Aankope / Skooluitgawes', code: '3000/135', name: 'Skryfbehoeftes Kantoor' },
+  { g: 'Bemarking & Bank', code: '3050/000', name: 'Advertensie / Bemarking' },
+  { g: 'Bemarking & Bank', code: '3100/000', name: 'Bankkoste' },
+  { g: 'Diverse Uitgawes', code: '3300/100', name: 'Uniforms Personeel' },
+  { g: 'Diverse Uitgawes', code: '3300/120', name: 'Beserings / Medies Personeel' },
+  { g: 'Diverse Uitgawes', code: '3400/000', name: 'Donasie' },
+  { g: 'Funksies & Uitstappies', code: '3500/100', name: 'Moedersdag' },
+  { g: 'Funksies & Uitstappies', code: '3500/110', name: 'Vadersdag' },
+  { g: 'Funksies & Uitstappies', code: '3500/120', name: 'Konsert' },
+  { g: 'Funksies & Uitstappies', code: '3500/125', name: 'Uitstappies' },
+  { g: 'Funksies & Uitstappies', code: '3500/130', name: 'Opedag' },
+  { g: 'Funksies & Uitstappies', code: '3500/135', name: 'Kleur Dag' },
+  { g: 'Funksies & Uitstappies', code: '3500/140', name: 'Dans' },
+  { g: 'Funksies & Uitstappies', code: '3500/145', name: 'Madiba Dag' },
+  { g: 'Dienste & Geskenke', code: '3650/000', name: 'Elektrisiteit / Water / Gas / Mun. Koste' },
+  { g: 'Dienste & Geskenke', code: '3700/000', name: 'Geskenke' },
+  { g: 'Kopieerkoste', code: '3800/110', name: 'Drukkoste' },
+  { g: 'Kopieerkoste', code: '3800/115', name: 'Ink' },
+  { g: 'Kopieerkoste', code: '3800/130', name: 'Huur (Kopieerder)' },
+  { g: 'Onthaal & Opleiding', code: '4000/000', name: 'Onthaal' },
+  { g: 'Onthaal & Opleiding', code: '4100/000', name: 'Opleiding Personeel' },
+  { g: 'Motorvoertuie', code: '4150/100', name: 'Onderhoud Voertuie' },
+  { g: 'Motorvoertuie', code: '4150/200', name: 'Lisensie' },
+  { g: 'Motorvoertuie', code: '4150/250', name: 'Brandstof' },
+  { g: 'Persele & Huur', code: '4200/100', name: 'Huur (Perseel)' },
+  { g: 'Persele & Huur', code: '4200/110', name: 'Onderhoud Geboue & Inhoud' },
+  { g: 'Persele & Huur', code: '4200/125', name: 'Stoor Huur' },
+  { g: 'Professionele Dienste & Vervoer', code: '4250/000', name: 'Professionele Dienste' },
+  { g: 'Professionele Dienste & Vervoer', code: '4260/000', name: 'Personeel Vervoer' },
+  { g: 'Rekenaar Uitgawes', code: '4300/115', name: 'Internet Maandeliks' },
+  { g: 'Rekenaar Uitgawes', code: '4300/120', name: 'Webwerf' },
+  { g: 'Rekenaar Uitgawes', code: '4300/210', name: 'Uitgawes / Onderhoud Rekenaars' },
+  { g: 'Rekenmeesters & Ouditgelde', code: '4350/100', name: 'Rekenmeesters & Ouditgelde Maandeliks' },
+  { g: 'Rekenmeesters & Ouditgelde', code: '4350/200', name: 'Rekenmeesters & Ouditgelde Jaarliks' },
+  { g: 'Salarisse', code: '4400/100', name: 'Salarisse Maandeliks' },
+  { g: 'Salarisse', code: '4400/110', name: 'Bonus' },
+  { g: 'Salarisse', code: '4400/115', name: 'Maatskappy Koste' },
+  { g: 'Salarisse', code: '4400/120', name: 'ETI' },
+  { g: 'Salarisse', code: '4400/130', name: 'Tydelik / Oortyd' },
+  { g: 'Sekuriteit & Telefoon', code: '4451/000', name: 'Sekuriteit' },
+  { g: 'Sekuriteit & Telefoon', code: '4500/000', name: 'Telefoon' },
+  { g: 'Toerusting & Ander Aankope', code: '4550/100', name: 'Aankope (Toerusting & Ander)' },
+  { g: 'Toerusting & Ander Aankope', code: '4600/000', name: 'Versekering' },
+  { g: 'Toerusting & Ander Aankope', code: '4650/000', name: 'Reis & Verblyf' },
 ];
