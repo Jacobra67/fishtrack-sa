@@ -340,7 +340,12 @@
 
   function fillReview(d) {
     $('vendor').value = d.vendor || '';
-    $('total').value = (d.total != null) ? d.total : '';
+    var amount = toNum(d.total);
+    $('total').value = (amount != null) ? amount : '';
+    if (amount == null) {
+      showErr("Kon nie die bedrag op die strokie lees nie \u2014 tik dit asseblief self in.");
+      setTimeout(function () { $('total').focus(); }, 50);
+    }
     $('date').value = d.date || today();
     $('summary').value = d.summary || '';
     if (d.code) sel.value = d.code;
@@ -477,6 +482,18 @@
   function today() { return new Date().toISOString().slice(0, 10); }
   function fmt(n) { n = Number(n) || 0; return n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+  // Last line of defence: the reader should return a plain number, but an old
+  // cached function (or a stray "R1 187,84") must still land in the amount box.
+  function toNum(v) {
+    if (typeof v === 'number') return isFinite(v) ? v : null;
+    if (typeof v !== 'string') return null;
+    var s = v.replace(/[^0-9.,-]/g, '');
+    if (!s) return null;
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
+    else s = s.replace(/,/g, '');
+    var n = parseFloat(s);
+    return isFinite(n) ? n : null;
+  }
   function hide(id) { $(id).style.display = 'none'; }
   function showErr(m) { var b = $('errBanner'); b.textContent = m; b.style.display = 'block'; }
   function showOk(m) { var b = $('okBanner'); b.textContent = m; b.style.display = 'block'; setTimeout(function () { b.style.display = 'none'; }, 4000); }

@@ -62,6 +62,11 @@ exports.handler = async function (event) {
     '"currency":string,"category":string,"code":string,"confidence":"high"|"medium"|"low","summary":string}',
     'Rules:',
     '- vendor = shop/supplier name. total = final amount paid (grand total incl VAT).',
+    '- The photo may be a CARD TRANSACTION RECORD / bank card slip instead of a till slip.',
+    '  On those, the line labelled AMOUNT (or TOTAL / BEDRAG / TOTAAL) IS the total. Always return it.',
+    '- Numbers MUST be plain JSON numbers: no currency symbol, no thousands separator,',
+    '  a dot for the decimal point. "R1,187.84" and "R1 187,84" both become 1187.84.',
+    '- Only use null for total if no amount is legible anywhere on the slip.',
     '- vat = VAT/BTW amount if shown, else null. currency defaults to "ZAR".',
     '- category MUST be one of the names below; code MUST be its matching code.',
     '- If unsure of the category, choose the closest and set confidence "low".',
@@ -109,6 +114,10 @@ exports.handler = async function (event) {
         || categories.find((c) => c.code.toLowerCase() === String(data.code || '').toLowerCase());
       if (match) { data.category = match.name; data.code = match.code; }
       data.currency = data.currency || 'ZAR';
+      // Models sometimes hand back "R1 187,84" or "1,187.84" instead of a number.
+      // Coerce here so the browser's number input can always accept it.
+      data.total = toNum(data.total);
+      data.vat = toNum(data.vat);
       return { statusCode: 200, headers: cors, body: JSON.stringify({ ok: true, data, model }) };
     } catch (e) {
       clearTimeout(timer);
@@ -119,6 +128,20 @@ exports.handler = async function (event) {
   }
   return { statusCode: 502, headers: cors, body: JSON.stringify({ ok: false, error: lastErr, overloaded }) };
 };
+
+// Coerce a model-supplied amount into a plain number. Handles "R1 187,84",
+// "1,187.84", "R 1187.84" and similar. Returns null when nothing usable is left.
+function toNum(v) {
+  if (typeof v === 'number') return isFinite(v) ? v : null;
+  if (typeof v !== 'string') return null;
+  var s = v.replace(/[^0-9.,-]/g, '');          // drop R, spaces, letters
+  if (!s) return null;
+  var lastComma = s.lastIndexOf(','), lastDot = s.lastIndexOf('.');
+  if (lastComma > lastDot) s = s.replace(/\./g, '').replace(',', '.');  // 1.187,84
+  else s = s.replace(/,/g, '');                                        // 1,187.84
+  var n = parseFloat(s);
+  return isFinite(n) ? n : null;
+}
 
 function safeParse(text) {
   if (!text) return null;
