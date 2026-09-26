@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="af">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#161c4a">
+<title>Kinder Ark — Maand vergelyking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amatica+SC:wght@400;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#eef5f6; --card:#ffffff; --ink:#1a2140; --ink-2:#4b5372; --ink-3:#6a7290;
+    --line:#e4e8f0; --line-2:#cfd6e2;
+    --navy-900:#0f1540; --navy:#161c4a; --teal-700:#157e84; --teal:#2aa7ad;
+    --teal-100:#d9f0f0; --teal-text:#0f5f63;
+    --pink:#ef5077; --pink-2:#ffb0c2;
+    --warn-bg:#fbf0d6; --warn-text:#6e4506; --warn-line:#ecd08e;
+    --stop-bg:#f9e5e1; --stop-text:#7a1d16; --stop-line:#edb8b0;
+    --radius:18px;
+    --shadow:0 1px 2px rgba(22,28,74,.06), 0 6px 18px -8px rgba(22,28,74,.20);
+    --sans:"Poppins",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; }
+  body { background:var(--paper); color:var(--ink); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; line-height:1.45; }
+  .wrap { max-width:560px; margin:0 auto; padding:0 16px 96px; }
+
+  header { background:var(--navy); color:#fff; border-bottom:3px solid var(--pink); }
+  .hd { max-width:560px; margin:0 auto; padding:16px; display:flex; align-items:center; gap:12px; }
+  .mark { width:38px; height:38px; flex:0 0 auto; }
+  .brand h1 { font-family:"Amatica SC",var(--sans); font-weight:700; font-size:28px;
+    line-height:1; margin:0; letter-spacing:.5px; }
+  .brand p { margin:2px 0 0; font-size:12.5px; color:#c9cde6; }
+
+  h2 { font-size:15px; margin:22px 2px 10px; color:var(--ink-2); font-weight:600;
+    text-transform:uppercase; letter-spacing:.6px; }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:18px; }
+
+  label { display:block; font-size:12.5px; font-weight:600; color:var(--ink-3);
+    margin-bottom:5px; text-transform:uppercase; letter-spacing:.4px; }
+  input[type=month], select, textarea {
+    width:100%; font-family:var(--sans); font-size:16px; color:var(--ink);
+    background:#fbfcfe; border:1.5px solid var(--line-2); border-radius:12px;
+    padding:12px 13px; appearance:none; }
+  textarea { min-height:150px; resize:vertical; font-size:13.5px; line-height:1.5; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:var(--teal); background:#fff; }
+  .row { margin-bottom:13px; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  .save { width:100%; border:none; border-radius:14px; cursor:pointer; margin-top:6px;
+    background:var(--navy); color:#fff; font-family:var(--sans); font-weight:700;
+    font-size:16px; padding:16px; }
+  .save:active { transform:translateY(1px); }
+  .save[disabled] { opacity:.5; }
+  .save.teal { background:var(--teal-700); }
+  .ghost { background:none; border:1.5px solid var(--line-2); color:var(--ink-2);
+    border-radius:12px; padding:11px 14px; font-family:var(--sans); font-weight:600;
+    font-size:14px; cursor:pointer; }
+  input[type=file] { display:none; }
+
+  .banner { display:none; border-radius:12px; padding:11px 13px; font-size:13.5px; margin-top:12px; }
+  .banner.ok { background:var(--teal-100); color:var(--teal-text); }
+  .banner.err { background:var(--stop-bg); color:var(--stop-text); }
+  .banner.warn { background:var(--warn-bg); color:var(--warn-text); }
+  .hint { font-size:12.5px; color:var(--ink-3); margin:8px 2px 0; }
+
+  /* score tiles */
+  .tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:6px; }
+  .tile { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 10px;
+    text-align:center; box-shadow:var(--shadow); }
+  .tile .l { font-size:10.5px; font-weight:700; color:var(--ink-3); text-transform:uppercase;
+    letter-spacing:.4px; line-height:1.25; }
+  .tile .v { font-size:17px; font-weight:800; margin-top:5px; white-space:nowrap; }
+  .tile.good .v { color:var(--teal-text); }
+  .tile.bad .v { color:var(--stop-text); }
+
+  /* result groups */
+  .grp { margin-top:14px; }
+  .ghead { display:flex; align-items:center; gap:9px; width:100%; cursor:pointer; text-align:left;
+    background:none; border:none; padding:12px 2px; font-family:var(--sans); color:var(--ink); }
+  .ghead .dot { width:10px; height:10px; border-radius:50%; flex:0 0 auto; }
+  .ghead .t { flex:1 1 auto; font-weight:700; font-size:14.5px; }
+  .ghead .n { font-size:12px; font-weight:700; padding:2px 9px; border-radius:999px;
+    background:var(--line); color:var(--ink-2); }
+  .ghead .chev { width:14px; height:14px; color:var(--ink-3); transition:transform .15s; }
+  .grp.open .chev { transform:rotate(90deg); }
+  .gbody { display:none; }
+  .grp.open .gbody { display:block; }
+
+  .line { display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-top:1px solid var(--line); }
+  .line .info { flex:1 1 auto; min-width:0; }
+  .line .v { font-weight:600; font-size:14px; }
+  .line .m { font-size:12px; color:var(--ink-3); margin-top:1px; }
+  .line .amt { font-weight:700; font-size:14px; white-space:nowrap; }
+  .tagx { display:inline-block; font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px;
+    margin-left:6px; vertical-align:middle; }
+  .tagx.warn { background:var(--warn-bg); color:var(--warn-text); }
+  .tagx.stop { background:var(--stop-bg); color:var(--stop-text); }
+  .tagx.ok { background:var(--teal-100); color:var(--teal-text); }
+  .empty { text-align:center; color:var(--ink-3); font-size:13.5px; padding:18px 10px; }
+  .foot { text-align:center; color:var(--ink-3); font-size:11.5px; margin-top:26px; }
+  .foot a { color:var(--teal-text); }
+  .btnrow { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+  .spin { width:18px; height:18px; border:2.5px solid var(--teal-100);
+    border-top-color:var(--teal-700); border-radius:50%; animation:sp .8s linear infinite;
+    display:inline-block; vertical-align:middle; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<header>
+  <div class="hd">
+    <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M8 40 Q32 18 56 40 L52 48 Q32 34 12 48 Z" fill="#2aa7ad"/>
+      <path d="M6 46 Q32 30 58 46 L54 56 L10 56 Z" fill="#ffffff" opacity=".18"/>
+      <path d="M32 20c-3-6-13-4-11 4 1 5 11 11 11 11s10-6 11-11c2-8-8-10-11-4z" fill="#ef5077"/>
+    </svg>
+    <div class="brand">
+      <h1>Maand vergelyking</h1>
+      <p>Rekeninge se opsomming teenoor jou strokies</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <h2>1 · Watter maand</h2>
+  <div class="card">
+    <div class="two">
+      <div class="row">
+        <label for="month">Maand</label>
+        <input type="month" id="month">
+      </div>
+      <div class="row">
+        <label for="schoolFilter">Skool</label>
+        <select id="schoolFilter">
+          <option value="">Albei skole</option>
+          <option value="VDV">Val de Vie (VDV)</option>
+          <option value="KAP">Courtrai (KAP)</option>
+        </select>
+      </div>
+    </div>
+    <div id="slipState" class="hint"><span class="spin"></span> Laai strokies…</div>
+  </div>
+
+  <h2>2 · Rekeninge se opsomming</h2>
+  <div class="card">
+    <button class="save teal" id="pickBtn" type="button">Laai 'n lêer op (Excel of CSV)</button>
+    <input type="file" id="file" accept=".xlsx,.xls,.csv,.txt,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    <p class="hint" style="text-align:center">of plak die lys hieronder in</p>
+    <textarea id="paste" placeholder="Plak die opsomming hier — een uitgawe per reël, met die datum en die bedrag."></textarea>
+    <div class="banner err" id="parseErr"></div>
+    <div class="banner ok" id="parseOk"></div>
+    <button class="save" id="compareBtn" type="button" disabled>Vergelyk</button>
+  </div>
+
+  <div id="results" hidden>
+    <h2>3 · Uitslag</h2>
+    <div class="tiles">
+      <div class="tile"><div class="l">Opsomming</div><div class="v" id="t-stmt">R0</div></div>
+      <div class="tile"><div class="l">Jou strokies</div><div class="v" id="t-slips">R0</div></div>
+      <div class="tile" id="t-diff-tile"><div class="l">Verskil</div><div class="v" id="t-diff">R0</div></div>
+    </div>
+    <div class="banner" id="verdict" style="display:block"></div>
+
+    <div class="card" style="margin-top:14px;padding:6px 18px 14px">
+      <div class="grp" id="g-missing">
+        <button class="ghead" type="button"><span class="dot" style="background:var(--pink)"></span>
+          <span class="t">Op die opsomming, geen strokie</span><span class="n">0</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+        <div class="gbody"></div>
+      </div>
+      <div class="grp" id="g-extra">
+        <button class="ghead" type="button"><span class="dot" style="background:var(--warn-line)"></span>
+          <span class="t">Strokie gesnap, nie op die opsomming</span><span class="n">0</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+        <div class="gbody"></div>
+      </div>
+      <div class="grp" id="g-check">
+        <button class="ghead" type="button"><span class="dot" style="background:var(--warn-text)"></span>
+          <span class="t">Kyk gou — pas amper</span><span class="n">0</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+        <div class="gbody"></div>
+      </div>
+      <div class="grp" id="g-ok">
+        <button class="ghead" type="button"><span class="dot" style="background:var(--teal)"></span>
+          <span class="t">Pas net mooi</span><span class="n">0</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+        <div class="gbody"></div>
+      </div>
+    </div>
+
+    <div class="btnrow">
+      <button class="ghost" id="copyBtn" type="button">Kopieer uitslag</button>
+      <button class="ghost" id="mailBtn" type="button">Stuur per e-pos</button>
+    </div>
+    <div class="banner ok" id="copyOk"></div>
+  </div>
+
+  <p class="foot">Kinder Ark Faktuurbeheer · aangedryf deur Wolk Solutions<br>
+    <a href="slip-capture.html">&larr; Terug na strokies snap</a></p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var params = new URLSearchParams(location.search);
+  var TENANT = params.get('tenant') || 'kinderark';
+
+  // ---- Firebase (read-only here; falls back to this device's local slips) ----
+  var DB = null;
+  try {
+    firebase.initializeApp({ apiKey: 'AIzaSyBu8k_4z-Rg6UDCZfqHa2K-kfkwjxA_qH8', authDomain: 'fishtrack-sa.firebaseapp.com', projectId: 'fishtrack-sa', storageBucket: 'fishtrack-sa.firebasestorage.app', messagingSenderId: '610455904003', appId: '1:610455904003:web:3f04f72c5bd9644c64d336' });
+    DB = firebase.firestore();
+    firebase.auth().onAuthStateChanged(function (u) { if (!u) firebase.auth().signInAnonymously().catch(function () {}); });
+  } catch (e) { DB = null; }
+
+  // ========================================================================
+  // Helpers
+  // ========================================================================
+  function fmt(n) { n = Number(n) || 0; return n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function R(n) { return (n < 0 ? '-R' : 'R') + fmt(Math.abs(n)); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+  function cents(n) { return Math.round((Number(n) || 0) * 100); }
+  function days(a, b) {
+    if (!a || !b) return 999;
+    return Math.abs((Date.parse(a + 'T00:00:00') - Date.parse(b + 'T00:00:00')) / 86400000);
+  }
+  function show(id, cls, msg) { var b = $(id); b.className = 'banner ' + cls; b.textContent = msg; b.style.display = 'block'; }
+  function hide(id) { $(id).style.display = 'none'; }
+
+  // ========================================================================
+  // Date parsing — the accounts lady's file can carry any of these formats
+  // ========================================================================
+  var MONTHS = { jan:1, feb:2, mrt:3, maa:3, mar:3, apr:4, mei:5, may:5, jun:6, jul:7,
+                 aug:8, sep:9, okt:10, oct:10, nov:11, des:12, dec:12 };
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function iso(y, m, d) {
+    if (y < 100) y += (y < 70 ? 2000 : 1900);
+    if (!(m >= 1 && m <= 12) || !(d >= 1 && d <= 31) || !(y >= 1990 && y <= 2100)) return null;
+    return y + '-' + pad(m) + '-' + pad(d);
+  }
+  function monthNum(w) { return MONTHS[String(w).slice(0, 3).toLowerCase()] || 0; }
+
+  // Returns { date, start, end } for the first date-looking run in the text.
+  function findDate(s) {
+    var pats = [
+      // 2026-09-10 / 2026/09/10
+      [/\b(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})\b/, function (m) { return iso(+m[1], +m[2], +m[3]); }],
+      // 10/09/2026, 10-09-26, 10.09.2026  (day first — SA convention)
+      [/\b(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})\b/, function (m) { return iso(+m[3], +m[2], +m[1]); }],
+      // 10 Sep 2026 / 10-Sep-26 / 10 September 2026
+      [/\b(\d{1,2})[\s\-\/]*([A-Za-z]{3,12})\.?[\s\-\/]*(\d{2,4})\b/, function (m) { return iso(+m[3], monthNum(m[2]), +m[1]); }],
+      // Sep 10, 2026
+      [/\b([A-Za-z]{3,12})\.?\s+(\d{1,2}),?\s+(\d{2,4})\b/, function (m) { return iso(+m[3], monthNum(m[1]), +m[2]); }]
+    ];
+    for (var i = 0; i < pats.length; i++) {
+      var m = pats[i][0].exec(s);
+      if (m) {
+        var d = pats[i][1](m);
+        if (d) return { date: d, start: m.index, end: m.index + m[0].length };
+      }
+    }
+    return null;
+  }
+
+  // Excel keeps dates as a serial number when the sheet is read raw.
+  function excelSerialToIso(n) {
+    if (!(n > 20000 && n < 60000)) return null;
+    var d = new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 86400000);
+    return d.toISOString().slice(0, 10);
+  }
+
+  // ========================================================================
+  // Amount parsing — "R1 351,51", "1,351.51", "1351.51", "(84.00)"
+  // ========================================================================
+  function toNum(v) {
+    if (typeof v === 'number') return isFinite(v) ? v : null;
+    if (typeof v !== 'string') return null;
+    var neg = /^\s*\(.*\)\s*$/.test(v) || /-/.test(v);
+    var s = v.replace(/[^0-9.,]/g, '');
+    if (!s) return null;
+    // Decide which separator is the decimal point by whichever comes last.
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(/,/g, '.');
+    else s = s.replace(/,/g, '');
+    var n = parseFloat(s);
+    if (!isFinite(n)) return null;
+    return neg ? -Math.abs(n) : n;
+  }
+
+  // Money-looking runs in a line, best candidate last-resort ranked.
+  function findAmount(s) {
+    var re = /(R\s*)?(\(?-?\d{1,3}(?:[  ,.]\d{3})*(?:[.,]\d{1,2})?\)?|\(?-?\d+(?:[.,]\d{1,2})?\)?)/g;
+    var best = null, m;
+    while ((m = re.exec(s))) {
+      var raw = m[0];
+      var val = toNum(raw);
+      if (val === null || val === 0) continue;
+      var hasR = !!m[1];
+      var hasDec = /[.,]\d{2}(?!\d)/.test(m[2]);
+      var score = (hasDec ? 4 : 0) + (hasR ? 2 : 0);
+      // Prefer the strongest signal; on a tie take the right-most run, which is
+      // where a statement line puts its amount.
+      if (!best || score > best.score || (score === best.score && m.index > best.start)) {
+        best = { val: Math.abs(val), score: score, start: m.index, end: m.index + raw.length };
+      }
+    }
+    // Reject lines whose only numbers are bare (order numbers, codes, counts).
+    if (!best || best.score === 0) return null;
+    return best;
+  }
+
+  // ========================================================================
+  // Statement parsing
+  // ========================================================================
+  var SKIP = /^\s*(totaal|total|subtotaal|sub-?total|saldo|balance|aantal|gestuur|opening|closing|brought forward|carried forward|btw|vat\b|grand total)/i;
+  // Roll-up lines carry a real-looking amount but are not an expense. These
+  // words are enough to spot one wherever it sits in the line, e.g.
+  // "Val de Vie (VDV) — subtotaal R16 839,99".
+  var SKIP_ANY = /\b(sub-?totaal|sub-?total|grand total|totaal vir|total for|carried forward|brought forward)\b/i;
+
+  function parseLines(text) {
+    var out = [], bad = 0;
+    text.split(/\r?\n/).forEach(function (raw) {
+      var line = raw.replace(/ /g, ' ').trim();
+      if (!line || SKIP.test(line) || SKIP_ANY.test(line)) return;
+      if (!/\d/.test(line)) return;
+      var d = findDate(line);
+      // Take the date out before hunting for money, so "2026-09-10" cannot be
+      // mistaken for an amount.
+      var rest = d ? (line.slice(0, d.start) + ' ' + line.slice(d.end)) : line;
+      var a = findAmount(rest);
+      if (!a) { bad++; return; }
+      var desc = rest.slice(0, a.start);
+      if (norm(desc).length < 3) desc = rest.slice(a.end);
+      out.push({ date: d ? d.date : null, amount: a.val, desc: cleanDesc(desc), raw: line });
+    });
+    return { rows: out, skipped: bad };
+  }
+
+  function cleanDesc(s) {
+    return String(s || '')
+      .replace(/\[[^\]]*\]/g, ' ')          // [3700/000 Geskenke]
+      .replace(/^[\s\-–—•*·>|,;]+/, '')
+      .replace(/[\s\-–—•*·>|,;]+$/, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
+  // ---- Delimited table (CSV / Excel rows) ----
+  // One delimiter for the whole file, decided up front. Guessing per character
+  // would split "1,796.92" in a tab-separated export.
+  function detectDelim(lines) {
+    function count(ch) {
+      return lines.slice(0, 10).reduce(function (n, l) {
+        return n + (l.split(ch).length - 1);
+      }, 0);
+    }
+    if (count('\t')) return '\t';
+    if (count(';')) return ';';
+    return ',';
+  }
+
+  function splitCsvLine(line, d) {
+    d = d || ',';
+    var out = [], cur = '', q = false;
+    for (var i = 0; i < line.length; i++) {
+      var c = line[i];
+      if (q) {
+        if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+        else if (c === '"') q = false;
+        else cur += c;
+      } else if (c === '"') q = true;
+      else if (c === d) { out.push(cur); cur = ''; }
+      else cur += c;
+    }
+    out.push(cur);
+    return out.map(function (s) { return s.trim(); });
+  }
+
+  function toRows(text) {
+    var lines = text.split(/\r?\n/).filter(function (l) { return l.trim(); });
+    var d = detectDelim(lines);
+    return lines.map(function (l) { return splitCsvLine(l, d); });
+  }
+
+  function looksDelimited(text) {
+    var lines = text.split(/\r?\n/).filter(function (l) { return l.trim(); }).slice(0, 8);
+    if (lines.length < 2) return false;
+    var d = detectDelim(lines);
+    var hits = lines.filter(function (l) { return splitCsvLine(l, d).length >= 3; }).length;
+    return hits >= Math.max(2, Math.ceil(lines.length * 0.6));
+  }
+
+  // The single entry point for anything typed, pasted or read from a text file.
+  function parseText(text) {
+    return looksDelimited(text) ? parseTable(toRows(text)) : parseLines(text);
+  }
+
+  var H_DATE = /(datum|date|trans)/i;
+  var H_AMT = /(bedrag|amount|debiet|debit|totaal|total|waarde|value|rand|koste|cost)/i;
+  var H_DESC = /(beskryw|descr|verskaffer|supplier|winkel|vendor|naam|name|detail|narrative|reference|verwysing)/i;
+
+  // rows: array of arrays (strings or numbers)
+  function parseTable(rows) {
+    rows = rows.filter(function (r) { return r && r.some(function (c) { return String(c == null ? '' : c).trim(); }); });
+    if (!rows.length) return { rows: [], skipped: 0 };
+    var width = Math.max.apply(null, rows.map(function (r) { return r.length; }));
+
+    // Sniff a header row: mostly non-numeric text in the first two rows.
+    var head = null, startAt = 0;
+    for (var h = 0; h < Math.min(2, rows.length); h++) {
+      var cellsTxt = rows[h].filter(function (c) { return typeof c === 'string' && c && toNum(c) === null; }).length;
+      if (cellsTxt >= Math.max(2, Math.ceil(rows[h].length * 0.6))) { head = rows[h]; startAt = h + 1; break; }
+    }
+
+    var iDate = -1, iAmt = -1, iDesc = -1;
+    if (head) {
+      head.forEach(function (c, i) {
+        var t = String(c || '');
+        if (iDate < 0 && H_DATE.test(t)) iDate = i;
+        if (iAmt < 0 && H_AMT.test(t)) iAmt = i;
+        if (iDesc < 0 && H_DESC.test(t)) iDesc = i;
+      });
+    }
+
+    var body = rows.slice(startAt).filter(function (r) {
+      var first = String(r[0] == null ? '' : r[0]);
+      var joined = r.join(' ');
+      return !SKIP.test(first) && !SKIP.test(joined) && !SKIP_ANY.test(joined);
+    });
+
+    // Fall back to sniffing each column's contents.
+    function colScore(i, test) {
+      var n = 0, seen = 0;
+      body.slice(0, 40).forEach(function (r) {
+        var c = r[i]; if (c == null || c === '') return;
+        seen++; if (test(c)) n++;
+      });
+      return seen ? n / seen : 0;
+    }
+    if (iDate < 0) {
+      var bd = 0;
+      for (var i = 0; i < width; i++) {
+        var s = colScore(i, function (c) {
+          if (typeof c === 'number') return !!excelSerialToIso(c);
+          return !!findDate(String(c));
+        });
+        if (s > bd && s >= 0.6) { bd = s; iDate = i; }
+      }
+    }
+    if (iAmt < 0) {
+      var ba = 0;
+      for (var j = 0; j < width; j++) {
+        if (j === iDate) continue;
+        var s2 = colScore(j, function (c) { return typeof c === 'number' ? isFinite(c) : toNum(String(c)) !== null; });
+        if (s2 > ba && s2 >= 0.6) { ba = s2; iAmt = j; }
+      }
+    }
+    if (iDesc < 0) {
+      var bl = -1;
+      for (var k = 0; k < width; k++) {
+        if (k === iDate || k === iAmt) continue;
+        var avg = 0, cnt = 0;
+        body.slice(0, 40).forEach(function (r) { var c = r[k]; if (c == null) return; cnt++; avg += String(c).length; });
+        avg = cnt ? avg / cnt : 0;
+        if (avg > bl && avg >= 3) { bl = avg; iDesc = k; }
+      }
+    }
+    if (iAmt < 0) return { rows: [], skipped: body.length };
+
+    var out = [], bad = 0;
+    body.forEach(function (r) {
+      var amt = typeof r[iAmt] === 'number' ? r[iAmt] : toNum(String(r[iAmt] == null ? '' : r[iAmt]));
+      if (amt === null || !amt) { bad++; return; }
+      var date = null;
+      if (iDate >= 0) {
+        var dc = r[iDate];
+        if (typeof dc === 'number') date = excelSerialToIso(dc);
+        else { var fd = findDate(String(dc == null ? '' : dc)); date = fd ? fd.date : null; }
+      }
+      var desc = iDesc >= 0 ? String(r[iDesc] == null ? '' : r[iDesc]) : '';
+      if (!desc) {
+        desc = r.filter(function (c, i) { return i !== iAmt && i !== iDate && c; }).join(' ');
+      }
+      out.push({ date: date, amount: Math.abs(amt), desc: cleanDesc(desc), raw: r.join(' | ') });
+    });
+    return { rows: out, skipped: bad };
+  }
+
+  // ========================================================================
+  // Name matching
+  // ========================================================================
+  var STOP = { PTY:1, LTD:1, THE:1, AND:1, EN:1, CC:1, BPK:1, EDMS:1, STORE:1, WINKEL:1, SA:1 };
+  function norm(s) {
+    return String(s || '').toUpperCase().replace(/&/g, ' EN ').replace(/[^A-Z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function toks(s) {
+    return norm(s).split(' ').filter(function (t) { return t.length > 2 && !STOP[t]; });
+  }
+  function sim(a, b) {
+    var A = toks(a), B = toks(b);
+    if (!A.length || !B.length) return 0;
+    var hit = 0;
+    A.forEach(function (t) {
+      if (B.some(function (u) { return u === t || (t.length >= 4 && (u.indexOf(t) === 0 || t.indexOf(u) === 0)); })) hit++;
+    });
+    return (2 * hit) / (A.length + B.length);
+  }
+
+  // ========================================================================
+  // Reconciliation
+  // ========================================================================
+  function reconcile(stmt, slips) {
+    stmt.forEach(function (r) { r.hit = null; });
+    slips.forEach(function (r) { r.hit = null; });
+    var matched = [];
+
+    var check = [];
+
+    // Passes get progressively looser on the date; the amount must be exact.
+    // A gap of more than a month is not a late capture, it is a typed year, so
+    // it goes to the human instead of being tagged and filed away.
+    var GAP_TAG = 5;      // days: beyond this the match carries a note
+    var GAP_CHECK = 31;   // days: beyond this a human must look
+    [0, GAP_TAG, Infinity].forEach(function (maxDays) {
+      stmt.forEach(function (s) {
+        if (s.hit) return;
+        var best = null;
+        slips.forEach(function (c) {
+          if (c.hit) return;
+          if (cents(c.total) !== cents(s.amount)) return;
+          var dd = (s.date && c.date) ? days(s.date, c.date) : 0;
+          if (dd > maxDays) return;
+          var sc = sim(s.desc, c.vendor);
+          if (!best || sc > best.sc || (sc === best.sc && dd < best.dd)) best = { c: c, sc: sc, dd: dd };
+        });
+        if (!best) return;
+        s.hit = best.c; best.c.hit = s;
+        if (best.dd > GAP_CHECK) check.push({ stmt: s, slip: best.c, reason: 'datum', diff: 0, dd: best.dd });
+        else matched.push({ stmt: s, slip: best.c, tags: best.dd > GAP_TAG ? ['datum verskil'] : [] });
+      });
+    });
+
+    // Last pass: the amount is close but not exact and the names agree. Usually
+    // a typo in the captured amount — worth a human's eye, not an auto-match.
+    stmt.forEach(function (s) {
+      if (s.hit) return;
+      var best = null;
+      slips.forEach(function (c) {
+        if (c.hit) return;
+        var diff = Math.abs(c.total - s.amount);
+        if (diff > Math.max(2, s.amount * 0.02)) return;
+        var sc = sim(s.desc, c.vendor);
+        var dd = (s.date && c.date) ? days(s.date, c.date) : 0;
+        if (sc < 0.34 && dd > 3) return;
+        if (!best || sc > best.sc) best = { c: c, sc: sc, dd: dd, diff: diff };
+      });
+      if (best) {
+        s.hit = best.c; best.c.hit = s;
+        check.push({ stmt: s, slip: best.c, reason: 'bedrag', diff: best.diff, dd: best.dd });
+      }
+    });
+
+    return {
+      matched: matched,
+      check: check,
+      missing: stmt.filter(function (s) { return !s.hit; }),
+      extra: slips.filter(function (c) { return !c.hit; })
+    };
+  }
+
+  // ========================================================================
+  // Slips
+  // ========================================================================
+  var allSlips = [];   // everything we could load
+  var slipsInMonth = [];
+
+  function localAll() {
+    try { return JSON.parse(localStorage.getItem('ka_slips_' + TENANT) || '[]'); } catch (e) { return []; }
+  }
+
+  function loadSlips() {
+    $('slipState').innerHTML = '<span class="spin"></span> Laai strokies…';
+    var local = localAll().map(function (r) {
+      return { src: 'local', fid: r.fid || null, vendor: r.vendor, total: Number(r.total) || 0,
+               date: r.date, code: r.code, category: r.category, school: r.school,
+               schoolCode: r.schoolCode, capturedBy: r.capturedBy };
+    });
+    if (!DB) { allSlips = local; afterLoad('net hierdie toestel'); return; }
+    DB.collection('wolkInvoices').where('tenant', '==', TENANT).get().then(function (snap) {
+      var remote = [];
+      snap.forEach(function (d) {
+        var x = d.data();
+        if (x.type && x.type !== 'slip') return;
+        remote.push({ src: 'cloud', fid: d.id, vendor: x.vendor || x.supplier || 'Onbekend',
+                      total: Number(x.total) || 0, date: x.date, code: x.code, category: x.category,
+                      school: x.school, schoolCode: x.schoolCode, capturedBy: x.capturedBy });
+      });
+      var seen = {};
+      remote.forEach(function (r) { if (r.fid) seen[r.fid] = 1; });
+      allSlips = remote.concat(local.filter(function (r) { return !r.fid || !seen[r.fid]; }));
+      afterLoad('alle toestelle');
+    }).catch(function () {
+      allSlips = local;
+      afterLoad('net hierdie toestel — kon nie aanlyn kom nie');
+    });
+  }
+
+  function afterLoad(where) {
+    applyMonth();
+    $('slipState').textContent = slipsInMonth.length + ' strokie(s) vir hierdie maand · ' + where;
+  }
+
+  function applyMonth() {
+    var m = $('month').value;
+    var sc = $('schoolFilter').value;
+    slipsInMonth = allSlips.filter(function (r) {
+      if (sc && r.schoolCode !== sc) return false;
+      return m ? String(r.date || '').slice(0, 7) === m : true;
+    });
+    slipsInMonth.sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
+  }
+
+  // ========================================================================
+  // UI
+  // ========================================================================
+  var parsed = null;
+
+  function setParsed(res, where) {
+    hide('parseErr'); hide('parseOk');
+    if (!res || !res.rows.length) {
+      parsed = null;
+      $('compareBtn').disabled = true;
+      show('parseErr', 'err', 'Kon geen uitgawes in ' + where + ' uitken nie. Elke reël moet \'n bedrag hê (bv. R240,00).');
+      return;
+    }
+    parsed = res.rows;
+    $('compareBtn').disabled = false;
+    var sum = parsed.reduce(function (s, r) { return s + r.amount; }, 0);
+    var noDate = parsed.filter(function (r) { return !r.date; }).length;
+    var msg = parsed.length + ' reël(s) gelees uit ' + where + ' · totaal ' + R(sum);
+    if (noDate) msg += ' · ' + noDate + ' sonder datum';
+    if (res.skipped) msg += ' · ' + res.skipped + ' reël(s) oorgeslaan';
+    show('parseOk', 'ok', msg);
+  }
+
+  $('paste').addEventListener('input', function () {
+    var t = $('paste').value;
+    if (!t.trim()) { parsed = null; $('compareBtn').disabled = true; hide('parseErr'); hide('parseOk'); return; }
+    setParsed(parseText(t), 'die geplakte teks');
+  });
+
+  $('pickBtn').addEventListener('click', function () { $('file').click(); });
+  $('file').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0];
+    $('file').value = '';
+    if (!f) return;
+    if (/\.(xlsx|xlsm|xls)$/i.test(f.name)) readExcel(f);
+    else readText(f);
+  });
+
+  function readText(f) {
+    var fr = new FileReader();
+    fr.onload = function () {
+      var t = String(fr.result || '');
+      $('paste').value = t;
+      setParsed(parseText(t), f.name);
+    };
+    fr.onerror = function () { show('parseErr', 'err', 'Kon nie die lêer lees nie.'); };
+    fr.readAsText(f);
+  }
+
+  // SheetJS is only fetched when an actual Excel file is picked.
+  function withSheetJS(cb) {
+    if (window.XLSX) return cb();
+    show('parseOk', 'warn', 'Laai Excel-leser…');
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = function () { hide('parseOk'); cb(); };
+    s.onerror = function () { show('parseErr', 'err', 'Kon nie die Excel-leser laai nie. Stoor die lêer as CSV en probeer weer.'); };
+    document.head.appendChild(s);
+  }
+
+  function readExcel(f) {
+    withSheetJS(function () {
+      var fr = new FileReader();
+      fr.onload = function () {
+        try {
+          var wb = XLSX.read(new Uint8Array(fr.result), { type: 'array' });
+          var best = null;
+          wb.SheetNames.forEach(function (n) {
+            var rows = XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: true, defval: '' });
+            var res = parseTable(rows);
+            if (!best || res.rows.length > best.res.rows.length) best = { res: res, name: n };
+          });
+          setParsed(best ? best.res : null, f.name + (best && wb.SheetNames.length > 1 ? ' · blad "' + best.name + '"' : ''));
+        } catch (e) {
+          show('parseErr', 'err', 'Kon nie die Excel-lêer lees nie. Stoor dit as CSV en probeer weer.');
+        }
+      };
+      fr.readAsArrayBuffer(f);
+    });
+  }
+
+  function fill(grpId, items, render) {
+    var g = $(grpId);
+    g.querySelector('.n').textContent = items.length;
+    var body = g.querySelector('.gbody');
+    body.innerHTML = items.length ? items.map(render).join('') : '<div class="empty">Niks hier nie.</div>';
+  }
+
+  function dstr(d) { return d || 'geen datum'; }
+
+  var last = null;
+
+  $('compareBtn').addEventListener('click', function () {
+    if (!parsed) return;
+    applyMonth();
+    var m = $('month').value;
+    // Statement rows outside the chosen month get a tag, but still count —
+    // dropping them would hide a captured date typo.
+    var stmt = parsed.map(function (r) {
+      return { date: r.date, amount: r.amount, desc: r.desc || 'Onbekend', raw: r.raw,
+               off: !!(m && r.date && r.date.slice(0, 7) !== m) };
+    });
+    var res = reconcile(stmt, slipsInMonth.slice());
+    last = { res: res, stmt: stmt, month: m };
+
+    var sumStmt = stmt.reduce(function (s, r) { return s + r.amount; }, 0);
+    var sumSlip = slipsInMonth.reduce(function (s, r) { return s + r.total; }, 0);
+    var diff = sumSlip - sumStmt;
+    $('t-stmt').textContent = R(sumStmt);
+    $('t-slips').textContent = R(sumSlip);
+    $('t-diff').textContent = R(diff);
+    $('t-diff-tile').className = 'tile ' + (Math.abs(diff) < 0.005 ? 'good' : 'bad');
+
+    var v = $('verdict');
+    if (!res.missing.length && !res.extra.length && !res.check.length) {
+      v.className = 'banner ok'; v.textContent = 'Alles pas — al ' + res.matched.length + ' uitgawes het \'n strokie.';
+    } else {
+      v.className = 'banner ' + (res.missing.length ? 'err' : 'warn');
+      var bits = [];
+      if (res.missing.length) bits.push(res.missing.length + ' sonder strokie');
+      if (res.extra.length) bits.push(res.extra.length + ' strokie(s) nie op die opsomming');
+      if (res.check.length) bits.push(res.check.length + ' om na te kyk');
+      v.textContent = res.matched.length + ' pas · ' + bits.join(' · ');
+    }
+    v.style.display = 'block';
+
+    fill('g-missing', res.missing, function (s) {
+      return '<div class="line"><div class="info"><div class="v">' + esc(s.desc) +
+        (s.off ? '<span class="tagx stop">ander maand</span>' : '') + '</div>' +
+        '<div class="m">' + esc(dstr(s.date)) + ' · geen strokie gesnap nie</div></div>' +
+        '<div class="amt">' + R(s.amount) + '</div></div>';
+    });
+    fill('g-extra', res.extra, function (c) {
+      return '<div class="line"><div class="info"><div class="v">' + esc(c.vendor) + '</div>' +
+        '<div class="m">' + esc(dstr(c.date)) + ' · ' + esc(c.code || '') + ' ' + esc(c.category || '') +
+        ' · ' + esc(c.capturedBy || '') + '</div></div>' +
+        '<div class="amt">' + R(c.total) + '</div></div>';
+    });
+    fill('g-check', res.check, function (p) {
+      var tag = p.reason === 'datum'
+        ? '<span class="tagx stop">datum verskil</span>'
+        : '<span class="tagx warn">verskil ' + R(p.diff) + '</span>';
+      return '<div class="line"><div class="info"><div class="v">' + esc(p.stmt.desc) + tag + '</div>' +
+        '<div class="m">opsomming ' + R(p.stmt.amount) + ' ' + esc(dstr(p.stmt.date)) +
+        ' · strokie ' + R(p.slip.total) + ' ' + esc(dstr(p.slip.date)) + ' (' + esc(p.slip.vendor) + ')</div></div></div>';
+    });
+    fill('g-ok', res.matched, function (p) {
+      return '<div class="line"><div class="info"><div class="v">' + esc(p.slip.vendor) +
+        (p.tags.length ? '<span class="tagx warn">' + esc(p.tags.join(', ')) + '</span>' : '') + '</div>' +
+        '<div class="m">' + esc(dstr(p.slip.date)) + ' · ' + esc(p.slip.code || '') + ' ' + esc(p.slip.category || '') + '</div></div>' +
+        '<div class="amt">' + R(p.slip.total) + '</div></div>';
+    });
+
+    // Open whatever needs attention; keep the tidy list closed.
+    $('g-missing').classList.toggle('open', !!res.missing.length);
+    $('g-extra').classList.toggle('open', !!res.extra.length);
+    $('g-check').classList.toggle('open', !!res.check.length);
+    $('g-ok').classList.remove('open');
+
+    $('results').hidden = false;
+    if ($('results').scrollIntoView) $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.ghead'), function (b) {
+    b.addEventListener('click', function () { b.parentNode.classList.toggle('open'); });
+  });
+
+  function reportText() {
+    if (!last) return '';
+    var r = last.res;
+    var sumStmt = last.stmt.reduce(function (s, x) { return s + x.amount; }, 0);
+    var sumSlip = slipsInMonth.reduce(function (s, x) { return s + x.total; }, 0);
+    var L = [];
+    L.push('Kinder Ark — vergelyking vir ' + (last.month || 'die maand'));
+    var scName = $('schoolFilter').options[$('schoolFilter').selectedIndex].text;
+    L.push('Skool: ' + scName);
+    L.push('');
+    L.push('Opsomming van rekeninge: R' + fmt(sumStmt) + '  (' + last.stmt.length + ' reëls)');
+    L.push('Strokies gesnap:         R' + fmt(sumSlip) + '  (' + slipsInMonth.length + ' strokies)');
+    L.push('Verskil:                 ' + R(sumSlip - sumStmt));
+    L.push('');
+    if (r.missing.length) {
+      L.push('OP DIE OPSOMMING, GEEN STROKIE (' + r.missing.length + '):');
+      r.missing.slice().sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); })
+        .forEach(function (s) { L.push('  - ' + dstr(s.date) + '  R' + fmt(s.amount) + '  ' + s.desc); });
+      L.push('');
+    }
+    if (r.extra.length) {
+      L.push('STROKIE GESNAP, NIE OP DIE OPSOMMING (' + r.extra.length + '):');
+      r.extra.slice().sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); })
+        .forEach(function (c) { L.push('  - ' + dstr(c.date) + '  R' + fmt(c.total) + '  ' + c.vendor + '  [' + (c.code || '') + ' ' + (c.category || '') + ']'); });
+      L.push('');
+    }
+    if (r.check.length) {
+      L.push('KYK GOU (' + r.check.length + '):');
+      r.check.forEach(function (p) {
+        if (p.reason === 'datum') {
+          L.push('  - ' + p.stmt.desc + ' R' + fmt(p.stmt.amount) + ': datum verskil — opsomming ' + dstr(p.stmt.date) + ', strokie ' + dstr(p.slip.date));
+        } else {
+          L.push('  - ' + p.stmt.desc + ': opsomming R' + fmt(p.stmt.amount) + ' teenoor strokie R' + fmt(p.slip.total) + ' (' + p.slip.vendor + ', ' + dstr(p.slip.date) + ')');
+        }
+      });
+      L.push('');
+    }
+    L.push('Pas net mooi: ' + r.matched.length);
+    L.push('');
+    L.push('Gestuur vanaf Kinder Ark Faktuurbeheer.');
+    return L.join('\n');
+  }
+
+  $('copyBtn').addEventListener('click', function () {
+    var t = reportText(); if (!t) return;
+    function done() { show('copyOk', 'ok', 'Gekopieer — plak dit waar jy wil.'); setTimeout(function () { hide('copyOk'); }, 3500); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, fallback);
+    else fallback();
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = t; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { show('copyOk', 'err', 'Kon nie kopieer nie.'); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  $('mailBtn').addEventListener('click', function () {
+    var t = reportText(); if (!t) return;
+    var subj = 'Kinder Ark vergelyking - ' + (last.month || '');
+    location.href = 'mailto:?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(t);
+  });
+
+  $('month').addEventListener('change', function () { applyMonth(); afterLoad($('slipState').dataset.where || 'gelaai'); });
+  $('schoolFilter').addEventListener('change', function () { applyMonth(); afterLoad($('slipState').dataset.where || 'gelaai'); });
+
+  // ---- boot ----
+  (function init() {
+    var now = new Date();
+    $('month').value = params.get('m') || (now.getFullYear() + '-' + pad(now.getMonth() + 1));
+    loadSlips();
+  })();
+})();
+</script>
+</body>
+</html>
